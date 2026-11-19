@@ -87,9 +87,17 @@ npm --prefix frontend run build
 
 - Specs and changes live in `docs/spectra/`. Plan with `$spectra-propose`, implement with `$spectra-apply <change>`. Do not deviate from an approved proposal; update the change first.
 - Apply in stages, in this order. Finish a stage before starting the next.
-  - **Stage 1 — core (must ship):** `race-data-replay` → `prediction-and-events` → `position-prediction` → `race-dashboard`
+  - **Stage 1 — core (must ship):** `race-data-replay` → `prediction-and-events` → two parallel tracks:
+    - **Backend track:** `position-prediction`
+    - **Frontend track:** `race-dashboard`
   - **Stage 2 — differentiator:** `race-wrapped`
   - **Stage 3 — extras:** `llm-commentary` → `polish`
+- Stage 1 parallel tracks:
+  - Start both tracks only after `prediction-and-events` is archived. Exception: `race-dashboard` tasks 1.1 (scaffold) and 1.2 (typed API client) may start earlier.
+  - Run each track in its own worktree. The backend track changes only `backend/`; the frontend track changes only `frontend/`. If a track needs a change outside its directory, stop and update the change first.
+  - Until `position-prediction` serves `/positions` and `/positions/history`, the frontend track uses mock responses that follow the API shapes in the `race-dashboard` design. Remove the mocks and test against the real backend before archiving `race-dashboard`.
+  - `spxa` reads and writes the main checkout's `docs/`, even from a worktree. Sync each track's Spectra artifacts into its worktree by hand, and archive one change at a time.
+  - Stage 1 is finished when both tracks are archived.
 - Spec files are written in English.
 
 ## Communication
