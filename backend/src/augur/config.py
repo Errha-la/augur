@@ -42,7 +42,9 @@ STRATEGY_SEED_DEFAULT = 42
 PACE_DROP_S = 1.0
 PACE_DROP_COOLDOWN_LAPS = 3
 DEG_WARNING_S_PER_LAP = 0.10
-DEG_WARNING_MIN_LAPS = 5
+# Raised from 5 after measuring the demo races: most warnings fired at exactly
+# 5 clean laps, where a 5-point line fit is noisy (design: "Event thresholds tuned").
+DEG_WARNING_MIN_LAPS = 8
 UNDERCUT_GAP_S = 2.5
 UNDERCUT_MIN_TYRE_AGE = 12
 UNDERCUT_NO_PIT_LAPS = 3

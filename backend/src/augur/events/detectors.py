@@ -169,18 +169,27 @@ def detect_undercut(lap: int, cars: Iterable[CarStatus], state: DetectorState) -
 
 
 def detect_position_change(
-    lap: int, positions: Mapping[str, int], state: DetectorState, total_laps: int
+    lap: int,
+    positions: Mapping[str, int],
+    state: DetectorState,
+    total_laps: int,
+    pitted: Iterable[str] = (),
 ) -> list[dict]:
-    """Gain/loss of >= 2 places from lap N-1, or a new leader; never on lap 1."""
+    """Gain/loss of >= 2 places from lap N-1, or a new leader; never on lap 1.
+
+    ``pitted`` are drivers whose own lap N is a pit-in or pit-out lap: their
+    place changes come from their own stop and are not reported.
+    """
     prev = state.prev_positions
     state.prev_positions = dict(positions)
     if lap <= 1 or prev is None:
         return []
+    pitted = set(pitted)
     out = []
     remaining = max(0, total_laps - lap)
     old_leader = min(prev, key=prev.get) if prev else None
     new_leader = min(positions, key=positions.get) if positions else None
-    if old_leader and new_leader and old_leader != new_leader:
+    if old_leader and new_leader and old_leader != new_leader and new_leader not in pitted:
         out.append(
             _event(
                 lap,
@@ -199,7 +208,7 @@ def detect_position_change(
             )
         )
     for driver in sorted(positions):
-        if driver not in prev:
+        if driver not in prev or driver in pitted:
             continue
         places = prev[driver] - positions[driver]  # > 0 gained
         if abs(places) < config.POSITION_CHANGE_MIN_PLACES:

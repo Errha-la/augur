@@ -79,14 +79,14 @@ class EventEngine:
         positions = {d["code"]: d["position"] for d in standings["drivers"]}
 
         cars = self._cars(laps, standings["drivers"], degradation)
+        stopped = laps["pit_in"].astype(bool) | laps["pit_out"].astype(bool)
+        pit_drivers = sorted(set(laps.loc[(laps["lap"] == lap) & stopped, "driver"]))
 
         events = []
         events += detectors.detect_pace_drop(lap, observations, self.state)
         events += detectors.detect_degradation(lap, degradation, self.state)
         events += detectors.detect_undercut(lap, cars, self.state)
-        events += detectors.detect_position_change(lap, positions, self.state, total)
-        stopped = laps["pit_in"].astype(bool) | laps["pit_out"].astype(bool)
-        pit_drivers = sorted(set(laps.loc[(laps["lap"] == lap) & stopped, "driver"]))
+        events += detectors.detect_position_change(lap, positions, self.state, total, pitted=pit_drivers)
         for e in events:
             if e["type"] == "position_change":
                 e["evidence"]["pit_drivers"] = pit_drivers

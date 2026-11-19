@@ -6,7 +6,7 @@ Turn lap data, predictions, and degradation fits into a short list of significan
 
 ### Requirement: Detect race events lap by lap
 
-An `EventEngine` built on a `RaceFeed` SHALL expose `step(lap)` that, for each lap N stepped in order, runs four detectors using only `feed.laps_until(N)`: `pace_drop`, `degradation_warning`, `undercut_window`, and `position_change`, with the trigger rules, deduplication, and severity scores defined in the design's rule-based event detectors table. Each event SHALL have `id` equal to `<race_id>:<lap>:<type>:<drivers joined by "-">`, and severity between 0 and 100.
+An `EventEngine` built on a `RaceFeed` SHALL expose `step(lap)` that, for each lap N stepped in order, runs four detectors using only `feed.laps_until(N)`: `pace_drop`, `degradation_warning`, `undercut_window`, and `position_change`, with the trigger rules, deduplication, and severity scores defined in the design's rule-based event detectors table. A `degradation_warning` without a cliff SHALL require at least 8 clean laps in the stint. A `position_change` SHALL NOT fire for a driver whose own lap N is a pit-in or pit-out lap. Each event SHALL have `id` equal to `<race_id>:<lap>:<type>:<drivers joined by "-">`, and severity between 0 and 100.
 
 #### Scenario: Out-of-order step
 
@@ -32,13 +32,20 @@ An `EventEngine` built on a `RaceFeed` SHALL expose `step(lap)` that, for each l
 | ------------------------ | ----- |
 | driver gains 1 place | none |
 | driver loses 2 places | `position_change`, severity 40 |
+| driver loses 3 places on their own pit-in lap | none |
+| driver gains 2 places while two other cars pit | `position_change`, severity 40 |
 | leader changes | `position_change`, severity 90 |
 | any change on lap 1 | none |
 
 #### Scenario: Degradation warning fires once per stint
 
-- **WHEN** a driver's stint slope stays at or above 0.10 s per lap for laps 18 to 25
+- **WHEN** a driver's stint slope stays at or above 0.10 s per lap for laps 18 to 25 with at least 8 clean laps
 - **THEN** exactly one non-cliff `degradation_warning` exists for that driver and stint
+
+#### Scenario: Too few clean laps for a degradation warning
+
+- **WHEN** a stint's slope is 0.30 s per lap over 7 clean laps and there is no cliff
+- **THEN** no `degradation_warning` exists for that stint
 
 ### Requirement: Explained event analysis
 
@@ -57,7 +64,7 @@ Every event SHALL include `title` and `analysis` with non-empty `what`, `why`, a
 
 ### Requirement: Precompute race events
 
-`python -m augur.analyze --race <race_id> [--model <name>]` (default `lightgbm`) SHALL compute events by stepping an `EventEngine` over a `ReplayFeed` for laps 1 to `total_laps`, SHALL replace that race's rows for that model in the SQLite `events` table, and SHALL print `analyzed <race_id>: <n> events`. It SHALL exit with code 1 when the model file is missing or the race is in the model's training races.
+`python -m augur.analyze --race <race_id> [--model <name>]` (default `lightgbm`) SHALL compute events by stepping an `EventEngine` over a `ReplayFeed` for laps 1 to `total_laps`, SHALL replace that race's rows for that model in the SQLite `events` table, SHALL record the run in the `analyses` table so a race analyzed with zero events reports `analyzed` true, and SHALL print `analyzed <race_id>: <n> events`. It SHALL exit with code 1 when the model file is missing or the race is in the model's training races.
 
 #### Scenario: Re-run analysis
 

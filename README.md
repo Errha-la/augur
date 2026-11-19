@@ -88,12 +88,14 @@ The lap-time model predicts each driver's next clean lap as their recent pace (m
 - **Split:** train on 2024 rounds 2–11 (8,161 laps), test on 2024 round 1 (Bahrain) and round 24 (Abu Dhabi). The circuit degradation prior for each race comes from the 2023 race at the same location; OpenF1 has no earlier data, so Shanghai and Imola (no 2023 race) have no prior: 1,376 of 8,161 training laps (16.9%).
 - **Caveat:** the training races come after test race 1 in time, so the model has seen 2024 car behaviour from later in the season. No lap of a test race is used for training.
 
-Events precomputed with `lightgbm` (thresholds in `backend/src/augur/config.py` are first estimates, not yet tuned):
+Events precomputed with `lightgbm`, before and after tuning two rules (measured 2026-11-19): a tyre degradation warning now needs 8 clean laps in the stint instead of 5 (most warnings had fired at exactly 5 laps, where the line fit is noisy), and a position change is no longer reported for a driver on their own pit-in or pit-out lap. The other thresholds in `backend/src/augur/config.py` are untuned first estimates.
 
 | Race | Pace drop | Tyres fading | Undercut window | Position change | Total |
 |---|---|---|---|---|---|
-| 2024 Bahrain | 27 | 58 | 40 | 76 | 201 |
-| 2024 Abu Dhabi | 23 | 37 | 42 | 43 | 145 |
+| 2024 Bahrain, before | 27 | 58 | 40 | 76 | 201 |
+| 2024 Bahrain, after | 27 | 48 | 40 | 37 | 152 |
+| 2024 Abu Dhabi, before | 23 | 37 | 42 | 43 | 145 |
+| 2024 Abu Dhabi, after | 23 | 32 | 42 | 19 | 116 |
 
 ## Test
 

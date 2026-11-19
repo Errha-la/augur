@@ -32,7 +32,7 @@ Recorded in design.md.
 
 - New code: backend/src/augur/features.py, backend/src/augur/models/ (laptime, degradation), backend/src/augur/strategy.py, backend/src/augur/events/ (detectors, analysis, precompute), new routes in the existing FastAPI app, backend/tests/.
 - New dependencies: lightgbm, scikit-learn, numpy, joblib.
-- New local files: data/models/<model>.joblib, data/models/<model>_metrics.json; new SQLite table `events` (with a `model` column) in data/augur.sqlite.
+- New local files: data/models/<model>.joblib, data/models/<model>_metrics.json; new SQLite tables `events` (with a `model` column) and `analyses` (one row per analyzed race and model) in data/augur.sqlite.
 - New environment variable `AUGUR_MODEL` (default `lightgbm`) selects the model the API serves.
 - Depends on `race-data-replay` (`ReplayStore.laps_until`, OpenF1 ingest command, catalog with `races.location`, OpenF1 response cache under `data/openf1-cache/`).
 - Data to ingest for the default run: 2024 rounds 1-11 and 24, plus 2023 rounds 1, 2, 3, 5, 6, 7, 8, 9, 16, and 22 as circuit-prior sources only.

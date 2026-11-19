@@ -64,7 +64,13 @@ The system SHALL build model features for lap k only from rows with lap lower th
 #### Scenario: Training race not ingested
 
 - **WHEN** a listed race has not been ingested
-- **THEN** the command prints `missing race <race_id>, run augur.ingest first` and exits with code 1
+- **THEN** the command prints `missing race <label>, run augur.ingest first` and exits with code 1, where the label is `<year>-<rr>` because the race's event name is unknown before ingest
+
+##### Example: missing round
+
+- **GIVEN** 2024 round 5 is not ingested
+- **WHEN** the user runs `python -m augur.train --train 2024:2-11`
+- **THEN** the output is `missing race 2024-05, run augur.ingest first`
 
 ### Requirement: Pluggable lap-time models
 

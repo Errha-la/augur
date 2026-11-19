@@ -6,7 +6,7 @@ Compare pit-stop options for one driver at a replay lap with a seeded Monte Carl
 
 ### Requirement: Candidate pit strategies
 
-For driver D at lap N, the system SHALL simulate "pit on lap N+k" for each k in {1, 3, 5, 8} where N+k is lower than `total_laps - 1`, and SHALL add "no further stop" only when D has already used two different dry compounds up to lap N. Each simulated lap time SHALL be base pace plus degradation times tyre age plus normal noise; a pit stop SHALL add the pit loss and reset tyre age. Pit loss SHALL be the median observed pit cost up to lap N, or 22.0 s when no stop has been observed.
+For driver D at lap N, the system SHALL simulate "pit on lap N+k" for each k in {1, 3, 5, 8} where N+k is lower than `total_laps - 1`, and SHALL add "no further stop" only when D has already used two different dry compounds up to lap N. Each simulated lap time SHALL be base pace plus degradation times tyre age plus normal noise; a pit stop SHALL add the pit loss, reset tyre age, and fit HARD tyres, or MEDIUM when the driver's current compound is HARD. Pit loss SHALL be the median observed pit cost up to lap N, or 22.0 s when no stop has been observed.
 
 #### Scenario: Driver who has not used two compounds
 

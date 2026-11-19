@@ -82,9 +82,23 @@ Each detector is a pure function of the laps up to lap N, the predictions at lap
 | Type | Fires when | Severity score |
 |---|---|---|
 | `pace_drop` | clean lap N is more than `PACE_DROP_S = 1.0` s slower than its prediction; at most once per driver per 3 laps | min(100, 30 × seconds slower than predicted) |
-| `degradation_warning` | stint `deg_s_per_lap` ≥ 0.10 with ≥ 5 clean laps, or a cliff; once per driver per stint (a cliff can fire once more) | cliff 80, otherwise min(100, 500 × slope) |
+| `degradation_warning` | stint `deg_s_per_lap` ≥ 0.10 with ≥ 8 clean laps (`DEG_WARNING_MIN_LAPS`), or a cliff; once per driver per stint (a cliff can fire once more) | cliff 80, otherwise min(100, 500 × slope) |
 | `undercut_window` | chaser within 2.5 s of the car ahead on the same lap count, car ahead tyre age ≥ 12, neither pitted in the last 3 laps; once per pair per stint of the car ahead | 60 |
-| `position_change` | a driver gains or loses ≥ 2 places from lap N-1 to N, or the leader changes (score 90); not on lap 1 | min(100, 20 × places) |
+| `position_change` | a driver gains or loses ≥ 2 places from lap N-1 to N, or the leader changes (score 90); not on lap 1; not for a driver whose own lap N is a pit-in or pit-out lap (a leader change is skipped when the new leader pitted on lap N) | min(100, 20 × places) |
+
+### Event thresholds tuned on the demo races
+
+Measured on 2026-11-19 with `lightgbm` before tuning: 2024 Bahrain had 201 events (58 `degradation_warning`, 76 `position_change`) and 2024 Abu Dhabi 145 (37 and 43). Of the degradation warnings, 32 (Bahrain) and 21 (Abu Dhabi) fired at exactly 5 clean laps, the earliest the rule allowed, where a 5-point line fit is noisy (example: RIC, 6-lap-old HARD tyres, 0.366 s/lap, "pitting on lap 20 in 93% of simulations"). Every `position_change` fell on a lap with pit activity, and 39 (Bahrain) and 24 (Abu Dhabi) were the driver's own pit stop.
+
+**Supersedes:** `degradation_warning` with ≥ 5 clean laps → ≥ 8 clean laps; and `position_change` for every driver → not for a driver who pitted on that lap (their own in-lap or out-lap). Position changes caused by other cars' stops still fire. Alternatives considered: drop every `position_change` on a lap with any pit stop (rejected: it would remove all of them on the demo races, measured), and keep all of them for the dashboard to filter (rejected by the user on 2026-11-19). The before/after counts per type are recorded in the README.
+
+### Analysis bookkeeping, error labels, and simulated tyre choice
+
+Three details decided during implementation:
+
+- `augur.analyze` also writes an `analyses(race_id, model, n_events, analyzed_at)` row. The `events` table alone cannot tell "analyzed with zero events" from "never analyzed", and the events endpoint must report `analyzed` true for the first.
+- A race that is not ingested has no known event-name slug, so `augur.train` names it by its race_id prefix `<year>-<rr>` (for example `missing race 2024-05, run augur.ingest first`); an ingested race is named by its full race_id.
+- A simulated pit stop fits HARD, or MEDIUM when the driver is already on HARD (an unknown compound also gets HARD). The design did not fix the compound; this keeps candidates comparable with one rule.
 
 ### Deterministic What / Why / Next analysis
 
@@ -103,7 +117,7 @@ Each event carries `analysis.what`, `analysis.why`, `analysis.next` built from f
 **Commands**
 
 - `python -m augur.train [--model lightgbm] [--train 2024:2-11] [--test 2024:1,24]` → writes `data/models/<model>.joblib` and `data/models/<model>_metrics.json` = `{model, author, train_races, test_races, n_train, n_test, mae_model_s, mae_baseline_s, trained_at}`; prints both MAE values. Exits 1 with `missing race <race_id>, run augur.ingest first` when a listed race is not ingested, with `unknown model <name>` for a name not in the registry, and with `train and test races overlap: <race_id>` when a race is in both sets.
-- `python -m augur.analyze --race <race_id> [--model lightgbm]` → prints `analyzed <race_id>: <n> events`; exit 1 when the model file is missing or the race is in the training set.
+- `python -m augur.analyze --race <race_id> [--model lightgbm]` → replaces the race's rows for that model in `events` and upserts its `analyses` row; prints `analyzed <race_id>: <n> events`; exit 1 when the model file is missing (`model <name> is not trained, run augur.train first`), the model is unknown, or the race is in the training set (`race <race_id> is in the training set of model <name>`).
 
 **HTTP API** (added to `augur.api:app`; same 404/422 rules as `race-data-replay`)
 
@@ -124,7 +138,7 @@ Each event carries `analysis.what`, `analysis.why`, `analysis.next` built from f
 
 ## Risks / Trade-offs
 
-- [Thresholds (fuel 0.03 s/kg × 110 kg, 10% outlier rule, pace drop 1.0 s, cliff 0.8 s, undercut 2.5 s, pit loss fallback 22 s, per-compound degradation fallbacks) are estimates] → kept as named constants in `augur.config`; confirm by counting events per type on the demo race and adjusting before the dashboard change.
+- [Thresholds (fuel 0.03 s/kg × 110 kg, 10% outlier rule, pace drop 1.0 s, cliff 0.8 s, undercut 2.5 s, pit loss fallback 22 s, per-compound degradation fallbacks) are estimates] → kept as named constants in `augur.config`; event counts per type were measured on both demo races and two rules tuned (see Event thresholds tuned on the demo races). The other thresholds stay untuned estimates.
 - [Model may barely beat the baseline] → report both MAEs honestly; the dashboard still works on the baseline-relative residuals.
 - [Downloading 22 races (12 from 2024, 10 prior sources from 2023) is slow; not measured] → OpenF1 responses are cached under `data/openf1-cache/`, so each race is downloaded once; `--train` accepts fewer rounds. Task 6.1 records the actual ingest time.
 - [Training races come after test race 1 in the same season] → no test-race lap is used; the README states the split and the trade-off.

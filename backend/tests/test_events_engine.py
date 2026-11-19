@@ -97,6 +97,29 @@ def test_position_change_thresholds(lap, prev, now, expected):
     assert [(e["drivers"], e["severity"]) for e in events] == expected
 
 
+def test_no_position_change_on_own_pit_lap():
+    # driver loses 3 places on their own pit-in lap -> none
+    prev = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5}
+    now = {"A": 1, "C": 2, "D": 3, "E": 4, "B": 5}
+    state = DetectorState(prev_positions=prev)
+    assert detect_position_change(10, now, state, 57, pitted=["B"]) == []
+    assert state.prev_positions == now  # memory still advances
+
+
+def test_position_change_when_other_cars_pit():
+    # driver gains 2 places while two other cars pit -> position_change, severity 40
+    prev = {"A": 1, "B": 2, "C": 3, "D": 4}
+    now = {"A": 1, "D": 2, "B": 3, "C": 4}
+    events = detect_position_change(10, now, DetectorState(prev_positions=prev), 57, pitted=["B", "C"])
+    assert [(e["drivers"], e["severity"]) for e in events] == [(["D"], 40.0)]
+
+
+def test_leader_change_skipped_when_new_leader_pitted():
+    prev = {"A": 1, "B": 2, "C": 3}
+    now = {"B": 1, "A": 2, "C": 3}
+    assert detect_position_change(10, now, DetectorState(prev_positions=prev), 57, pitted=["B"]) == []
+
+
 def test_no_position_change_on_lap_one():
     state = DetectorState(prev_positions={"A": 1, "B": 2, "C": 3})
     assert detect_position_change(1, {"C": 1, "B": 2, "A": 3}, state, 57) == []
@@ -114,13 +137,24 @@ def test_degradation_warning_fires_once_per_stint():
         events += detect_degradation(lap, _deg(0.12, lap - 12), state)
     non_cliff = [e for e in events if not e["evidence"]["cliff"]]
     assert len(non_cliff) == 1
+    assert non_cliff[0]["lap"] == 20  # first lap with 8 clean laps
     assert non_cliff[0]["severity"] == 60.0
     # a new stint can warn again; a cliff can fire once more
-    assert len(detect_degradation(40, _deg(0.12, 6, stint=2), state)) == 1
-    assert detect_degradation(41, _deg(0.12, 7, stint=2), state) == []
-    cliff = detect_degradation(42, _deg(0.12, 8, stint=2, cliff=True), state)
+    assert len(detect_degradation(40, _deg(0.12, 8, stint=2), state)) == 1
+    assert detect_degradation(41, _deg(0.12, 9, stint=2), state) == []
+    cliff = detect_degradation(42, _deg(0.12, 10, stint=2, cliff=True), state)
     assert [e["severity"] for e in cliff] == [80.0]
-    assert detect_degradation(43, _deg(0.12, 9, stint=2, cliff=True), state) == []
+    assert detect_degradation(43, _deg(0.12, 11, stint=2, cliff=True), state) == []
+
+
+def test_too_few_clean_laps_for_degradation_warning():
+    # slope 0.30 s per lap over 7 clean laps, no cliff -> none
+    assert detect_degradation(15, _deg(0.30, 7), DetectorState()) == []
+
+
+def test_cliff_fires_below_eight_clean_laps():
+    events = detect_degradation(15, _deg(0.05, 6, cliff=True), DetectorState())
+    assert [e["severity"] for e in events] == [80.0]
 
 
 def test_degradation_below_thresholds_is_silent():
