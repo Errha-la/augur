@@ -6,7 +6,7 @@ def pytest_addoption(parser):
         "--run-network",
         action="store_true",
         default=False,
-        help="run tests marked 'network' (they download real FastF1 data)",
+        help="run tests marked 'network' (they download real OpenF1 data)",
     )
 
 

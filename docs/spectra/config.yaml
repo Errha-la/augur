@@ -3,8 +3,8 @@ schema: spec-driven
 context: |
   Project: AUGUR, an F1 race intelligence platform (portfolio project, 2-day build).
   It replays historical races lap by lap and explains them: what happened, why, and what could happen next.
-  Tech stack: Python 3.12 + FastAPI + FastF1 + pandas + LightGBM + pytest in backend/;
+  Tech stack: Python 3.12 + FastAPI + OpenF1 API + pandas + LightGBM + pytest in backend/;
   React + Vite + TypeScript in frontend/. Storage: Parquet for laps, SQLite for metadata/events, under data/ (git-ignored).
   Hard rule: no future information leakage. At replay lap N, every model input, prediction and event reads only laps <= N.
-  Public data only (FastF1). No database server, no LLM calls, no auth, no cloud deployment in the MVP.
+  Public data only (OpenF1 API, no account needed). No database server, no LLM calls, no auth, no cloud deployment in the MVP.
   Prefer the simplest working solution; every task must fit in under 1 hour.

@@ -47,9 +47,9 @@ Portfolio project, meant to be cloned locally so others can plug in their own mo
 
 | Path | Contents |
 |---|---|
-| `backend/` | Python 3.12, FastAPI, FastF1, pandas, LightGBM, pytest |
+| `backend/` | Python 3.12, FastAPI, OpenF1 API, pandas, LightGBM, pytest |
 | `frontend/` | React + Vite + TypeScript |
-| `data/` | FastF1 cache, Parquet (laps), SQLite (race metadata, events). Not in git. |
+| `data/` | OpenF1 response cache, Parquet (laps), SQLite (race metadata, events). Not in git. |
 | `bench/` | Benchmark results per model (`bench/<model>.json`), tracked in git |
 | `docs/spectra/` | Spectra specs and changes |
 
@@ -74,7 +74,7 @@ npm --prefix frontend run build
 ## Hard rules
 
 - **No future information leakage.** At replay lap N, every model input, prediction, and event detection reads only data with `lap <= N`. Keep a test that proves results at lap N do not change when laps > N are altered.
-- Public data only (FastF1). Local-first storage: Parquet + SQLite. No database server.
+- Public data only (OpenF1 API, no account or subscription needed). Local-first storage: Parquet + SQLite. No database server.
 - Do not invent metrics. Every reported model number must be reproducible from code in this repo.
 - Analysis text is deterministic templates in an analyst's voice: `next` is a probabilistic outlook, never an instruction. Gemini commentary (`llm-commentary`) is optional, runs only in `augur.narrate`, never sees event outcomes, and is discarded unless every number and driver code is grounded in the event evidence. Nothing else may need an API key.
 - Every consumer reads race data through `RaceFeed` (`ReplayFeed` now, `LiveFeed` later), and the event engine steps lap by lap, so live data can replace replay later.

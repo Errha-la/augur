@@ -16,5 +16,5 @@ LAP_COLUMNS: tuple[str, ...] = (
     "is_accurate",
 )
 
-# Colour used when FastF1 has no TeamColor for a driver.
+# Colour used when OpenF1 has no valid team_colour for a driver.
 DEFAULT_TEAM_COLOR = "#71717A"

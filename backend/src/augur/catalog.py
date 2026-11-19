@@ -3,7 +3,7 @@
 Layout under a data root:
     <root>/augur.sqlite                 races + drivers catalog
     <root>/races/<race_id>/laps.parquet normalized laps of one race
-    <root>/fastf1-cache/                FastF1 download cache
+    <root>/openf1-cache/                OpenF1 JSON response cache
 """
 
 from __future__ import annotations
@@ -57,8 +57,8 @@ def laps_path(data_dir: Path, race_id: str) -> Path:
     return race_dir(data_dir, race_id) / "laps.parquet"
 
 
-def fastf1_cache_dir(data_dir: Path) -> Path:
-    return Path(data_dir) / "fastf1-cache"
+def openf1_cache_dir(data_dir: Path) -> Path:
+    return Path(data_dir) / "openf1-cache"
 
 
 def connect(data_dir: Path) -> sqlite3.Connection:

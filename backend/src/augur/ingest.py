@@ -1,4 +1,4 @@
-"""FastF1 race ingest: normalize laps, build catalog records, CLI.
+"""OpenF1 race ingest CLI: resolve rounds, normalize laps, store races.
 
 Usage:
     python -m augur.ingest --year 2024 --rounds 1 2 3 [--data-dir DIR]
@@ -13,34 +13,14 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
-
 from augur import catalog
-from augur.schema import DEFAULT_TEAM_COLOR, LAP_COLUMNS
+from augur.openf1 import RacePayload, load_openf1_race, normalize_openf1, parse_time
 from augur.storage import DriverRecord, RaceRecord, store_race, validate_race_id
-
-# FastF1 Laps columns read by normalize_laps.
-SOURCE_COLUMNS: tuple[str, ...] = (
-    "Driver",
-    "Team",
-    "LapNumber",
-    "LapTime",
-    "Time",
-    "Stint",
-    "Compound",
-    "TyreLife",
-    "PitInTime",
-    "PitOutTime",
-    "TrackStatus",
-    "IsAccurate",
-)
 
 MIN_YEAR = 1950
 MAX_YEAR = 2100
 MIN_ROUND = 1
 MAX_ROUND = 99
-
-_HEX6 = re.compile(r"^[0-9A-Fa-f]{6}$")
 
 
 # --------------------------------------------------------------------------- ids
@@ -75,177 +55,38 @@ def _check_round(round_: Any) -> int:
     return round_
 
 
-# ---------------------------------------------------------------- normalization
+# ----------------------------------------------------------------------- ingest
 
 
-def _seconds(series: pd.Series) -> pd.Series:
-    """Timedelta -> float seconds; NaT -> NaN (null in parquet)."""
-    return pd.to_timedelta(series).dt.total_seconds().astype("float64")
-
-
-def _nullable_int(series: pd.Series, name: str) -> pd.Series:
-    numeric = pd.to_numeric(series, errors="raise")
-    try:
-        return numeric.astype("Int64")
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"column {name!r} has non-integer values") from exc
-
-
-def _nullable_str(series: pd.Series) -> pd.Series:
-    def conv(value: Any) -> str | None:
-        if value is None or (not isinstance(value, str) and pd.isna(value)):
-            return None
-        text = str(value)
-        return text if text != "" else None
-
-    return series.map(conv).astype("object")
-
-
-def normalize_laps(fastf1_laps: pd.DataFrame) -> pd.DataFrame:
-    """Map FastF1 Laps to the 12 normalized columns (order = LAP_COLUMNS).
-
-    Durations become float seconds; missing values stay null (NaN / <NA> /
-    None), never zero. `lap` must be present on every row; `stint` and
-    `tyre_life` are nullable Int64 because FastF1 occasionally has NaN there.
-    Raises KeyError naming any missing FastF1 column.
-    """
-    missing = [c for c in SOURCE_COLUMNS if c not in fastf1_laps.columns]
-    if missing:
-        raise KeyError(f"FastF1 laps missing column(s): {', '.join(missing)}")
-
-    src = pd.DataFrame(fastf1_laps).reset_index(drop=True)
-
-    lap = _nullable_int(src["LapNumber"], "LapNumber")
-    if lap.isna().any():
-        raise ValueError("column 'LapNumber' has missing values")
-    driver = _nullable_str(src["Driver"])
-    if driver.isna().any():
-        raise ValueError("column 'Driver' has missing values")
-
-    out = pd.DataFrame(
-        {
-            "driver": driver,
-            "team": _nullable_str(src["Team"]),
-            "lap": lap.astype("int64"),
-            "lap_time_s": _seconds(src["LapTime"]),
-            "session_time_s": _seconds(src["Time"]),
-            "stint": _nullable_int(src["Stint"], "Stint"),
-            "compound": _nullable_str(src["Compound"]),
-            "tyre_life": _nullable_int(src["TyreLife"], "TyreLife"),
-            "pit_in": src["PitInTime"].notna().astype("bool"),
-            "pit_out": src["PitOutTime"].notna().astype("bool"),
-            "track_status": _nullable_str(src["TrackStatus"]),
-            "is_accurate": src["IsAccurate"].astype("boolean").fillna(False).astype("bool"),
-        }
+def ingest_payload(
+    payload: RacePayload, year: int, round_: int, data_dir: Path
+) -> tuple[RaceRecord, list[DriverRecord]]:
+    """Normalize one round's OpenF1 payloads and store them atomically."""
+    laps, drivers = normalize_openf1(
+        payload.session, payload.laps, payload.stints, payload.pits, payload.drivers, payload.race_control
     )
-    return out.loc[:, list(LAP_COLUMNS)]
-
-
-# --------------------------------------------------------------- session records
-
-
-def team_color(value: Any) -> str:
-    """FastF1 TeamColor ('3671C6', maybe '#'-prefixed/empty/NaN) -> '#RRGGBB'."""
-    if value is None or (not isinstance(value, str) and pd.isna(value)):
-        return DEFAULT_TEAM_COLOR
-    text = str(value).strip().lstrip("#")
-    return f"#{text.upper()}" if _HEX6.fullmatch(text) else DEFAULT_TEAM_COLOR
-
-
-def _opt_str(value: Any) -> str | None:
-    if value is None or (not isinstance(value, str) and pd.isna(value)):
-        return None
-    text = str(value).strip()
-    return text or None
-
-
-def _opt_int(value: Any) -> int | None:
-    if value is None:
-        return None
-    try:
-        if pd.isna(value):
-            return None
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def build_drivers(results: pd.DataFrame) -> list[DriverRecord]:
-    missing = [
-        c
-        for c in ("Abbreviation", "FullName", "TeamName", "TeamColor", "GridPosition")
-        if c not in results.columns
-    ]
-    if missing:
-        raise KeyError(f"FastF1 results missing column(s): {', '.join(missing)}")
-    drivers: list[DriverRecord] = []
-    for row in results.itertuples(index=False):
-        code = _opt_str(row.Abbreviation)
-        if code is None:
-            continue
-        drivers.append(
-            DriverRecord(
-                code=code,
-                full_name=_opt_str(row.FullName),
-                team=_opt_str(row.TeamName),
-                team_color=team_color(row.TeamColor),
-                grid_position=_opt_int(row.GridPosition),
-            )
-        )
-    return drivers
-
-
-def _session_date(session: Any) -> str | None:
-    for value in (getattr(session, "date", None), session.event.get("EventDate")):
-        if value is not None and not pd.isna(value):
-            return pd.Timestamp(value).date().isoformat()
-    return None
-
-
-def build_race(session: Any, year: int, round_: int, laps: pd.DataFrame) -> RaceRecord:
-    event = session.event
-    event_name = _opt_str(event["EventName"])
-    if event_name is None:
-        raise ValueError("session has no EventName")
     if laps.empty:
         raise ValueError("session has no laps")
-    return RaceRecord(
-        race_id=make_race_id(year, round_, event_name),
+    if not drivers:
+        raise ValueError("session has no drivers")
+    session = payload.session
+    location = session.get("location")
+    race = RaceRecord(
+        race_id=make_race_id(year, round_, payload.meeting_name),
         year=year,
         round=round_,
-        event_name=event_name,
-        location=_opt_str(event.get("Location")),
-        date=_session_date(session),
+        event_name=payload.meeting_name,
+        location=(location.strip() or None) if isinstance(location, str) else None,
+        date=parse_time(session["date_start"], "session.date_start").date().isoformat(),
         total_laps=int(laps["lap"].max()),
     )
-
-
-def ingest_session(session: Any, year: int, round_: int, data_dir: Path) -> tuple[RaceRecord, list[DriverRecord]]:
-    """Normalize a loaded session and store it. Returns what was stored."""
-    laps = normalize_laps(session.laps)
-    race = build_race(session, year, round_, laps)
-    drivers = build_drivers(session.results)
-    if not drivers:
-        raise ValueError("session has no driver results")
     store_race(data_dir, race, drivers, laps)
     return race, drivers
 
 
 # ------------------------------------------------------------------------- CLI
 
-SessionLoader = Callable[[int, int, Path], Any]
-
-
-def load_fastf1_session(year: int, round_: int, data_dir: Path) -> Any:
-    """Load the race ("R") session of a round via FastF1 with a local cache."""
-    import fastf1
-
-    cache_dir = catalog.fastf1_cache_dir(data_dir)
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    fastf1.Cache.enable_cache(str(cache_dir))
-    session = fastf1.get_session(year, round_, "R")
-    session.load(laps=True, telemetry=False, weather=False, messages=False)
-    return session
+RaceLoader = Callable[[int, int, Path], RacePayload]
 
 
 def _year_arg(text: str) -> int:
@@ -263,26 +104,35 @@ def _round_arg(text: str) -> int:
 
 
 def _parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="python -m augur.ingest", description="Ingest F1 races from FastF1.")
+    p = argparse.ArgumentParser(
+        prog="python -m augur.ingest", description="Ingest historical F1 races from the public OpenF1 API."
+    )
     p.add_argument("--year", type=_year_arg, required=True)
     p.add_argument("--rounds", type=_round_arg, nargs="+", required=True)
     p.add_argument("--data-dir", type=Path, default=None, help="data root (default: repo data/)")
     return p
 
 
-def main(argv: Sequence[str] | None = None, load_session: SessionLoader | None = None) -> int:
+def _reason(exc: BaseException) -> str:
+    if isinstance(exc, KeyError) and exc.args:
+        text = str(exc.args[0])  # str(KeyError) would add quotes
+    else:
+        text = str(exc)
+    return text or type(exc).__name__
+
+
+def main(argv: Sequence[str] | None = None, load_race: RaceLoader | None = None) -> int:
     args = _parser().parse_args(argv)
     data_dir: Path = args.data_dir if args.data_dir is not None else catalog.default_data_dir()
-    loader = load_session or load_fastf1_session
+    loader = load_race or load_openf1_race
     ok = True
     for round_ in dict.fromkeys(args.rounds):  # de-duplicate, keep order
         try:
-            session = loader(args.year, round_, data_dir)
-            race, drivers = ingest_session(session, args.year, round_, data_dir)
+            payload = loader(args.year, round_, data_dir)
+            race, drivers = ingest_payload(payload, args.year, round_, data_dir)
         except Exception as exc:  # report and continue with the next round
             ok = False
-            reason = str(exc) or type(exc).__name__
-            print(f"failed {args.year} round {round_}: {type(exc).__name__}: {reason}", flush=True)
+            print(f"failed {args.year} round {round_}: {_reason(exc)}", flush=True)
             continue
         print(f"ingested {race.race_id}: {len(drivers)} drivers, {race.total_laps} laps", flush=True)
     return 0 if ok else 1
