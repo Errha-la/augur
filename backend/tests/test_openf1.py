@@ -249,7 +249,8 @@ class FakeResponse(io.BytesIO):
 
 
 class FakeOpener:
-    """Returns queued responses per endpoint; ints are HTTP error codes."""
+    """Returns queued responses per endpoint; ints are HTTP error codes,
+    ``(code, body)`` tuples are HTTP errors with a JSON body."""
 
     def __init__(self, routes):
         self.routes = {k: list(v) for k, v in routes.items()}
@@ -264,7 +265,13 @@ class FakeOpener:
         item = self.routes[endpoint].pop(0) if len(self.routes[endpoint]) > 1 else self.routes[endpoint][0]
         if isinstance(item, int):
             raise urllib.error.HTTPError(url, item, "error", {}, io.BytesIO(b"{}"))
+        if isinstance(item, tuple):
+            code, body = item
+            raise urllib.error.HTTPError(url, code, "error", {}, io.BytesIO(json.dumps(body).encode()))
         return FakeResponse(item)
+
+
+NO_RESULTS = (404, {"detail": "No results found."})
 
 
 class FakeClock:
@@ -302,12 +309,31 @@ def test_gives_up_after_three_retries(tmp_path):
     assert not (tmp_path / "openf1-cache" / "9472" / "laps.json").exists()
 
 
-def test_404_is_not_retried_or_cached(tmp_path):
-    client, opener, _ = make_client(tmp_path, {"pit": [404]})
+def test_404_no_results_is_empty_list_and_cached(tmp_path):
+    client, opener, _ = make_client(tmp_path, {"pit": [NO_RESULTS]})
+    assert client.session_list("pit", 9472) == []
+    assert len(opener.urls) == 1
+    cached = tmp_path / "openf1-cache" / "9472" / "pit.json"
+    assert json.loads(cached.read_text()) == []
+
+    client2, opener2, _ = make_client(tmp_path, {})
+    assert client2.session_list("pit", 9472) == []
+    assert opener2.urls == []
+
+
+@pytest.mark.parametrize("item", [404, (404, {"detail": "Not Found"}), (404, ["x"])])
+def test_other_404_is_not_retried_or_cached(tmp_path, item):
+    client, opener, _ = make_client(tmp_path, {"pit": [item]})
     with pytest.raises(OpenF1Error, match="HTTP 404"):
         client.session_list("pit", 9472)
     assert len(opener.urls) == 1
     assert not (tmp_path / "openf1-cache" / "9472").exists()
+
+
+def test_year_list_takes_no_extra_filters(tmp_path):
+    client, _, _ = make_client(tmp_path, {})
+    with pytest.raises(TypeError):
+        client.year_list("sessions", 2024, session_name="Qualifying")
 
 
 def test_non_list_response_rejected(tmp_path):
@@ -365,7 +391,7 @@ def test_load_race_requests_and_cache(tmp_path):
     assert "year=2024&session_name=Race" in opener.urls[0]
     assert all("session_result" not in u and "starting_grid" not in u for u in opener.urls)
     cache = tmp_path / "openf1-cache"
-    assert (cache / "2024" / "sessions.json").exists() and (cache / "2024" / "meetings.json").exists()
+    assert sorted(p.name for p in (cache / "2024").iterdir()) == ["meetings.json", "race-sessions.json"]
     assert sorted(p.name for p in (cache / "9472").iterdir()) == sorted(
         f"{e}.json" for e in ("drivers", "laps", "stints", "pit", "race_control")
     )
@@ -375,3 +401,31 @@ def test_load_race_requests_and_cache(tmp_path):
     again = load_openf1_race(2024, 1, tmp_path, client=client2)
     assert opener2.urls == [] and client2.requests == 0
     assert again == payload
+
+
+def ingest_with(tmp_path, routes, capsys):
+    from augur.ingest import main
+
+    client, _, _ = make_client(tmp_path, routes)
+
+    def loader(year, round_, data_dir):
+        return load_openf1_race(year, round_, data_dir, client=client)
+
+    code = main(["--year", "2024", "--rounds", "1", "--data-dir", str(tmp_path)], load_race=loader)
+    return code, capsys.readouterr().out
+
+
+def test_ingest_stores_race_with_empty_pit_and_race_control(tmp_path, capsys):
+    routes = {**race_routes(), "pit": [NO_RESULTS], "race_control": [NO_RESULTS]}
+    code, out = ingest_with(tmp_path, routes, capsys)
+    assert code == 0
+    assert "ingested 2024-01-bahrain-grand-prix: 1 drivers, 1 laps" in out
+    assert (tmp_path / "races" / "2024-01-bahrain-grand-prix" / "laps.parquet").exists()
+
+
+def test_ingest_year_without_data_reports_missing_round(tmp_path, capsys):
+    routes = {**race_routes(), "sessions": [NO_RESULTS]}
+    code, out = ingest_with(tmp_path, routes, capsys)
+    assert code == 1
+    assert "failed 2024 round 1: no race session for round 1" in out
+    assert not (tmp_path / "races").exists()

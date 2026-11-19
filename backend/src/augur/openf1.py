@@ -37,6 +37,13 @@ MAX_REQUESTS_PER_SECOND = 3
 RETRY_WAITS_S: tuple[float, ...] = (2.0, 4.0, 8.0)
 
 YEAR_ENDPOINTS = frozenset({"sessions", "meetings"})
+# Year-level requests take fixed filters only, so each cache file maps to exactly one query.
+YEAR_QUERIES: dict[str, tuple[dict[str, str], str]] = {
+    "sessions": ({"session_name": "Race"}, "race-sessions.json"),
+    "meetings": ({}, "meetings.json"),
+}
+# OpenF1 answers a query with no rows with HTTP 404 and this detail.
+NO_RESULTS_DETAIL = "No results found."
 SESSION_ENDPOINTS: tuple[str, ...] = ("drivers", "laps", "stints", "pit", "race_control")
 ENDPOINTS = YEAR_ENDPOINTS | frozenset(SESSION_ENDPOINTS)
 
@@ -416,11 +423,13 @@ class OpenF1Client:
 
     # -- public ---------------------------------------------------------------
 
-    def year_list(self, endpoint: str, year: int, **params: Any) -> list[dict[str, Any]]:
+    def year_list(self, endpoint: str, year: int) -> list[dict[str, Any]]:
+        """Year-level list; ``sessions`` returns Race sessions only."""
         if endpoint not in YEAR_ENDPOINTS:
             raise ValueError(f"endpoint {endpoint!r} is not filtered by year")
         year = _int(year, "year")
-        return self._get(endpoint, {"year": year, **params}, self.cache_root / str(year) / f"{endpoint}.json")
+        filters, cache_name = YEAR_QUERIES[endpoint]
+        return self._get(endpoint, {"year": year, **filters}, self.cache_root / str(year) / cache_name)
 
     def session_list(self, endpoint: str, session_key: int) -> list[dict[str, Any]]:
         if endpoint not in SESSION_ENDPOINTS:
@@ -473,6 +482,8 @@ class OpenF1Client:
             status, body = self._send(request)
             if status == 200:
                 break
+            if status == 404 and _is_no_results(body):
+                return []
             retryable = status == 429 or 500 <= status <= 599
             if not retryable or attempt >= len(self._retry_waits):
                 tried = f" after {attempt} retries" if retryable else ""
@@ -492,8 +503,20 @@ class OpenF1Client:
             with self._opener(request, timeout=self._timeout) as resp:
                 return int(getattr(resp, "status", 200)), resp.read()
         except urllib.error.HTTPError as exc:
-            exc.close()
-            return int(exc.code), b""
+            try:
+                body = exc.read() if exc.fp is not None else b""
+            finally:
+                exc.close()
+            return int(exc.code), body
+
+
+def _is_no_results(body: bytes) -> bool:
+    """True for OpenF1's empty-result 404 body ``{"detail": "No results found."}``."""
+    try:
+        data = json.loads(body)
+    except ValueError:
+        return False
+    return isinstance(data, dict) and data.get("detail") == NO_RESULTS_DETAIL
 
 
 # ============================================================ race resolution
@@ -538,7 +561,7 @@ def load_openf1_race(
 ) -> RacePayload:
     """Fetch (or read from cache) every payload of the race session of a round."""
     client = client or OpenF1Client(catalog.openf1_cache_dir(data_dir))
-    session = dict(resolve_race_session(client.year_list("sessions", year, session_name="Race"), round_))
+    session = dict(resolve_race_session(client.year_list("sessions", year), round_))
     name = meeting_name(client.year_list("meetings", year), session["meeting_key"])
     key = session["session_key"]
     payloads = {endpoint: client.session_list(endpoint, key) for endpoint in SESSION_ENDPOINTS}

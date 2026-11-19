@@ -178,4 +178,4 @@ def test_network_ingest_2024_round_1(tmp_path, capsys):
     laps = pd.read_parquet(catalog.laps_path(tmp_path, race_id))
     assert laps["lap"].max() == 57
     assert laps["lap_time_s"].notna().sum() > 1000
-    assert (tmp_path / "openf1-cache" / "2024" / "sessions.json").exists()
+    assert (tmp_path / "openf1-cache" / "2024" / "race-sessions.json").exists()
