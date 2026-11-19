@@ -4,7 +4,7 @@ from synthetic import synthetic_race_laps
 
 from augur import config
 from augur.schema import LAP_COLUMNS
-from augur.strategy import NO_STOP, candidate_strategies, pit_loss, simulate
+from augur.strategy import NO_STOP, candidate_strategies, next_compound, pit_loss, simulate
 
 
 def one_driver(total=57, upto=15, compounds=None):
@@ -71,6 +71,13 @@ def test_simulation_ignores_future_laps():
     altered.loc[altered["lap"] > 10, "lap_time_s"] = 50.0
     altered.loc[altered["lap"] > 10, "pit_in"] = True
     assert simulate(altered, 30, "DDD", 10) == before
+
+
+def test_simulated_stop_compound():
+    assert next_compound("HARD") == "MEDIUM"
+    assert next_compound("SOFT") == "HARD"
+    assert next_compound("MEDIUM") == "HARD"
+    assert next_compound(None) == "HARD"
 
 
 def test_runs_out_of_range_raises():

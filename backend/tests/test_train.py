@@ -98,6 +98,15 @@ def test_missing_race_message(three_races, capsys):
     assert capsys.readouterr().out.strip() == "missing race 2098-09, run augur.ingest first"
 
 
+def test_missing_round_example(tmp_path, capsys):
+    # Spec example "missing round": 2024 round 5 not ingested, default train list.
+    data = tmp_path / "data"
+    for rnd in (1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 24):
+        write_synthetic_race(data, 2024, rnd, rnd)
+    assert train.main(["--train", "2024:2-11", "--data-dir", str(data)]) == 1
+    assert capsys.readouterr().out.strip() == "missing race 2024-05, run augur.ingest first"
+
+
 def test_unknown_model_message(three_races, capsys):
     code = train.main(["--model", "nope", "--data-dir", str(three_races)])
     assert code == 1

@@ -77,7 +77,8 @@ def detect_pace_drop(lap: int, observations: Iterable[LapObservation], state: De
 
 
 def detect_degradation(lap: int, degradation: Mapping[str, dict], state: DetectorState) -> list[dict]:
-    """Stint slope >= 0.10 s/lap over >= 5 clean laps, or a cliff; once per stint (+ once for a cliff)."""
+    """Stint slope >= DEG_WARNING_S_PER_LAP over >= DEG_WARNING_MIN_LAPS clean laps, or a cliff;
+    once per stint (+ once for a cliff)."""
     out = []
     for driver in sorted(degradation):
         d = degradation[driver]
