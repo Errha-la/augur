@@ -1,0 +1,13 @@
+data/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+frontend/dist/
+.env
+
+# Spectra app data
+.spectra/
+*.egg-info/
+.claude/worktrees/
