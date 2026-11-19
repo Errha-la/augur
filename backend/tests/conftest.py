@@ -115,6 +115,7 @@ def write_race(
     event_name: str,
     total_laps: int,
     drivers=FIXTURE_DRIVERS,
+    location: str = "Nowhere",
 ) -> None:
     """Write laps.parquet and register the race + drivers in the catalog."""
     path = catalog.laps_path(data_dir, race_id)
@@ -125,7 +126,7 @@ def write_race(
         with conn:
             conn.execute(
                 "INSERT OR REPLACE INTO races VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (race_id, year, round_, event_name, "Nowhere",
+                (race_id, year, round_, event_name, location,
                  f"{year}-01-01", total_laps, "2026-01-01T00:00:00Z"),
             )
             conn.executemany(

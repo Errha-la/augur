@@ -51,12 +51,51 @@ backend/.venv/bin/uvicorn augur.api:app --reload
 | `GET /api/races` | ingested races ordered by year, round |
 | `GET /api/races/{race_id}/state?lap=N` | track status and per-driver position, gap, tyre, stint, pit count at lap N |
 | `GET /api/races/{race_id}/laps?lap=N[&driver=VER]` | normalized lap rows with lap ≤ N |
+| `GET /api/races/{race_id}/predictions?lap=N` | per driver: predicted next lap time, recent pace, tyre degradation per lap, cliff flag |
+| `GET /api/races/{race_id}/strategy?lap=N&driver=VER[&runs=1000&seed=42]` | pit strategies compared by a seeded Monte Carlo simulation (mean, p10, p90, win probability) |
+| `GET /api/races/{race_id}/events?lap=N` | precomputed race events up to lap N with What / Why / Next analysis |
+
+The prediction and event endpoints use the model named by `AUGUR_MODEL` (default `lightgbm`); an unknown or untrained model returns HTTP 503.
 
 ```bash
 curl "localhost:8000/api/races/2024-01-bahrain-grand-prix/state?lap=10"
 ```
 
 CORS allows `http://localhost:5173` (the dashboard dev server).
+
+## Train the model and analyze races
+
+```bash
+# training races, test races, and the 2023 races used only for circuit priors
+backend/.venv/bin/python -m augur.ingest --year 2024 --rounds 1 2 3 4 5 6 7 8 9 10 11 24
+backend/.venv/bin/python -m augur.ingest --year 2023 --rounds 1 2 3 5 6 7 8 9 16 22
+backend/.venv/bin/python -m augur.train            # --model lightgbm --train 2024:2-11 --test 2024:1,24
+backend/.venv/bin/python -m augur.analyze --race 2024-01-bahrain-grand-prix
+backend/.venv/bin/python -m augur.analyze --race 2024-24-abu-dhabi-grand-prix
+```
+
+Ingesting these 22 races took 575 s on one machine (measured 2026-11-19, OpenF1 throttled to 3 requests/s); later runs read `data/openf1-cache/`. To plug in your own lap-time model, see [docs/swap-model.md](docs/swap-model.md).
+
+## Model results
+
+The lap-time model predicts each driver's next clean lap as their recent pace (median of the last 3 clean laps) plus a predicted delta. The baseline predicts a delta of 0. Numbers are mean absolute error on clean laps of the test races, from `data/models/lightgbm_metrics.json` (trained 2026-11-19):
+
+| Model | MAE (s) | Test laps |
+|---|---|---|
+| `lightgbm` | 0.305 | 1,773 |
+| `baseline` (next lap = recent pace) | 0.380 | 1,773 |
+
+- **Split:** train on 2024 rounds 2–11 (8,161 laps), test on 2024 round 1 (Bahrain) and round 24 (Abu Dhabi). The circuit degradation prior for each race comes from the 2023 race at the same location; OpenF1 has no earlier data, so Shanghai and Imola (no 2023 race) have no prior: 1,376 of 8,161 training laps (16.9%).
+- **Caveat:** the training races come after test race 1 in time, so the model has seen 2024 car behaviour from later in the season. No lap of a test race is used for training.
+
+Events precomputed with `lightgbm`, before and after tuning two rules (measured 2026-11-19): a tyre degradation warning now needs 8 clean laps in the stint instead of 5 (most warnings had fired at exactly 5 laps, where the line fit is noisy), and a position change is no longer reported for a driver on their own pit-in or pit-out lap. The other thresholds in `backend/src/augur/config.py` are untuned first estimates.
+
+| Race | Pace drop | Tyres fading | Undercut window | Position change | Total |
+|---|---|---|---|---|---|
+| 2024 Bahrain, before | 27 | 58 | 40 | 76 | 201 |
+| 2024 Bahrain, after | 27 | 48 | 40 | 37 | 152 |
+| 2024 Abu Dhabi, before | 23 | 37 | 42 | 43 | 145 |
+| 2024 Abu Dhabi, after | 23 | 32 | 42 | 19 | 116 |
 
 ## Test
 
@@ -65,4 +104,4 @@ backend/.venv/bin/pytest backend                 # offline, a few seconds
 backend/.venv/bin/pytest backend --run-network   # also downloads 2024 round 1 from OpenF1
 ```
 
-`test_state_unaffected_by_future_laps` proves that responses at lap N do not change when laps after N are altered.
+`test_state_unaffected_by_future_laps`, `test_predictions_unaffected_by_future_laps`, and `test_events_unaffected_by_future_laps` prove that state, predictions, and events at lap N do not change when laps after N are altered.

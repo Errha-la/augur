@@ -36,6 +36,26 @@ CREATE TABLE IF NOT EXISTS drivers (
     grid_position INT,
     PRIMARY KEY (race_id, code)
 );
+CREATE TABLE IF NOT EXISTS events (
+    race_id   TEXT,
+    model     TEXT,
+    id        TEXT,
+    lap       INT,
+    type      TEXT,
+    drivers   TEXT,
+    severity  REAL,
+    title     TEXT,
+    analysis  TEXT,
+    evidence  TEXT,
+    PRIMARY KEY (race_id, model, id)
+);
+CREATE TABLE IF NOT EXISTS analyses (
+    race_id     TEXT,
+    model       TEXT,
+    n_events    INT,
+    analyzed_at TEXT,
+    PRIMARY KEY (race_id, model)
+);
 """
 
 
