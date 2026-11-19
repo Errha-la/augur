@@ -23,8 +23,8 @@
 
 ## 5. Precompute and serve events
 
-- [ ] 5.1 [after: 4.3] Implement `python -m augur.analyze --race <race_id> --model` to Precompute race events, following Precompute events per race into SQLite: step an `EventEngine` over a `ReplayFeed` from lap 1 to `total_laps`, replace the race's rows for that model in the `events` table (which has a `model` column), print `analyzed <race_id>: <n> events`, exit 1 when the model is missing or the race is a training race. Verify: tests for "Re-run analysis" and "Training race refused" on the synthetic fixture.
-- [ ] 5.2 [after: 5.1] Serve events up to a lap at `GET /api/races/{race_id}/events?lap=N` for the `AUGUR_MODEL` model, returning `model` in the response, ordered by lap then severity descending, with `analyzed` false for races never analyzed with that model. Verify: TestClient test for "Events filtered by lap" and the not-analyzed case; `test_events_unaffected_by_future_laps` steps the engine for laps 1 to N before and after altering later rows and asserts identical events.
+- [x] 5.1 [after: 4.3] Implement `python -m augur.analyze --race <race_id> --model` to Precompute race events, following Precompute events per race into SQLite: step an `EventEngine` over a `ReplayFeed` from lap 1 to `total_laps`, replace the race's rows for that model in the `events` table (which has a `model` column), print `analyzed <race_id>: <n> events`, exit 1 when the model is missing or the race is a training race. Verify: tests for "Re-run analysis" and "Training race refused" on the synthetic fixture.
+- [x] 5.2 [after: 5.1] Serve events up to a lap at `GET /api/races/{race_id}/events?lap=N` for the `AUGUR_MODEL` model, returning `model` in the response, ordered by lap then severity descending, with `analyzed` false for races never analyzed with that model. Verify: TestClient test for "Events filtered by lap" and the not-analyzed case; `test_events_unaffected_by_future_laps` steps the engine for laps 1 to N before and after altering later rows and asserts identical events.
 
 ## 6. End-to-end run
 

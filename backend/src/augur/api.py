@@ -136,6 +136,20 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
         )
         return {"race_id": feed.race_id, "lap": lap, "drivers": drivers}
 
+    @app.get("/api/races/{race_id}/events")
+    def events(race_id: str, lap: LapParam) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        name = model_name()
+        analyzed = s.is_analyzed(race_id, name)
+        return {
+            "race_id": feed.race_id,
+            "lap": lap,
+            "model": name,
+            "analyzed": analyzed,
+            "events": s.events_until(race_id, name, lap) if analyzed else [],
+        }
+
     @app.get("/api/races/{race_id}/strategy")
     def strategy(
         race_id: str,
