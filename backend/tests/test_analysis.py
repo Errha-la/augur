@@ -67,6 +67,17 @@ def test_every_type_has_three_sentences_and_is_deterministic(type_):
     assert first_word(a["next"]) not in IMPERATIVES
 
 
+def test_cliff_text_follows_config(monkeypatch):
+    from augur import config
+
+    ev = {**EXAMPLES["degradation_warning"], "cliff": True}
+    _, a = explain({"lap": 30, "type": "degradation_warning", "evidence": ev})
+    assert "more than 0.8 s slower" in a["what"]
+    monkeypatch.setattr(config, "CLIFF_RESIDUAL_S", 1.0)
+    _, a = explain({"lap": 30, "type": "degradation_warning", "evidence": ev})
+    assert "more than 1 s slower" in a["what"]
+
+
 def test_no_further_stop_outlook_is_not_imperative():
     text = strategy_outlook("VER", {"name": "no further stop", "pit_lap": None, "win_probability": 0.7})
     assert first_word(text) not in IMPERATIVES

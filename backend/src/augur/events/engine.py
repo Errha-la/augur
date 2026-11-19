@@ -76,7 +76,9 @@ class EventEngine:
             )
 
         standings = race_state(laps, [], {"race_id": self.feed.race_id, "total_laps": total}, lap)
-        positions = {d["code"]: d["position"] for d in standings["drivers"]}
+        # Only drivers who completed lap N are compared: a retired car drops to the
+        # back of the standings, which is not a position change on track.
+        positions = {d["code"]: d["position"] for d in standings["drivers"] if d["laps_completed"] >= lap}
 
         cars = self._cars(laps, standings["drivers"], degradation)
         stopped = laps["pit_in"].astype(bool) | laps["pit_out"].astype(bool)

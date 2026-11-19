@@ -66,6 +66,17 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
         return feed
 
     model_cache: dict[tuple[str, int], LapTimeModel] = {}
+    prior_cache: dict[tuple, dict[str, float]] = {}
+
+    def priors_for(s: ReplayStore, race_id: str) -> dict[str, float]:
+        """circuit_priors, cached per race until the prior race is re-ingested."""
+        prior_id = s.find_prior_race(race_id)
+        if prior_id is None:
+            return {}
+        key = (str(s.data_dir), race_id, prior_id, s.ingested_at(prior_id))
+        if key not in prior_cache:
+            prior_cache[key] = circuit_priors(s, race_id)
+        return prior_cache[key]
 
     def model_name() -> str:
         name = os.environ.get(config.MODEL_ENV) or config.DEFAULT_MODEL
@@ -131,7 +142,7 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
             feed.total_laps,
             lap,
             model,
-            circuit_priors(s, race_id),
+            priors_for(s, race_id),
             [d["code"] for d in s.list_drivers(race_id)],
         )
         return {"race_id": feed.race_id, "lap": lap, "drivers": drivers}

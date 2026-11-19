@@ -84,7 +84,7 @@ Each detector is a pure function of the laps up to lap N, the predictions at lap
 | `pace_drop` | clean lap N is more than `PACE_DROP_S = 1.0` s slower than its prediction; at most once per driver per 3 laps | min(100, 30 × seconds slower than predicted) |
 | `degradation_warning` | stint `deg_s_per_lap` ≥ 0.10 with ≥ 8 clean laps (`DEG_WARNING_MIN_LAPS`), or a cliff; once per driver per stint (a cliff can fire once more) | cliff 80, otherwise min(100, 500 × slope) |
 | `undercut_window` | chaser within 2.5 s of the car ahead on the same lap count, car ahead tyre age ≥ 12, neither pitted in the last 3 laps; once per pair per stint of the car ahead | 60 |
-| `position_change` | a driver gains or loses ≥ 2 places from lap N-1 to N, or the leader changes (score 90); not on lap 1; not for a driver whose own lap N is a pit-in or pit-out lap (a leader change is skipped when the new leader pitted on lap N) | min(100, 20 × places) |
+| `position_change` | a driver gains or loses ≥ 2 places from lap N-1 to N, or the leader changes (score 90); not on lap 1; not for a driver whose own lap N is a pit-in or pit-out lap (a leader change is skipped when the new leader pitted on lap N); only drivers who completed lap N are compared, so a retirement is not a position change; the new leader gets the leader-change event only, not a second gain event | min(100, 20 × places) |
 
 ### Event thresholds tuned on the demo races
 

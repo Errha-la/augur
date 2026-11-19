@@ -114,6 +114,31 @@ def test_position_change_when_other_cars_pit():
     assert [(e["drivers"], e["severity"]) for e in events] == [(["D"], 40.0)]
 
 
+def test_lead_change_is_reported_once():
+    # A and B pit on the same lap; C goes from P3 to P1: one lead-change event, no extra "moved up 2".
+    prev = {"A": 1, "B": 2, "C": 3}
+    now = {"C": 1, "A": 2, "B": 3}
+    events = detect_position_change(10, now, DetectorState(prev_positions=prev), 57, pitted=["A", "B"])
+    assert [(e["drivers"], e["severity"]) for e in events] == [(["C", "A"], 90.0)]
+
+
+def test_retirement_is_not_a_position_change(tmp_path):
+    # AAA (leader) and CCC stop completing laps after lap 20.
+    from conftest import write_race
+    from synthetic import SYN_DRIVER_ROWS, synthetic_race_laps
+
+    laps = synthetic_race_laps(1)
+    laps = laps[~(laps["driver"].isin(["AAA", "CCC"]) & (laps["lap"] > 20))]
+    data = tmp_path / "data"
+    race = "2098-06-retire-grand-prix"
+    write_race(data, race, laps, year=2098, round_=6, event_name="Retire", total_laps=30, drivers=SYN_DRIVER_ROWS)
+    engine = EventEngine(ReplayFeed(race, ReplayStore(data)), BaselineModel())
+    events = [e for lap in range(1, 31) for e in engine.step(lap)]
+    late = [e for e in events if e["type"] == "position_change" and e["lap"] >= 21]
+    assert not any({"AAA", "CCC"} & set(e["drivers"]) for e in late)
+    assert not any(e["evidence"]["leader_change"] for e in late)
+
+
 def test_leader_change_skipped_when_new_leader_pitted():
     prev = {"A": 1, "B": 2, "C": 3}
     now = {"B": 1, "A": 2, "C": 3}

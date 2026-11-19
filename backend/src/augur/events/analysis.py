@@ -8,6 +8,8 @@ equal text.
 
 from __future__ import annotations
 
+from augur import config
+
 
 def _pct(probability: float) -> int:
     return int(round(float(probability) * 100))
@@ -48,7 +50,10 @@ def _degradation(lap: int, ev: dict) -> tuple[str, dict]:
     slope = ev.get("deg_s_per_lap")
     if ev.get("cliff"):
         title = f"{d}'s {compound} tyres hit a performance cliff"
-        what = f"{d}'s last two clean laps up to lap {lap} were more than 0.8 s slower than the stint's trend."
+        what = (
+            f"{d}'s last two clean laps up to lap {lap} were more than "
+            f"{config.CLIFF_RESIDUAL_S:g} s slower than the stint's trend."
+        )
     else:
         title = f"{d}'s {compound} tyres are fading"
         what = (

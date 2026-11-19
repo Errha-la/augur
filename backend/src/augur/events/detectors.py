@@ -190,7 +190,15 @@ def detect_position_change(
     remaining = max(0, total_laps - lap)
     old_leader = min(prev, key=prev.get) if prev else None
     new_leader = min(positions, key=positions.get) if positions else None
-    if old_leader and new_leader and old_leader != new_leader and new_leader not in pitted:
+    leader_event = False
+    if (
+        old_leader
+        and new_leader
+        and old_leader != new_leader
+        and old_leader in positions
+        and new_leader not in pitted
+    ):
+        leader_event = True
         out.append(
             _event(
                 lap,
@@ -209,7 +217,7 @@ def detect_position_change(
             )
         )
     for driver in sorted(positions):
-        if driver not in prev or driver in pitted:
+        if driver not in prev or driver in pitted or (leader_event and driver == new_leader):
             continue
         places = prev[driver] - positions[driver]  # > 0 gained
         if abs(places) < config.POSITION_CHANGE_MIN_PLACES:

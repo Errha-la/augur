@@ -62,6 +62,24 @@ def test_unknown_and_untrained_model(trained_data, monkeypatch, tmp_path):
     assert r.json()["detail"] == "model lightgbm is not trained, run augur.train first"
 
 
+def test_circuit_priors_cached_per_race(tmp_path, trained_data, monkeypatch):
+    import augur.api as api_module
+
+    data = tmp_path / "data"
+    write_synthetic_race(data, 2097, 3, 7)  # same location "Nowhere", earlier season -> prior race
+    write_synthetic_race(data, 2098, 3, 3)
+    (data / "models").mkdir()
+    for f in (trained_data / "models").iterdir():
+        (data / "models" / f.name).write_bytes(f.read_bytes())
+    calls = []
+    real = api_module.circuit_priors
+    monkeypatch.setattr(api_module, "circuit_priors", lambda s, r: calls.append(r) or real(s, r))
+    client = TestClient(create_app(data))
+    for lap in (5, 6, 7):
+        assert client.get(f"/api/races/{RACE}/predictions?lap={lap}").status_code == 200
+    assert calls == [RACE]
+
+
 def test_invalid_requests(client):
     assert client.get("/api/races/nope/predictions?lap=1").status_code == 404
     assert client.get(f"/api/races/{RACE}/predictions?lap=0").status_code == 422

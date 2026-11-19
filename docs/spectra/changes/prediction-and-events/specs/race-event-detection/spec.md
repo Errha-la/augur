@@ -6,7 +6,7 @@ Turn lap data, predictions, and degradation fits into a short list of significan
 
 ### Requirement: Detect race events lap by lap
 
-An `EventEngine` built on a `RaceFeed` SHALL expose `step(lap)` that, for each lap N stepped in order, runs four detectors using only `feed.laps_until(N)`: `pace_drop`, `degradation_warning`, `undercut_window`, and `position_change`, with the trigger rules, deduplication, and severity scores defined in the design's rule-based event detectors table. A `degradation_warning` without a cliff SHALL require at least 8 clean laps in the stint. A `position_change` SHALL NOT fire for a driver whose own lap N is a pit-in or pit-out lap. Each event SHALL have `id` equal to `<race_id>:<lap>:<type>:<drivers joined by "-">`, and severity between 0 and 100.
+An `EventEngine` built on a `RaceFeed` SHALL expose `step(lap)` that, for each lap N stepped in order, runs four detectors using only `feed.laps_until(N)`: `pace_drop`, `degradation_warning`, `undercut_window`, and `position_change`, with the trigger rules, deduplication, and severity scores defined in the design's rule-based event detectors table. A `degradation_warning` without a cliff SHALL require at least 8 clean laps in the stint. A `position_change` SHALL NOT fire for a driver whose own lap N is a pit-in or pit-out lap. Only drivers who completed lap N SHALL be compared, so a car that stops completing laps causes no `position_change` and no leader change. A new leader SHALL get only the leader-change event for that lap. Each event SHALL have `id` equal to `<race_id>:<lap>:<type>:<drivers joined by "-">`, and severity between 0 and 100.
 
 #### Scenario: Out-of-order step
 
@@ -34,6 +34,8 @@ An `EventEngine` built on a `RaceFeed` SHALL expose `step(lap)` that, for each l
 | driver loses 2 places | `position_change`, severity 40 |
 | driver loses 3 places on their own pit-in lap | none |
 | driver gains 2 places while two other cars pit | `position_change`, severity 40 |
+| the leader stops completing laps | none |
+| P3 takes the lead while P1 and P2 pit | one `position_change` for the new and old leader, severity 90 |
 | leader changes | `position_change`, severity 90 |
 | any change on lap 1 | none |
 
