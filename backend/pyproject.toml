@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "augur"
+version = "0.1.0"
+description = "AUGUR: F1 race replay, prediction, and analysis"
+requires-python = ">=3.12"
+dependencies = [
+    "fastf1==3.9.2",
+    "pandas==2.3.3",
+    "pyarrow==26.0.1",
+    "fastapi==0.165.0",
+    "uvicorn==0.54.0",
+    "pydantic==2.14.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.2.0",
+    "httpx==0.28.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: downloads real FastF1 data; skipped unless --run-network is given",
+]
