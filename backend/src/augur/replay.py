@@ -64,6 +64,23 @@ class ReplayStore:
         )
         return dict(rows[0]) if rows else None
 
+    def race_id_for(self, year: int, round_: int) -> str | None:
+        rows = self._query(
+            "SELECT race_id FROM races WHERE year = ? AND round = ?", (int(year), int(round_))
+        )
+        return rows[0]["race_id"] if rows else None
+
+    def find_prior_race(self, race_id: str) -> str | None:
+        """The most recent earlier season's race at the same location, if ingested."""
+        rows = self._query(
+            "SELECT p.race_id FROM races r JOIN races p"
+            " ON p.location = r.location AND p.year < r.year"
+            " WHERE r.race_id = ? AND r.location IS NOT NULL"
+            " ORDER BY p.year DESC, p.round DESC LIMIT 1",
+            (race_id,),
+        )
+        return rows[0]["race_id"] if rows else None
+
     def list_drivers(self, race_id: str) -> list[dict]:
         rows = self._query(
             "SELECT code, full_name, team, team_color, grid_position "
