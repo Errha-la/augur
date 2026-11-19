@@ -10,6 +10,8 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 
+import pandas as pd
+
 from augur import config
 from augur.events import detectors
 from augur.events.analysis import explain
@@ -69,7 +71,7 @@ class EventEngine:
                     predicted_s=_opt(predicted.iat[i]),
                     clean=bool(row["target_clean"]),
                     compound=lap_rows["compound"].get(driver) if driver in lap_rows.index else None,
-                    tyre_life=None if tyre_life is None or tyre_life != tyre_life else int(tyre_life),
+                    tyre_life=None if tyre_life is None or pd.isna(tyre_life) else int(tyre_life),
                 )
             )
 

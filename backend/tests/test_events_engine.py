@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 from synthetic import write_synthetic_race
 
@@ -42,6 +43,24 @@ def test_engine_runs_whole_race_with_ids(engine):
         assert 0 <= e["severity"] <= 100
     assert len({e["id"] for e in events}) == len(events)
     assert any(e["type"] == "position_change" for e in events)  # pit stops reshuffle the order
+
+
+def test_engine_handles_missing_tyre_life_and_compound(tmp_path):
+    # Real OpenF1 data has laps without stint data (tyre_life <NA>, compound None).
+    from conftest import write_race
+    from synthetic import SYN_DRIVER_ROWS, synthetic_race_laps
+
+    laps = synthetic_race_laps(1)
+    gap = (laps["driver"] == "CCC") & laps["lap"].between(20, 22)
+    laps.loc[gap, "tyre_life"] = pd.NA
+    laps.loc[gap, "compound"] = None
+    laps.loc[gap, "stint"] = pd.NA
+    data = tmp_path / "data"
+    race = "2098-05-gap-grand-prix"
+    write_race(data, race, laps, year=2098, round_=5, event_name="Gap", total_laps=30, drivers=SYN_DRIVER_ROWS)
+    engine = EventEngine(ReplayFeed(race, ReplayStore(data)), BaselineModel())
+    for lap in range(1, 31):
+        engine.step(lap)
 
 
 def test_pace_drop_example_severity_48():
