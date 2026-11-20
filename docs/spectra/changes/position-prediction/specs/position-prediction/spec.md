@@ -6,7 +6,7 @@ Give viewers, at any lap, the probability that each driver wins, reaches the pod
 
 ### Requirement: Simulate the remaining race for every driver
 
-For lap N the system SHALL simulate laps N+1 to `total_laps` for all drivers `runs` times (default 1000) with seed `seed + N` (default seed 42), starting from each driver's cumulative time and laps completed at lap N, using predicted pace, stint degradation, fuel gain, normal noise, the expected pit plan, and the dirty-air penalty. It SHALL read race data only through `feed.laps_until(N)`.
+For lap N the system SHALL simulate laps N+1 to `total_laps` for all drivers `runs` times (default 1000) with seed `seed + N` (default seed 42), starting from each driver's cumulative time and laps completed at lap N, using predicted pace, stint degradation, fuel gain, normal noise, the expected pit plan, and the dirty-air penalty. It SHALL read race data only through `feed.laps_until(N)`. The projected degradation SHALL use a driver's own stint slope only when the fit has at least 8 clean laps and a non-negative slope, otherwise the race's compound median or the per-compound default, and SHALL never be negative.
 
 #### Scenario: Dominant leader
 
@@ -18,6 +18,11 @@ For lap N the system SHALL simulate laps N+1 to `total_laps` for all drivers `ru
 - **WHEN** predictions for lap 20 are computed twice with the same data, model, and seed
 - **THEN** both results are identical
 
+#### Scenario: Short or negative stint fit
+
+- **WHEN** a driver's current stint fit has a slope of −0.164 s/lap, or a slope of 0.334 s/lap from 5 clean laps, and the race's median slope for that compound is 0.05 s/lap
+- **THEN** the projected degradation for that driver is 0.05 s/lap
+
 #### Scenario: Altered future laps
 
 - **WHEN** rows with lap greater than 20 are altered and predictions for lap 20 are computed again
@@ -25,7 +30,7 @@ For lap N the system SHALL simulate laps N+1 to `total_laps` for all drivers `ru
 
 ### Requirement: Expected pit plan
 
-A driver who has not used two different dry compounds by lap N SHALL make exactly one simulated stop, on lap `N + max(1, life − tyre_age) + U{−3..3}` clipped to `[N+1, total_laps − 1]`, with `life` SOFT 20, MEDIUM 28, HARD 38; a driver who has used two dry compounds SHALL make no simulated stop. A stop SHALL add the pit loss and switch to HARD after SOFT or MEDIUM, or to MEDIUM after HARD.
+A driver who has not used two different dry compounds by lap N SHALL make exactly one simulated stop when N < total_laps − 1, and no stop when N = total_laps − 1 because the stop window is empty, on lap `N + max(1, life − tyre_age) + U{−3..3}` clipped to `[N+1, total_laps − 1]`, with `life` SOFT 20, MEDIUM 28, HARD 38; a driver who has used two dry compounds SHALL make no simulated stop. A stop SHALL add the pit loss and switch to HARD after SOFT or MEDIUM, or to MEDIUM after HARD.
 
 #### Scenario: Stop window
 
@@ -34,6 +39,11 @@ A driver who has not used two different dry compounds by lap N SHALL make exactl
 - **GIVEN** a driver on MEDIUM with tyre age 10 at lap 15 who has used only MEDIUM
 - **WHEN** the pit plan is sampled
 - **THEN** every sampled stop lap is between 30 and 36 and the new compound is HARD
+
+#### Scenario: No stop window left
+
+- **WHEN** a driver who has used only MEDIUM is simulated from lap 56 of 57
+- **THEN** no simulated run contains a stop for that driver
 
 #### Scenario: Two compounds used
 
