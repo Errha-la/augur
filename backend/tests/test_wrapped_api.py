@@ -62,6 +62,16 @@ def test_not_analyzed_race(client):
     assert (r.status_code, r.json()) == (409, {"detail": "race not analyzed"})
 
 
+def test_events_without_position_predictions_count_as_not_analyzed(data, client):
+    event = {
+        "id": "x", "lap": 5, "type": "pace_drop", "drivers": ["AAA"], "severity": 50.0, "title": "t",
+        "analysis": {"what": "w", "why": "y", "next": "n"}, "evidence": {},
+    }
+    analyze.replace_events(data, UNANALYZED, "baseline", [event])
+    r = client.get(f"/api/races/{UNANALYZED}/wrapped?lap=58&driver=AAA")
+    assert (r.status_code, r.json()) == (409, {"detail": "race not analyzed"})
+
+
 def test_unknown_race(client):
     assert client.get("/api/races/2098-99-nope/wrapped?lap=58&driver=AAA").status_code == 404
 

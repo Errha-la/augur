@@ -41,7 +41,7 @@ Finishing-position prediction is AUGUR's headline output, so the headline score 
 
 ### Shared scoring for bench and Wrapped
 
-`augur.scoring` computes, for one race and one model: the podium skill above; `mae_model_s` and `mae_baseline_s` over clean laps with a prediction and `lap_improvement_pct = 100 × (mae_baseline_s − mae_model_s) / mae_baseline_s` rounded to 1 decimal; and the hit rate `{undercut: {hits, resolved}, degradation: {hits, resolved}, overall_pct}`, where resolved counts hits and misses and excludes voids. A pooled variant combines races by pooling (c, d) pairs, clean laps, and events. Both `augur.bench` and the Wrapped endpoint call it, so the numbers always match.
+`augur.scoring` computes, for one race and one model: the podium skill above; `mae_model_s` and `mae_baseline_s` over clean laps with a prediction and `lap_improvement_pct = 100 × (mae_baseline_s − mae_model_s) / mae_baseline_s` rounded to 1 decimal; and the hit rate `{undercut: {hits, resolved}, degradation: {hits, resolved}, hits, resolved, overall_pct}` (top-level `hits` and `resolved` are the totals over both types), where resolved counts hits and misses and excludes voids. A pooled variant combines races by pooling (c, d) pairs, clean laps, and events. Both `augur.bench` and the Wrapped endpoint call it, so the numbers always match.
 
 ### Fixed benchmark races
 
@@ -59,7 +59,7 @@ Cards reuse the dashboard tokens (zinc-950 background, JetBrains Mono) with larg
 
 **Commands**
 
-- `python -m augur.bench --model <name>` → analyzes both benchmark races with that model when they have no events or position predictions for it, writes `bench/<name>.json` = `{model, author, races, position_skill_pct, brier_model, brier_baseline, lap_improvement_pct, mae_model_s, mae_baseline_s, hit_rate, per_race: [{race_id, position_skill_pct, brier_model, brier_baseline, lap_improvement_pct, mae_model_s, mae_baseline_s, hit_rate}], seed, data_source, augur_version, generated_at}`, and prints `<name>: podium skill <s>% vs current order, lap times <beat|trail> baseline by <x>%, event hit rate <y>% (<hits>/<resolved>)` (`podium skill n/a` when null). Exit 1 with `benchmark race <race_id> is in the training set`, `unknown model <name>`, or `missing race <race_id>, run augur.ingest first`.
+- `python -m augur.bench --model <name>` → analyzes both benchmark races with that model when they have no events or position predictions for it (or their undercut and degradation events have no outcome, i.e. were stored before outcomes existed), writes `bench/<name>.json` = `{model, author, races, position_skill_pct, brier_model, brier_baseline, lap_improvement_pct, mae_model_s, mae_baseline_s, hit_rate, per_race: [{race_id, position_skill_pct, brier_model, brier_baseline, lap_improvement_pct, mae_model_s, mae_baseline_s, hit_rate}], seed, data_source, augur_version, generated_at}`, and prints `<name>: podium skill <s>% vs current order, lap times <beat|trail> baseline by <x>%, event hit rate <y>% (<hits>/<resolved>)` (`podium skill n/a` when null; `lap times match baseline (0.0%)` when the improvement is 0.0). Exit 1 with `benchmark race <race_id> is in the training set`, `unknown model <name>`, or `missing race <race_id>, run augur.ingest first`.
 
 **HTTP API**
 
@@ -68,9 +68,9 @@ Cards reuse the dashboard tokens (zinc-950 background, JetBrains Mono) with larg
 
 **Frontend**
 
-- Status bar shows a "Wrapped" button, disabled with a lock icon until lap = `total_laps`; enabled, it opens a full-screen overlay for the current race, model, and focus driver.
+- Status bar shows a "Wrapped" button, disabled with a lock icon until lap = `total_laps` (and while no focus driver is set); enabled, it opens a full-screen overlay for the current race, model, and focus driver.
 - Overlay: 7 progress segments at the top; Right arrow or click on the right half goes forward, Left arrow or left half goes back, Esc closes; button "Download card".
-- Cards: 1 Summary (event, winner, podium, laps, event count), 2 Podium Call ("At lap 29 AUGUR's podium was A, B, C — 2 of 3 correct" with each probability), 3 Accuracy (podium skill, lap-time improvement, hit rate), 4 Best Call, 5 Biggest Miss, 6 Biggest Moment (each showing lap, drivers, title, what AUGUR said, and the outcome text where present), 7 Driver (grid → final position, position line by lap, podium-probability line by lap, stint bar, their events with outcomes). A null section shows "No resolved calls this race" or "No events this race".
+- Cards: 1 Summary (event, winner, podium, laps, event count), 2 Podium Call ("At lap 29 AUGUR's podium was A, B, C — 2 of 3 correct" with each probability), 3 Accuracy (podium skill, lap-time improvement, hit rate), 4 Best Call, 5 Biggest Miss, 6 Biggest Moment (each showing lap, drivers, title, what AUGUR said, and the outcome text where present), 7 Driver (grid (when `grid_position` is null, as with OpenF1 data, the position after lap 1, labelled "Lap 1") → final position, position line by lap, podium-probability line by lap, stint bar, their events with outcomes). A null section shows "No resolved calls this race" or "No events this race".
 
 **Acceptance**
 
