@@ -50,6 +50,10 @@ UNDERCUT_MIN_TYRE_AGE = 12
 UNDERCUT_NO_PIT_LAPS = 3
 POSITION_CHANGE_MIN_PLACES = 2
 
+# Event outcomes: laps after an undercut or degradation call that decide it (estimate;
+# check hit/miss/void counts on the demo races).
+OUTCOME_WINDOW_LAPS = 8
+
 # Position prediction (full-field race simulation).
 POSITION_RUNS_DEFAULT = 1000
 POSITION_RUNS_MIN = 100

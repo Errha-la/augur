@@ -47,6 +47,9 @@ CREATE TABLE IF NOT EXISTS events (
     title     TEXT,
     analysis  TEXT,
     evidence  TEXT,
+    outcome      TEXT,
+    outcome_lap  INT,
+    outcome_text TEXT,
     PRIMARY KEY (race_id, model, id)
 );
 CREATE TABLE IF NOT EXISTS position_predictions (
@@ -103,4 +106,20 @@ def connect(data_dir: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
+    _migrate(conn)
     return conn
+
+
+# Columns added after a table was first created; added in place to older catalogs.
+_ADDED_COLUMNS: dict[str, tuple[tuple[str, str], ...]] = {
+    "events": (("outcome", "TEXT"), ("outcome_lap", "INT"), ("outcome_text", "TEXT")),
+}
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    for table, columns in _ADDED_COLUMNS.items():
+        have = {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}
+        for name, sql_type in columns:
+            if name not in have:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {sql_type}")
+    conn.commit()

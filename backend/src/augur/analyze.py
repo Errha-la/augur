@@ -20,6 +20,7 @@ from pathlib import Path
 
 from augur import catalog, config
 from augur.events.engine import EventEngine
+from augur.events.outcomes import resolve_outcomes
 from augur.feed import ReplayFeed
 from augur.models import registry
 from augur.positions import positions_at
@@ -57,6 +58,9 @@ def compute_analysis(
     for lap in range(1, feed.total_laps + 1):
         events += engine.step(lap)
         positions[lap] = positions_at(feed, lap, model, prior, runs=runs, seed=seed)
+    # Outcomes look past each event by design; the API hides them until outcome_lap.
+    meta = {"race_id": race_id, "total_laps": feed.total_laps}
+    events = resolve_outcomes(events, feed.laps_until(feed.total_laps), store.list_drivers(race_id), meta)
     return events, positions
 
 
@@ -68,12 +72,14 @@ def replace_events(data_dir: Path, race_id: str, model_name: str, events: list[d
             conn.execute("DELETE FROM events WHERE race_id = ? AND model = ?", (race_id, model_name))
             conn.executemany(
                 "INSERT INTO events (race_id, model, id, lap, type, drivers, severity, title,"
-                " analysis, evidence) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                " analysis, evidence, outcome, outcome_lap, outcome_text)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
                     (
                         race_id, model_name, e["id"], e["lap"], e["type"], json.dumps(e["drivers"]),
                         e["severity"], e["title"], json.dumps(e["analysis"]),
                         json.dumps(e["evidence"], sort_keys=True),
+                        e.get("outcome"), e.get("outcome_lap"), e.get("outcome_text"),
                     )
                     for e in events
                 ],
