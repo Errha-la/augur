@@ -14,6 +14,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from augur import catalog, config
+from augur import wrapped as wrapped_content
 from augur.feed import RaceFeed, ReplayFeed
 from augur.models import registry
 from augur.models.base import LapTimeModel
@@ -200,6 +201,23 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
             "analyzed": analyzed,
             "laps": [{"lap": n, "drivers": drivers} for n, drivers in sorted(by_lap.items())],
         }
+
+    @app.get("/api/races/{race_id}/wrapped")
+    def wrapped(race_id: str, lap: LapParam, driver: str) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        if driver not in {d["code"] for d in s.list_drivers(race_id)}:
+            raise HTTPException(status_code=404, detail="driver not found")
+        # The Wrapped reads the whole race, so it must never open before the flag.
+        if lap < feed.total_laps:
+            raise HTTPException(status_code=409, detail="wrapped unlocks at the final lap")
+        name = model_name()
+        if not s.is_analyzed(race_id, name) or not s.has_positions(race_id, name):
+            raise HTTPException(status_code=409, detail="race not analyzed")
+        try:
+            return wrapped_content.build(s.data_dir, race_id, name, driver)
+        except registry.ModelNotTrainedError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from None
 
     @app.get("/api/races/{race_id}/strategy")
     def strategy(
