@@ -1,10 +1,11 @@
-"""Precompute race events lap by lap into SQLite.
+"""Precompute race events and position predictions lap by lap into SQLite.
 
 Usage:
-    python -m augur.analyze --race <race_id> [--model lightgbm] [--data-dir DIR]
+    python -m augur.analyze --race <race_id> [--model lightgbm] [--runs 1000] [--data-dir DIR]
 
-Steps an EventEngine over a ReplayFeed from lap 1 to total_laps and replaces
-the race's rows for that model in the ``events`` table.
+Steps an EventEngine over a ReplayFeed from lap 1 to total_laps, runs the
+position simulator at every lap, and replaces the race's rows for that model
+in the ``events`` and ``position_predictions`` tables.
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,6 +22,7 @@ from augur import catalog, config
 from augur.events.engine import EventEngine
 from augur.feed import ReplayFeed
 from augur.models import registry
+from augur.positions import positions_at
 from augur.priors import circuit_priors
 from augur.replay import RaceNotFound, ReplayStore
 
@@ -28,7 +31,14 @@ class AnalyzeError(Exception):
     pass
 
 
-def compute_events(data_dir: Path, race_id: str, model_name: str) -> list[dict]:
+def compute_analysis(
+    data_dir: Path,
+    race_id: str,
+    model_name: str,
+    runs: int = config.POSITION_RUNS_DEFAULT,
+    seed: int = config.POSITION_SEED_DEFAULT,
+) -> tuple[list[dict], dict[int, list[dict]]]:
+    """(events, {lap: position predictions}) for every lap of the race."""
     store = ReplayStore(data_dir)
     if store.get_race(race_id) is None:
         raise AnalyzeError(f"race not found: {race_id}")
@@ -40,8 +50,18 @@ def compute_events(data_dir: Path, race_id: str, model_name: str) -> list[dict]:
     if race_id in metrics.get("train_races", []):
         raise AnalyzeError(f"race {race_id} is in the training set of model {model_name}")
     feed = ReplayFeed(race_id, store)
-    engine = EventEngine(feed, model, circuit_priors(store, race_id))
-    return [e for lap in range(1, feed.total_laps + 1) for e in engine.step(lap)]
+    prior = circuit_priors(store, race_id)
+    engine = EventEngine(feed, model, prior)
+    events: list[dict] = []
+    positions: dict[int, list[dict]] = {}
+    for lap in range(1, feed.total_laps + 1):
+        events += engine.step(lap)
+        positions[lap] = positions_at(feed, lap, model, prior, runs=runs, seed=seed)
+    return events, positions
+
+
+def compute_events(data_dir: Path, race_id: str, model_name: str) -> list[dict]:
+    return compute_analysis(data_dir, race_id, model_name)[0]
 
 
 def replace_events(data_dir: Path, race_id: str, model_name: str, events: list[dict]) -> None:
@@ -70,10 +90,45 @@ def replace_events(data_dir: Path, race_id: str, model_name: str, events: list[d
         conn.close()
 
 
+def replace_positions(
+    data_dir: Path, race_id: str, model_name: str, positions: dict[int, list[dict]], runs: int, seed: int
+) -> None:
+    """Replace the race's position predictions for the model in one transaction."""
+    conn = catalog.connect(data_dir)
+    try:
+        with conn:
+            conn.execute(
+                "DELETE FROM position_predictions WHERE race_id = ? AND model = ?", (race_id, model_name)
+            )
+            conn.executemany(
+                "INSERT INTO position_predictions (race_id, model, lap, code, p_win, p_podium, p_points,"
+                " expected_position, position_p10, position_p90, runs, seed)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    (
+                        race_id, model_name, lap, d["code"], d["p_win"], d["p_podium"], d["p_points"],
+                        d["expected_position"], d["position_p10"], d["position_p90"], runs, seed,
+                    )
+                    for lap, drivers in sorted(positions.items())
+                    for d in drivers
+                ],
+            )
+    finally:
+        conn.close()
+
+
 def _parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="python -m augur.analyze", description="Precompute race events.")
+    p = argparse.ArgumentParser(
+        prog="python -m augur.analyze", description="Precompute race events and position predictions."
+    )
     p.add_argument("--race", required=True)
     p.add_argument("--model", default=config.DEFAULT_MODEL)
+    p.add_argument(
+        "--runs",
+        type=int,
+        default=config.POSITION_RUNS_DEFAULT,
+        help=f"position simulation runs per lap ({config.POSITION_RUNS_MIN}..{config.POSITION_RUNS_MAX})",
+    )
     p.add_argument("--data-dir", type=Path, default=None, help="data root (default: repo data/)")
     return p
 
@@ -81,12 +136,20 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     data_dir: Path = args.data_dir if args.data_dir is not None else catalog.default_data_dir()
+    if not config.POSITION_RUNS_MIN <= args.runs <= config.POSITION_RUNS_MAX:
+        print(f"runs must be {config.POSITION_RUNS_MIN}..{config.POSITION_RUNS_MAX}", flush=True)
+        return 1
+    seed = config.POSITION_SEED_DEFAULT
+    started = time.perf_counter()
     try:
-        events = compute_events(data_dir, args.race, args.model)
+        events, positions = compute_analysis(data_dir, args.race, args.model, runs=args.runs, seed=seed)
     except (AnalyzeError, RaceNotFound) as exc:
         print(str(exc), flush=True)
         return 1
     replace_events(data_dir, args.race, args.model, events)
+    replace_positions(data_dir, args.race, args.model, positions, args.runs, seed)
+    elapsed = time.perf_counter() - started
+    print(f"position predictions: {len(positions)} laps, {args.runs} runs per lap, {elapsed:.1f} s", flush=True)
     print(f"analyzed {args.race}: {len(events)} events", flush=True)
     return 0
 

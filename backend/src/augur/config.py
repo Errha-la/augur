@@ -50,6 +50,19 @@ UNDERCUT_MIN_TYRE_AGE = 12
 UNDERCUT_NO_PIT_LAPS = 3
 POSITION_CHANGE_MIN_PLACES = 2
 
+# Position prediction (full-field race simulation).
+POSITION_RUNS_DEFAULT = 1000
+POSITION_RUNS_MIN = 100
+POSITION_RUNS_MAX = 5000
+POSITION_SEED_DEFAULT = 42
+# Typical dry stint length in laps; estimates, compare with observed stints on the demo races.
+STINT_LIFE_LAPS: dict[str, int] = {"SOFT": 20, "MEDIUM": 28, "HARD": 38}
+STINT_LIFE_FALLBACK_LAPS = 28
+PIT_JITTER_LAPS = 3
+# Dirty air: the PITWALL project's documented prior, 0.40 s/lap within 1.0 s.
+DIRTY_AIR_GAP_S = 1.0
+DIRTY_AIR_PENALTY_S = 0.4
+
 # Model served by the API when AUGUR_MODEL is unset.
 DEFAULT_MODEL = "lightgbm"
 MODEL_ENV = "AUGUR_MODEL"
