@@ -136,8 +136,10 @@ function LapLine({
       continue;
     }
     const x = ((p.lap - 1) / (laps - 1)) * w;
-    const frac = Math.min(Math.max(p.value / max, 0), 1);
-    const y = invert ? frac * h : h - frac * h;
+    // invert: positions run 1..max with P1 at the top; otherwise values run 0..max from the bottom.
+    const frac = invert ? (p.value - 1) / Math.max(max - 1, 1) : p.value / max;
+    const clamped = Math.min(Math.max(frac, 0), 1);
+    const y = invert ? clamped * h : h - clamped * h;
     current.push(`${x.toFixed(1)},${y.toFixed(1)}`);
   }
   if (current.length) segments.push(current.join(" "));
@@ -156,7 +158,11 @@ export function buildCards(data: WrappedResponse, teamColors: Record<string, str
   const winnerColor = (summary.winner && teamColors[summary.winner]) || ACCENT.neutral;
   const driverColor = driver.team_color || teamColors[driver.code] || ACCENT.neutral;
   const skillGood = score.position_skill_pct != null && score.position_skill_pct > 0;
-  const maxPosition = Math.max(1, ...driver.positions_by_lap.map((p) => p.position ?? 0));
+  // At least P10 on the axis, so a driver who never moves still sits at a readable height.
+  const maxPosition = Math.max(10, ...driver.positions_by_lap.map((p) => p.position ?? 0));
+  // OpenF1 ingest stores no starting grid; fall back to the order after lap 1 and say so.
+  const lap1 = driver.positions_by_lap.find((p) => p.lap === 1)?.position ?? null;
+  const start = driver.grid_position != null ? `Grid P${driver.grid_position}` : `Lap 1 P${lap1 ?? "?"}`;
 
   return [
     {
@@ -243,8 +249,13 @@ export function buildCards(data: WrappedResponse, teamColors: Record<string, str
       body: (
         <div className="flex flex-col gap-12">
           <Label>{driver.team ?? ""}</Label>
-          <div className="text-[120px] leading-none font-bold" data-testid="driver-positions">
-            P{driver.grid_position ?? "?"} → P{driver.final_position ?? "?"}
+          <div data-testid="driver-positions" className="flex flex-col gap-4">
+            <div className="text-[110px] leading-none font-bold">
+              P{driver.grid_position ?? lap1 ?? "?"} → P{driver.final_position ?? "?"}
+            </div>
+            <div className="text-[34px] text-zinc-500">
+              {start} → Finish P{driver.final_position ?? "?"}
+            </div>
           </div>
           <div className="flex flex-col gap-3">
             <Label>Position by lap</Label>
@@ -277,7 +288,7 @@ export function buildCards(data: WrappedResponse, teamColors: Record<string, str
                 {e.outcome && <span className="ml-3 font-bold uppercase">{e.outcome}</span>}
               </li>
             ))}
-            {driver.events.length === 0 && <li className="text-zinc-500">{NO_EVENTS}</li>}
+            {driver.events.length === 0 && <li className="text-zinc-500">No events for {driver.code} this race</li>}
           </ul>
         </div>
       ),

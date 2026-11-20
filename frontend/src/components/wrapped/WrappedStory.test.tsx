@@ -152,6 +152,20 @@ describe("Story cards content", () => {
     expect(card()).toHaveTextContent("UNDERCUT");
   });
 
+  it("Driver card falls back to the lap 1 position when the grid is unknown, and draws P1 at the top", () => {
+    const flatP1 = Array.from({ length: 58 }, (_, i) => ({ lap: i + 1, position: 1 }));
+    story(wrappedResponse({}, { grid_position: null, final_position: 1, positions_by_lap: flatP1, events: [] }));
+    goTo(7);
+    const positions = screen.getByTestId("driver-positions");
+    expect(positions).toHaveTextContent("P1 → P1");
+    expect(positions).toHaveTextContent("Lap 1 P1 → Finish P1");
+    expect(positions).not.toHaveTextContent("?");
+    const line = screen.getByRole("img", { name: "Position by lap" }).querySelector("polyline")!;
+    const ys = line.getAttribute("points")!.split(" ").map((p) => Number(p.split(",")[1]));
+    expect(Math.max(...ys)).toBe(0); // P1 every lap → the top edge
+    expect(card()).toHaveTextContent("No events for NOR this race");
+  });
+
   it("keeps the card node at 1080×1920 while the stage is scaled", () => {
     story();
     expect(card()).toHaveStyle({ width: "1080px", height: "1920px" });

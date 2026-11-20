@@ -63,6 +63,14 @@ def test_no_pairs():
     assert podium_skill([])["position_skill_pct"] is None
 
 
+def test_a_tie_is_zero_not_negative_zero():
+    tie = podium_skill([(0.3, 1.0, 1), (0.7, 0.0, 1)])  # model 0.49+0.09, baseline 0+1 → not a tie
+    assert tie["position_skill_pct"] != 0.0
+    same = podium_skill([(1.0, 1.0, 0), (0.0, 0.0, 0)])  # identical errors → exactly 0
+    assert str(same["position_skill_pct"]) == "0.0"
+    assert str(lap_scores([1.0000001], [1.0])["lap_improvement_pct"]) == "0.0"
+
+
 # --- Shared scoring (task 2.2) -------------------------------------------------------
 
 

@@ -57,7 +57,8 @@ def podium_skill(pairs: list[Pair]) -> dict:
     n = len(pairs)
     brier_model = sum((m - o) ** 2 for m, _, o in pairs) / n
     brier_baseline = sum((b - o) ** 2 for _, b, o in pairs) / n
-    skill = None if brier_baseline == 0 else round(100.0 * (1.0 - brier_model / brier_baseline), 1)
+    # "+ 0.0" turns a rounded -0.0 into 0.0, so a tie never prints as "-0.0%".
+    skill = None if brier_baseline == 0 else round(100.0 * (1.0 - brier_model / brier_baseline), 1) + 0.0
     return {
         "brier_model": round(brier_model, 4),
         "brier_baseline": round(brier_baseline, 4),
@@ -79,7 +80,7 @@ def lap_scores(err_model: Iterable[float], err_baseline: Iterable[float]) -> dic
         return {"lap_improvement_pct": None, "mae_model_s": None, "mae_baseline_s": None}
     mae_model = sum(em) / len(em)
     mae_baseline = sum(eb) / len(eb)
-    improvement = None if mae_baseline == 0 else round(100.0 * (mae_baseline - mae_model) / mae_baseline, 1)
+    improvement = None if mae_baseline == 0 else round(100.0 * (mae_baseline - mae_model) / mae_baseline, 1) + 0.0
     return {
         "lap_improvement_pct": improvement,
         "mae_model_s": round(mae_model, 4),
