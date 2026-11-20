@@ -128,7 +128,7 @@ Run it again to retry rejected or failed events; cached events are skipped. Rest
 | `GEMINI_MODEL` | `gemini-flash-latest` | Gemini model id; set a fixed id for reproducible text |
 | `AUGUR_COMMENTARY_LANG` | `en` | `en` or `zh-TW` |
 
-Without the required setting the command prints `<VARIABLE> not set; nothing generated` and exits 0.
+Without the required setting the command prints `<VARIABLE> not set; nothing generated` and exits 0; with `AUGUR_NARRATOR=none` it prints `narrator none; nothing generated`. If the server cannot be reached (for example off the university network), it stops after 3 connection errors in a row and counts the untried events as failed instead of waiting out the 120 s timeout for each one.
 
 Measured on 2024 Abu Dhabi (116 events, 2026-11-20) with `openai_compat` and a self-hosted `glm` server: the first run gave 92 ok, 10 rejected, 14 failed (12 HTTP 503 in a burst, 2 timeouts) in 11 min 21 s; after the grounding check started accepting the event's own lap, a rerun gave 24 ok, 0 rejected, 0 failed, 92 cached, so all 116 events have commentary. Texts were 43–68 words (median 57); 24 exceeded the prompt's 60-word limit.
 

@@ -21,13 +21,16 @@ from pathlib import Path
 from augur import catalog, config
 from augur.events.outcomes import OUTCOME_FIELDS
 from augur.narration import base
-from augur.narration.base import MissingSettingError
+from augur.narration.base import MissingSettingError, is_connection_error
 from augur.narration.cache import CommentaryKey, cached_texts, store_text
 from augur.narration.grounding import check_grounding
 from augur.narration.prompt import PROMPT_VERSION, commentary_lang
 from augur.replay import ReplayStore
 
-__all__ = ["PROMPT_VERSION", "main"]
+__all__ = ["MAX_CONNECTION_ERRORS", "PROMPT_VERSION", "main"]
+
+# Stop after this many network errors in a row (no HTTP status): the server is unreachable.
+MAX_CONNECTION_ERRORS = 3
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -80,6 +83,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     except ValueError as exc:  # invalid AUGUR_NARRATOR, model name, server URL, or language
         print(str(exc), flush=True)
         return 1
+    if narrator.name == base.NoneNarrator.name:
+        print("narrator none; nothing generated", flush=True)
+        return 0
 
     key = CommentaryKey(
         model=args.model,
@@ -93,14 +99,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     conn = catalog.connect(data_dir)
     try:
         cached = cached_texts(conn, (e["id"] for e in events), key)
-        for event in events:
-            if event["id"] in cached:
-                continue
+        todo = [e for e in events if e["id"] not in cached]
+        connection_errors = 0
+        for i, event in enumerate(todo):
             text = narrator.narrate(event)
             if text is None:
                 failed += 1
-                print(f"failed {event['id']}: {_error_label(getattr(narrator, 'last_error', None))}", flush=True)
+                error = getattr(narrator, "last_error", None)
+                print(f"failed {event['id']}: {_error_label(error)}", flush=True)
+                connection_errors = connection_errors + 1 if is_connection_error(error) else 0
+                if connection_errors >= MAX_CONNECTION_ERRORS:
+                    # An unreachable server would otherwise cost the full timeout per event.
+                    skipped = len(todo) - i - 1
+                    failed += skipped
+                    print(
+                        f"stopped after {connection_errors} connection errors in a row; {skipped} events not tried",
+                        flush=True,
+                    )
+                    break
                 continue
+            connection_errors = 0
             grounding = check_grounding(text, event)
             if not grounding.accepted:
                 rejected += 1

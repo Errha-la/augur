@@ -58,6 +58,16 @@ def test_rounding_respects_shown_precision():
     assert not check_grounding("a 1.85 s gap", EVENT).accepted
 
 
+@pytest.mark.parametrize(
+    ("evidence", "text"),
+    [({"gap_s": 1.15}, "a 1.2 s gap"), ({"gap_s": 1.25}, "a 1.3 s gap"), ({"p": 0.125}, "a 13% chance")],
+)
+def test_half_way_values_round_up(evidence, text):
+    """Round-half-up is accepted too (Python's round() would round half to even)."""
+    event = {**EVENT, "evidence": evidence}
+    assert check_grounding(text, event).accepted
+
+
 def test_percentage_and_fraction_both_ways():
     event = {**EVENT, "analysis": {**EVENT["analysis"], "next": "Pitting wins in 62% of simulations."}}
     assert check_grounding("a 0.62 chance", event).accepted

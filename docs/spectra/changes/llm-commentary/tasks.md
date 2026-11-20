@@ -16,6 +16,8 @@
 
 - [x] 3.1 [after: 2.1] With the lab server (`AUGUR_NARRATOR=openai_compat`, `AUGUR_LLM_BASE_URL`, `AUGUR_LLM_MODEL=glm`), run `python -m augur.narrate --race 2024-24-abu-dhabi-grand-prix`, record the ok/rejected/failed counts and the number of events, read five accepted texts for tone (conditional, no team instructions), and add a README section "LLM commentary (optional)" with the environment variables for both `openai_compat` and `gemini`. Verify: counts and the five texts recorded in the task notes; `pytest backend` and `npm --prefix frontend run test` pass without a key or server.
 
+- [x] 3.2 [after: 3.1] Fix the review findings: `augur.narrate` stops after 3 connection errors in a row (no HTTP status) and counts the untried events as failed, the `none` narrator prints `narrator none; nothing generated` and exits 0, and the grounding check accepts a number within half a unit of the shown precision (1.25 grounds "1.3"). Verify: tests for the stop, the reset on success or HTTP error, the `none` narrator, and the half-way rounding cases.
+
 ## Change notes
 
 - 2026-11-20: the user chose the lab's self-hosted OpenAI-compatible server (`glm`) for commentary before Gemini; 1.5 and 1.6 added, 2.1 now also serves `commentary_model` (the dashboard cannot read `GEMINI_MODEL`), and 3.1 runs against the lab server instead of a Gemini key. Supersedes: the design's "Other LLM providers" non-goal and "no other field changes" in `/events`.

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+import urllib.error
 
 import pytest
 from synthetic import write_synthetic_race
@@ -184,6 +185,49 @@ def test_invalid_server_url_is_an_error(data, monkeypatch, capsys):
     monkeypatch.setenv("AUGUR_LLM_BASE_URL", "file:///etc/passwd")
     assert run(data) == 1
     assert "AUGUR_LLM_BASE_URL must be an http:// or https:// URL" in capsys.readouterr().out
+
+
+def test_none_narrator_generates_nothing(data, capsys):
+    assert run(data, "--narrator", "none") == 0
+    assert capsys.readouterr().out.strip() == "narrator none; nothing generated"
+    with sqlite3.connect(catalog.db_path(data)) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM commentary").fetchone()[0] == 0
+
+
+def test_unreachable_server_stops_after_connection_errors(data, fake, capsys):
+    n = n_events(data)
+    assert n > narrate.MAX_CONNECTION_ERRORS
+
+    def reply(event):
+        fake.last_error = urllib.error.URLError(TimeoutError("timed out"))
+        return None
+
+    fake.reply = reply
+    assert run(data) == 0
+    out = capsys.readouterr().out.strip().splitlines()
+    assert len(fake.seen) == narrate.MAX_CONNECTION_ERRORS
+    assert out[-2] == (
+        f"stopped after {narrate.MAX_CONNECTION_ERRORS} connection errors in a row;"
+        f" {n - narrate.MAX_CONNECTION_ERRORS} events not tried"
+    )
+    assert out[-1] == f"narrated {RACE}: 0 ok, 0 rejected, {n} failed, 0 cached"
+
+
+def test_http_errors_and_successes_reset_the_connection_count(data, fake, capsys):
+    n = n_events(data)
+    calls = {"n": 0}
+
+    def reply(event):
+        calls["n"] += 1
+        if calls["n"] % 2:
+            fake.last_error = urllib.error.URLError("refused")
+            return None
+        fake.last_error = None
+        return event["analysis"]["what"]
+
+    fake.reply = reply
+    assert run(data) == 0
+    assert len(fake.seen) == n  # never two connection errors in a row, so no stop
 
 
 def test_unknown_narrator_is_a_usage_error(data):

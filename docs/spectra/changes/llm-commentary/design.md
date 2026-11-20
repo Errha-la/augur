@@ -52,7 +52,8 @@ The dashboard cannot read backend environment variables, so `/events` adds one t
 
 ## Implementation Contract
 
-- Command output: `narrated <race_id>: <ok> ok, <rejected> rejected, <failed> failed, <cached> cached`. Without the narrator's required setting it prints `<SETTING> not set; nothing generated` and exits 0: `GEMINI_API_KEY not set; nothing generated` for `gemini`, `AUGUR_LLM_BASE_URL not set; nothing generated` for `openai_compat`.
+- Command output: `narrated <race_id>: <ok> ok, <rejected> rejected, <failed> failed, <cached> cached`. After 3 network errors in a row with no HTTP status (refused, unreachable, timed out) it prints `stopped after 3 connection errors in a row; <n> events not tried`, counts those events as failed, and exits 0. With the `none` narrator it prints `narrator none; nothing generated` and exits 0.
+- Rounding tolerance: a shown number matches a value when they differ by at most half a unit of the shown precision, so 1.25 grounds both "1.2" and "1.3". Without the narrator's required setting it prints `<SETTING> not set; nothing generated` and exits 0: `GEMINI_API_KEY not set; nothing generated` for `gemini`, `AUGUR_LLM_BASE_URL not set; nothing generated` for `openai_compat`.
 - `/events` events gain `commentary` (string or null); the response gains top-level `commentary_model` (string or null); no other field changes.
 - Dashboard: when the primary event has `commentary`, the card shows it first as a quote labelled `AUGUR commentary · <commentary_model>`, followed by What / Why / Next.
 - Acceptance: `pytest backend` with a fake Gemini client and a fake HTTP opener covers prompt content (no outcome fields), grounding pass and fail cases, caching, retries, `<think>` removal, and the missing-setting messages; `npm --prefix frontend run test` covers the quote block. Manual: with the lab server, narrate `2024-24-abu-dhabi-grand-prix` with `--narrator openai_compat` and record the ok/rejected/failed counts.

@@ -51,6 +51,11 @@ def is_retryable(exc: BaseException) -> bool:
     return isinstance(code, int) and (code == 429 or 500 <= code <= 599)
 
 
+def is_connection_error(exc: BaseException | None) -> bool:
+    """A network error with no HTTP status (refused, unreachable, timed out)."""
+    return isinstance(exc, OSError) and not isinstance(getattr(exc, "code", None), int)
+
+
 def call_with_retries(call: Callable[[], T], sleep: Callable[[float], None]) -> tuple[T | None, Exception | None]:
     """(result, None) on success, else (None, last error) after retrying 429/5xx twice."""
     for attempt in range(len(RETRY_WAITS_S) + 1):

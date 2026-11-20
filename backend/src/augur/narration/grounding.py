@@ -66,8 +66,9 @@ def _source_codes(event: Mapping[str, Any]) -> set[str]:
 
 
 def _matches(shown: str, value: float) -> bool:
+    """``value`` rounds to ``shown`` at its precision, either way at the half (1.25 -> 1.2 or 1.3)."""
     decimals = len(shown.split(".")[1]) if "." in shown else 0
-    return abs(round(value, decimals) - float(shown)) < 1e-9
+    return abs(value - float(shown)) <= 0.5 * 10**-decimals + 1e-9
 
 
 def check_grounding(text: str, event: Mapping[str, Any]) -> Grounding:
@@ -78,9 +79,8 @@ def check_grounding(text: str, event: Mapping[str, Any]) -> Grounding:
     for m in _NUMBER_RE.finditer(text):
         shown, percent = m.group(1), m.group(2)
         if percent:
-            # 62% must match a fraction 0.62 at two more decimals than shown.
-            decimals = len(shown.split(".")[1]) if "." in shown else 0
-            ok = any(abs(round(v * 100, decimals) - float(shown)) < 1e-9 for v in numbers)
+            # 62% must match a fraction 0.62 (value * 100 at the shown precision).
+            ok = any(_matches(shown, v * 100) for v in numbers)
         else:
             ok = any(_matches(shown, v) for v in numbers)
         if not ok:
