@@ -120,6 +120,13 @@ describe("Timing list — fastest lap colouring", () => {
     expect(field("HAM", "last")).toHaveClass("text-emerald-400");
   });
 
+  it("does not colour a shown last lap that differs from the latest lap row", () => {
+    // Latest row (lap 3, a pit lap) has no time; the shown time must not inherit a mark.
+    const laps = [lapRow("VER", 2, 96), lapRow("VER", 3, null, { pit_in: true })];
+    renderList({ lap: 3, laps, drivers: [driver("VER", 1, { last_lap_time_s: 96 })] });
+    expect(field("VER", "last").className).not.toMatch(/text-(purple|emerald)-400/);
+  });
+
   it("leaves a last lap uncoloured when it is slower than the driver's best", () => {
     const laps = [lapRow("VER", 2, 96), lapRow("VER", 3, 97)];
     renderList({ lap: 3, laps, drivers: [driver("VER", 1, { last_lap_time_s: 97 })] });

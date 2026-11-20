@@ -22,12 +22,19 @@ export function isCleanLap(r: LapRow): boolean {
 
 export type LastLapMark = "fastest" | "personal-best" | null;
 
+export interface LastLapInfo {
+  mark: LastLapMark;
+  /** Lap time of the row the mark was computed from. */
+  time: number | null;
+}
+
 /**
- * For each driver's latest lap up to `lap`: "fastest" (purple) when it is the
- * fastest clean lap of the race so far, "personal-best" (green) when it is the
- * driver's own fastest lap so far.
+ * For each driver's latest lap up to `lap` (the same row backend /state reports
+ * as last_lap_time_s): "fastest" (purple) when it is the fastest clean lap of
+ * the race so far, "personal-best" (green) when it is the driver's own fastest
+ * lap so far.
  */
-export function lastLapMarks(laps: LapRow[], lap: number): Map<string, LastLapMark> {
+export function lastLapMarks(laps: LapRow[], lap: number): Map<string, LastLapInfo> {
   let raceBest = Infinity;
   const ownBest = new Map<string, number>();
   const latest = new Map<string, LapRow>();
@@ -39,14 +46,14 @@ export function lastLapMarks(laps: LapRow[], lap: number): Map<string, LastLapMa
     if (isCleanLap(r)) raceBest = Math.min(raceBest, r.lap_time_s);
     ownBest.set(r.driver, Math.min(ownBest.get(r.driver) ?? Infinity, r.lap_time_s));
   }
-  const marks = new Map<string, LastLapMark>();
+  const marks = new Map<string, LastLapInfo>();
   for (const [driver, r] of latest) {
     let mark: LastLapMark = null;
     if (r.lap_time_s != null) {
       if (isCleanLap(r) && r.lap_time_s <= raceBest) mark = "fastest";
       else if (r.lap_time_s <= (ownBest.get(driver) ?? Infinity)) mark = "personal-best";
     }
-    marks.set(driver, mark);
+    marks.set(driver, { mark, time: r.lap_time_s });
   }
   return marks;
 }

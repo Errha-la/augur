@@ -55,8 +55,13 @@ export function FocusPanel({ data, focusCode, playing, chartSize }: FocusPanelPr
     api.positionsHistory(raceId, lap, signal),
   );
 
+  // Requests keep running across laps and focus changes; show only what belongs
+  // to the race and driver on screen (keys are `${raceId}|${lap}|${code}`).
+  const forFocus = (key: string | null) => key !== null && key.startsWith(`${raceId}|`) && key.endsWith(`|${focusCode}`);
   const strategyShown =
     strategy.value && strategy.value.race_id === raceId && strategy.value.driver === focusCode ? strategy.value : null;
+  const strategyLoading = forFocus(strategy.loadingKey);
+  const strategyError = forFocus(strategy.errorKey) ? strategy.error : null;
   const historyRows = useMemo(() => {
     if (!history.value || history.value.race_id !== raceId) return [];
     return history.value.laps
@@ -149,9 +154,15 @@ export function FocusPanel({ data, focusCode, playing, chartSize }: FocusPanelPr
 
       <div>
         <div data-testid="focus-probabilities" className="flex gap-4 font-bold tabular-nums">
-          <span>WIN {formatPct(pos?.p_win) ?? "–"}</span>
-          <span>PODIUM {formatPct(pos?.p_podium) ?? "–"}</span>
-          <span>POINTS {formatPct(pos?.p_points) ?? "–"}</span>
+          <span>
+            WIN <OrDash text={formatPct(pos?.p_win)} />
+          </span>
+          <span>
+            PODIUM <OrDash text={formatPct(pos?.p_podium)} />
+          </span>
+          <span>
+            POINTS <OrDash text={formatPct(pos?.p_points)} />
+          </span>
         </div>
         <p className="mt-0.5 text-[11px] text-zinc-500">{GREEN_RACE_NOTE}</p>
         <div data-testid="probability-history" className="mt-1 h-28">
@@ -169,8 +180,8 @@ export function FocusPanel({ data, focusCode, playing, chartSize }: FocusPanelPr
 
       <StrategyTable
         response={strategyShown}
-        loading={strategy.loading}
-        error={strategy.error}
+        loading={strategyLoading}
+        error={strategyError}
         idleText={`Strategy updates at lap ${nextRefresh} or when paused`}
       />
 

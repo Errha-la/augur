@@ -77,9 +77,9 @@ function PrimaryCard({ raceId, event, highlighted, focusColor }: {
 }) {
   const driver = event.drivers[0];
   const wantsStrategy = STRATEGY_EVENT_TYPES.has(event.type) && driver !== undefined;
-  const strategy = useKeyedFetch<StrategyResponse>(
-    wantsStrategy ? `${raceId}|${event.lap}|${driver}` : null,
-    (signal) => api.strategy(raceId, event.lap, driver, signal),
+  const strategyKey = wantsStrategy ? `${raceId}|${event.lap}|${driver}` : null;
+  const strategy = useKeyedFetch<StrategyResponse>(strategyKey, (signal) =>
+    api.strategy(raceId, event.lap, driver, signal),
   );
   const shown =
     strategy.value && strategy.value.race_id === raceId && strategy.value.driver === driver && strategy.value.lap === event.lap
@@ -112,7 +112,13 @@ function PrimaryCard({ raceId, event, highlighted, focusColor }: {
       </div>
       <h2 className="text-lg font-bold">{event.title}</h2>
       <Analysis event={event} />
-      {wantsStrategy && <StrategyTable response={shown} loading={strategy.loading} error={strategy.error} />}
+      {wantsStrategy && (
+        <StrategyTable
+          response={shown}
+          loading={strategy.loadingKey === strategyKey}
+          error={strategy.errorKey === strategyKey ? strategy.error : null}
+        />
+      )}
     </article>
   );
 }

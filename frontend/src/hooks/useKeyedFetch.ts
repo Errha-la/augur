@@ -5,9 +5,12 @@ export interface KeyedFetch<T> {
   /** Latest response and the key it was fetched for (kept while key is null). */
   value: T | null;
   valueKey: string | null;
-  /** A request is in flight (possibly for an earlier key, see above). */
+  /** A request is in flight (possibly for an earlier key: see `loadingKey`). */
   loading: boolean;
+  loadingKey: string | null;
+  /** Latest failure and the key it belongs to. */
   error: Error | null;
+  errorKey: string | null;
 }
 
 interface State<T> {
@@ -69,6 +72,12 @@ export function useKeyedFetch<T>(key: string | null, fetcher: (signal: AbortSign
     [],
   );
 
-  const error = state.errorKey !== null && state.errorKey === (key ?? state.errorKey) ? state.error : null;
-  return { value: state.value, valueKey: state.valueKey, loading: state.inflightKey !== null, error };
+  return {
+    value: state.value,
+    valueKey: state.valueKey,
+    loading: state.inflightKey !== null,
+    loadingKey: state.inflightKey,
+    error: state.error,
+    errorKey: state.error ? state.errorKey : null,
+  };
 }

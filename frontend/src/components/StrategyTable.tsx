@@ -43,7 +43,11 @@ export function StrategyTable({ response, loading, error, idleText }: StrategyTa
               <OrDash text={formatRaceTime(s.mean_s)} />
             </td>
             <td className="pr-2 text-right whitespace-nowrap text-zinc-400">
-              {formatRaceTime(s.p10_s)}–{formatRaceTime(s.p90_s)}
+              {s.p10_s == null || s.p90_s == null ? (
+                <OrDash text={null} />
+              ) : (
+                `${formatRaceTime(s.p10_s)}–${formatRaceTime(s.p90_s)}`
+              )}
             </td>
             <td className="text-right">
               <OrDash text={formatPct(s.win_probability)} />

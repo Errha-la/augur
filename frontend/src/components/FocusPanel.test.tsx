@@ -76,6 +76,26 @@ describe("Focus driver panel", () => {
     expect(list).toHaveTextContent("UNDERCUT");
   });
 
+  it("shows the dash icon for null probabilities and a null p10-p90 range", async () => {
+    fakeBackend({
+      handlers: {
+        strategy: (ctx) => ({
+          ...fixtures.strategy,
+          ...ctx,
+          strategies: [{ name: "no further stop", pit_lap: null, mean_s: 3600, p10_s: null, p90_s: null, win_probability: 0.5 }],
+        }),
+      },
+    });
+    const data = lapData(10, {
+      positions: { ...fixtures.positions, lap: 10, drivers: [positions("HAM", { p_win: null, p_podium: null, p_points: null })] },
+    });
+    renderPanel(data);
+    expect(within(screen.getByTestId("focus-probabilities")).getAllByTestId("dash")).toHaveLength(3);
+    const table = await screen.findByTestId("strategy-table");
+    expect(within(table).getAllByTestId("dash")).toHaveLength(1);
+    expect(table).not.toHaveTextContent("–");
+  });
+
   it("shows Simulating... until the strategy arrives, then the table", async () => {
     renderPanel(lapData(15));
     expect(screen.getByTestId("simulating")).toBeInTheDocument();
@@ -112,6 +132,33 @@ describe("Focus driver panel — Strategy requests during playback", () => {
     // Pausing at lap 16 refreshes lap 16; during playback only lap 15 was requested.
     expect(strategyLaps.filter((l) => l < 16)).toEqual([15]);
     expect(historyLaps.filter((l) => l < 16)).toEqual([15]);
+  });
+
+  it("does not show the previous driver's strategy error after a focus change during playback", async () => {
+    fakeBackend({
+      handlers: {
+        strategy: (ctx) => (ctx.driver === "VER" ? new Response("boom", { status: 500 }) : { ...fixtures.strategy, ...ctx }),
+      },
+    });
+    const size = { width: 300, height: 100 };
+    const { rerender } = render(<FocusPanel data={lapData(12)} focusCode="VER" playing={false} chartSize={size} />);
+    expect(await screen.findByText(/Strategy unavailable/)).toHaveTextContent("driver=VER");
+
+    rerender(<FocusPanel data={lapData(13)} focusCode="HAM" playing chartSize={size} />);
+    expect(screen.queryByText(/Strategy unavailable/)).not.toBeInTheDocument();
+    expect(screen.getByText("Strategy updates at lap 15 or when paused")).toBeInTheDocument();
+  });
+
+  it("does not show Simulating... for a new focus driver while the previous driver's request runs", async () => {
+    const backend = fakeBackend({ manual: true });
+    const size = { width: 300, height: 100 };
+    const { rerender } = render(<FocusPanel data={lapData(15)} focusCode="VER" playing chartSize={size} />);
+    await waitFor(() => expect(backend.of("strategy")).toHaveLength(1));
+    expect(screen.getByTestId("simulating")).toBeInTheDocument();
+
+    rerender(<FocusPanel data={lapData(16)} focusCode="HAM" playing chartSize={size} />);
+    expect(screen.queryByTestId("simulating")).not.toBeInTheDocument();
+    expect(screen.getByText("Strategy updates at lap 20 or when paused")).toBeInTheDocument();
   });
 
   it("keeps a slow lap-15 strategy response when playback moves on to lap 16", async () => {

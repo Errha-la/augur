@@ -43,7 +43,9 @@ export function TimingList({ lap, drivers, laps, predictions, positions, focusCo
         {ordered.map((d) => {
           const pred = predByCode.get(d.code);
           const pos = posByCode.get(d.code);
-          const mark = marks.get(d.code) ?? null;
+          // Colour only the time it was computed for, never a different lap's time.
+          const info = marks.get(d.code);
+          const mark = info && d.last_lap_time_s != null && info.time === d.last_lap_time_s ? info.mark : null;
           const letter = compoundLetter(d.compound);
           const podium = pos?.p_podium ?? null;
           const focused = d.code === focusCode;
