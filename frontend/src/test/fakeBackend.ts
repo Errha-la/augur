@@ -9,6 +9,7 @@ import type {
   RaceSummary,
   StrategyResponse,
 } from "../api/types";
+import { wrappedResponse } from "./builders";
 import eventsFixture from "./fixtures/events.json";
 import lapsFixture from "./fixtures/laps.json";
 import positionsFixture from "./fixtures/positions.json";
@@ -43,7 +44,8 @@ export type Endpoint =
   | "events"
   | "positions"
   | "positions/history"
-  | "strategy";
+  | "strategy"
+  | "wrapped";
 
 export interface RequestCtx {
   raceId: string;
@@ -84,6 +86,7 @@ const defaultHandlers: Record<Endpoint, Handler> = {
     laps: fixtures.history.laps.filter((l) => l.lap <= lap),
   }),
   strategy: ({ raceId, lap, driver }) => ({ ...fixtures.strategy, race_id: raceId, lap, driver }),
+  wrapped: ({ raceId, driver }) => wrappedResponse({ race_id: raceId }, { code: driver ?? "NOR" }),
 };
 
 interface Held {

@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { api, isAbortError } from "./api/client";
 import type { RaceSummary } from "./api/types";
 import { EventTimeline } from "./components/EventTimeline";
@@ -12,6 +12,8 @@ import { TimingList } from "./components/TimingList";
 import { useFocusDriver } from "./hooks/useFocusDriver";
 import { useLapData } from "./hooks/useLapData";
 import { usePlayback, useReplayKeys } from "./hooks/useReplayControls";
+import { useWrapped } from "./hooks/useWrapped";
+import { WrappedOverlay } from "./components/wrapped/WrappedOverlay";
 import { initialReplay, replayReducer } from "./state/replay";
 
 type RacesLoad = { status: "loading" } | { status: "error" } | { status: "ok"; races: RaceSummary[] };
@@ -47,8 +49,11 @@ export default function App() {
     if (lapData.error && replay.playing) dispatch({ type: "stop" });
   }, [lapData.error, replay.playing]);
 
+  const wrapped = useWrapped(replay.raceId);
+  const atFinalLap = rendered && data !== null && data.lap === replay.totalLaps;
+
   usePlayback(replay, rendered, dispatch);
-  useReplayKeys(dispatch);
+  useReplayKeys(dispatch, wrapped.state.status === "closed");
 
   const races = racesLoad.status === "ok" ? racesLoad.races : [];
 
@@ -87,6 +92,10 @@ export default function App() {
   );
 
   const focusColor = data?.state.drivers.find((d) => d.code === focusCode)?.team_color ?? null;
+  const teamColors = useMemo(
+    () => Object.fromEntries((data?.state.drivers ?? []).map((d) => [d.code, d.team_color])),
+    [data?.state.drivers],
+  );
 
   const timeline = data && data.events.analyzed && (
     <EventTimeline
@@ -118,18 +127,33 @@ export default function App() {
   }
 
   return (
-    <Layout
-      shownRaceId={data?.raceId}
-      shownLap={data?.lap}
-      banner={banner}
-      statusBar={
-        <StatusBar races={races} replay={replay} dispatch={dispatch} trackStatus={data?.state.track_status} />
-      }
-      timing={timing}
-      focus={focus}
-      chart={chart}
-      timeline={timeline}
-      intelligence={intelligence}
-    />
+    <>
+      <Layout
+        shownRaceId={data?.raceId}
+        shownLap={data?.lap}
+        banner={banner}
+        statusBar={
+          <StatusBar
+            races={races}
+            replay={replay}
+            dispatch={dispatch}
+            trackStatus={data?.state.track_status}
+            wrappedLocked={!atFinalLap || !focusCode}
+            onOpenWrapped={() => {
+              if (data && focusCode && atFinalLap) {
+                dispatch({ type: "stop" });
+                wrapped.open(data.raceId, data.lap, focusCode);
+              }
+            }}
+          />
+        }
+        timing={timing}
+        focus={focus}
+        chart={chart}
+        timeline={timeline}
+        intelligence={intelligence}
+      />
+      <WrappedOverlay state={wrapped.state} onClose={wrapped.close} teamColors={teamColors} />
+    </>
   );
 }

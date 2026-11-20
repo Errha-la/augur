@@ -8,6 +8,7 @@ import type {
   RaceState,
   RaceSummary,
   StrategyResponse,
+  WrappedResponse,
 } from "./types";
 
 /** Relative base: the Vite dev server proxies /api to the backend. */
@@ -67,6 +68,12 @@ export const api = {
     assertLap(lap);
     if (!driver) throw new RangeError("driver must be a non-empty code");
     return getJson<StrategyResponse>(raceUrl(raceId, "strategy", { lap, driver }), signal);
+  },
+  /** End-of-race Wrapped; the backend answers 409 before the final lap. */
+  wrapped(raceId: string, lap: number, driver: string, signal?: AbortSignal): Promise<WrappedResponse> {
+    assertLap(lap);
+    if (!driver) throw new RangeError("driver must be a non-empty code");
+    return getJson<WrappedResponse>(raceUrl(raceId, "wrapped", { lap, driver }), signal);
   },
 };
 
