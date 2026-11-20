@@ -140,6 +140,17 @@ def test_stop_adds_pit_loss():
     assert (pos[:, 0] == 2).all()
 
 
+def test_projected_deg_ignores_short_or_negative_fits():
+    from augur.models.degradation import StintFit
+    from augur.positions import projected_deg
+
+    medians = {"HARD": 0.05}
+    assert projected_deg(StintFit(-0.164, 98.0, 12, 1.6), "HARD", medians) == 0.05
+    assert projected_deg(StintFit(0.334, 98.0, 5, 0.2), "HARD", medians) == 0.05
+    assert projected_deg(StintFit(0.07, 98.0, 9, 0.2), "HARD", medians) == 0.07
+    assert projected_deg(None, "HARD", {"HARD": -0.02}) == 0.0
+
+
 # --- Dirty-air penalty -------------------------------------------------------
 
 

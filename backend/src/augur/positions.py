@@ -88,6 +88,13 @@ def _base_paces(
     return {code: out.get(code, field) for code in codes}
 
 
+def projected_deg(fit, compound: str | None, medians: Mapping[str, float]) -> float:
+    """Degradation projected to the flag: own fit from enough clean laps, else the compound
+    median or default; never negative (tyres do not get faster with age)."""
+    trusted = fit is not None and fit.n >= config.POSITION_DEG_MIN_FIT_LAPS and fit.slope >= 0
+    return max(0.0, _deg_or_fallback(fit.slope if trusted else None, compound, medians))
+
+
 def driver_starts(
     laps: pd.DataFrame,
     total_laps: int,
@@ -117,8 +124,8 @@ def driver_starts(
                 laps_completed=int(own["lap"].max()),
                 time_s=float(times.iloc[-1]) if not times.empty else math.inf,
                 base_s=base[code],
-                deg_s_per_lap=_deg_or_fallback(None if fit is None else fit.slope, compound, medians),
-                next_deg_s_per_lap=_deg_or_fallback(None, next_compound(compound), medians),
+                deg_s_per_lap=projected_deg(fit, compound, medians),
+                next_deg_s_per_lap=max(0.0, _deg_or_fallback(None, next_compound(compound), medians)),
                 tyre_age=int(d.get("tyre_life") or 0),
                 compound=compound,
                 stops=len(used) < 2,

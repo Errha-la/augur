@@ -59,6 +59,11 @@ POSITION_SEED_DEFAULT = 42
 STINT_LIFE_LAPS: dict[str, int] = {"SOFT": 20, "MEDIUM": 28, "HARD": 38}
 STINT_LIFE_FALLBACK_LAPS = 28
 PIT_JITTER_LAPS = 3
+# A driver's own stint slope is projected to the flag only from at least this many
+# clean laps; shorter or negative fits use the race's compound median instead.
+# Measured on Bahrain lap 15: a 5-lap fit of -0.164 s/lap made a backmarker the
+# favourite (p_win 0.81) after 42 projected laps.
+POSITION_DEG_MIN_FIT_LAPS = 8
 # Dirty air: the PITWALL project's documented prior, 0.40 s/lap within 1.0 s.
 DIRTY_AIR_GAP_S = 1.0
 DIRTY_AIR_PENALTY_S = 0.4
