@@ -109,10 +109,23 @@ def test_seed_changes_results_and_invalid_inputs_fail():
 
 
 def test_stop_window_medium_age_10_lap_15_of_57():
-    s = start("MED", 0.0, 90.0, stops=True, compound="MEDIUM", tyre_age=10, laps=15)
-    pits = sample_pit_laps([s], 15, 57, 2000, np.random.default_rng(0))
+    # Spec example: state derived from lap data, MEDIUM only (stop at lap 5, MEDIUM -> MEDIUM).
+    from augur.positions import driver_starts
+
+    laps = race_laps({"MED": (90.0, 0.0), "OTH": (90.5, 3.0)}, total_laps=57, upto=15, pit_lap=5)
+    laps.loc[laps["driver"] == "MED", "compound"] = "MEDIUM"
+    med = next(s for s in driver_starts(laps, 57, 15) if s.code == "MED")
+    assert (med.compound, med.tyre_age, med.stops) == ("MEDIUM", 10, True)
+    pits = sample_pit_laps([med], 15, 57, 2000, np.random.default_rng(0))
     assert pits.min() >= 30 and pits.max() <= 36
     assert set(np.unique(pits)) == set(range(30, 37))
+
+
+def test_no_stop_left_on_second_to_last_lap():
+    # Stop window [N+1, total_laps-1] is empty at N = total_laps - 1: no simulated stop.
+    s = start("MED", 0.0, 90.0, stops=True, compound="MEDIUM", tyre_age=40, laps=56)
+    pits = sample_pit_laps([s], 56, 57, 500, np.random.default_rng(0))
+    assert (pits == 0).all()
 
 
 def test_next_compound_after_medium_is_hard():
