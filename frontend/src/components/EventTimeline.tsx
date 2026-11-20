@@ -12,6 +12,8 @@ interface EventTimelineProps {
 }
 
 const TYPES = ["degradation_warning", "undercut_window", "position_change", "pace_drop"];
+/** Vertical room for stacked markers above the baseline (track height minus marker and baseline). */
+const STACK_HEIGHT_PX = 22;
 
 /** Track from lap 1 to total_laps with one clickable marker per event so far. */
 export function EventTimeline({ lap, totalLaps, events, focusCode, focusColor, onJump }: EventTimelineProps) {
@@ -24,11 +26,14 @@ export function EventTimeline({ lap, totalLaps, events, focusCode, focusColor, o
     stackIndex.set(e.id, n);
     perLap.set(e.lap, n + 1);
   }
+  // Busy laps carry ten or more events; squeeze the stack so it stays inside the track.
+  const tallest = Math.max(1, ...perLap.values());
+  const step = Math.min(7, STACK_HEIGHT_PX / Math.max(tallest - 1, 1));
 
   return (
     <div className="flex items-center gap-3">
       <span className="text-[10px] tracking-wider text-zinc-500">EVENTS</span>
-      <div data-testid="event-timeline" className="relative h-9 flex-1">
+      <div data-testid="event-timeline" className="relative h-9 flex-1 overflow-hidden">
         <div className="absolute inset-x-0 bottom-1 h-px bg-zinc-800" />
         <div
           className="absolute bottom-1 h-px bg-zinc-500"
@@ -53,7 +58,7 @@ export function EventTimeline({ lap, totalLaps, events, focusCode, focusColor, o
                 className="absolute h-2.5 w-2.5 -translate-x-1/2 rounded-full hover:scale-150"
                 style={{
                   left: `${((e.lap - 1) / span) * 100}%`,
-                  bottom: 4 + (stackIndex.get(e.id) ?? 0) * 7,
+                  bottom: 4 + (stackIndex.get(e.id) ?? 0) * step,
                   backgroundColor: color,
                   boxShadow: highlighted && focusColor ? `0 0 0 2px ${focusColor}` : undefined,
                 }}

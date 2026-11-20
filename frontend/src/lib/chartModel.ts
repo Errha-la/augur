@@ -60,12 +60,14 @@ export function chartModel(drivers: DriverState[], laps: LapRow[], focusCode: st
   return { lap, series, rows, domain: timeDomain(times) };
 }
 
-/** Y range around racing laps, so pit and safety-car laps don't flatten the lines. */
+/**
+ * Y range around racing laps: from just under the fastest lap to 3 s above the
+ * median, so lap 1, pit and safety-car laps run off the top instead of
+ * flattening the lines that matter.
+ */
 function timeDomain(times: number[]): [number, number] | null {
   if (times.length === 0) return null;
   const sorted = [...times].sort((a, b) => a - b);
-  const p90 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.9))];
-  const low = Math.floor(sorted[0] - 0.5);
-  const high = Math.ceil(Math.max(p90 + 1.5, sorted[0] + 2));
-  return [low, high];
+  const median = sorted[Math.floor(sorted.length / 2)];
+  return [Math.floor(sorted[0] - 0.5), Math.ceil(Math.max(median + 3, sorted[0] + 2))];
 }

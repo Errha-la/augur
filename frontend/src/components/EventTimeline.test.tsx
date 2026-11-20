@@ -36,6 +36,14 @@ describe("Event timeline navigation", () => {
     expect(lap5).toHaveStyle({ backgroundColor: "#38bdf8" });
   });
 
+  it("keeps a busy lap's stacked markers inside the track", () => {
+    const busy = Array.from({ length: 12 }, (_, i) => raceEvent(`b${i}`, 5, "pace_drop", ["VER"]));
+    render(<EventTimeline lap={5} totalLaps={58} events={busy} focusCode={null} focusColor={null} onJump={() => {}} />);
+    const bottoms = screen.getAllByTestId("timeline-marker").map((m) => parseFloat(m.style.bottom));
+    expect(Math.min(...bottoms)).toBe(4);
+    expect(Math.max(...bottoms)).toBeLessThanOrEqual(26);
+  });
+
   // Scenario: Jump to an event
   it("jumps from lap 40 to lap 12, stops playback, and shows only markers up to lap 12", async () => {
     await renderApp({ handlers: { events } });
