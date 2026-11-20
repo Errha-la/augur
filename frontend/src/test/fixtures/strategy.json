@@ -1,0 +1,42 @@
+{
+ "race_id": "2024-24-abu-dhabi-grand-prix",
+ "lap": 15,
+ "driver": "NOR",
+ "runs": 1000,
+ "seed": 42,
+ "pit_loss_s": 22.604,
+ "strategies": [
+  {
+   "name": "pit on lap 23",
+   "pit_lap": 23,
+   "mean_s": 3830.998,
+   "p10_s": 3829.307,
+   "p90_s": 3832.616,
+   "win_probability": 1.0
+  },
+  {
+   "name": "pit on lap 20",
+   "pit_lap": 20,
+   "mean_s": 3837.577,
+   "p10_s": 3835.875,
+   "p90_s": 3839.268,
+   "win_probability": 0.0
+  },
+  {
+   "name": "pit on lap 18",
+   "pit_lap": 18,
+   "mean_s": 3842.552,
+   "p10_s": 3840.823,
+   "p90_s": 3844.232,
+   "win_probability": 0.0
+  },
+  {
+   "name": "pit on lap 16",
+   "pit_lap": 16,
+   "mean_s": 3848.362,
+   "p10_s": 3846.717,
+   "p90_s": 3850.044,
+   "win_probability": 0.0
+  }
+ ]
+}

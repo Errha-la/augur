@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "@fontsource-variable/jetbrains-mono";
+
+/* Design Source tokens (race-dashboard design.md), after BENNNZO/f1-dashboard.
+   Tailwind's own zinc / purple / emerald scales cover the remaining tokens. */
+@theme {
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-card: #101013;
+
+  --color-tyre-soft: #f12f32;
+  --color-tyre-medium: #fbcc1c;
+  --color-tyre-inter: #128330;
+  --color-tyre-wet: #1f6da1;
+
+  --color-flag-yellow: #fbcc1c;
+  --color-flag-red: #f12f32;
+
+  --ease-snap: cubic-bezier(0.2, 1, 0.2, 1);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-zinc-950 font-mono text-zinc-100 antialiased;
+}

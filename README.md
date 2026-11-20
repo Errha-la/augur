@@ -76,6 +76,33 @@ backend/.venv/bin/python -m augur.analyze --race 2024-24-abu-dhabi-grand-prix
 
 Ingesting these 22 races took 575 s on one machine (measured 2026-11-19, OpenF1 throttled to 3 requests/s); later runs read `data/openf1-cache/`. To plug in your own lap-time model, see [docs/swap-model.md](docs/swap-model.md).
 
+## Run the dashboard
+
+The dashboard (`frontend/`, React + Vite) replays a race lap by lap: timing list with win and podium probabilities, the newest most severe event with its analysis, a focus-driver panel, and a lap-time chart. It needs Node.js 20 or newer and the API running on port 8000.
+
+```bash
+# terminal 1: the API
+backend/.venv/bin/uvicorn augur.api:app --reload
+
+# terminal 2: the dashboard on http://localhost:5173
+npm --prefix frontend install
+npm --prefix frontend run dev
+```
+
+The Vite dev server proxies `/api` to `http://localhost:8000`, so the dashboard uses relative URLs. It requests data only for the lap on the slider and cancels requests for laps it has moved past.
+
+| Control | Action |
+|---|---|
+| Race selector | switch race (restarts at lap 1) |
+| Slider, ◀ / ▶, Left / Right | move one lap |
+| PLAY / Space, 1× 2× 4× | play one lap per 1000 / 500 / 250 ms |
+| Timing row | set the focus driver (panel, chart, highlights) |
+| Event timeline marker | jump to that event's lap and pause |
+
+If the API is not running, the dashboard shows how to start it; if no race is ingested or a race is not analyzed, it shows the command to run.
+
+![AUGUR dashboard, 2024 Abu Dhabi Grand Prix at lap 20](docs/screenshot.png)
+
 ## Model results
 
 The lap-time model predicts each driver's next clean lap as their recent pace (median of the last 3 clean laps) plus a predicted delta. The baseline predicts a delta of 0. Numbers are mean absolute error on clean laps of the test races, from `data/models/lightgbm_metrics.json` (trained 2026-11-19):
@@ -102,6 +129,8 @@ Events precomputed with `lightgbm`, before and after tuning two rules (measured 
 ```bash
 backend/.venv/bin/pytest backend                 # offline, a few seconds
 backend/.venv/bin/pytest backend --run-network   # also downloads 2024 round 1 from OpenF1
+npm --prefix frontend run test                    # dashboard component tests (mocked API)
+npm --prefix frontend run build                   # type-check and production build
 ```
 
 `test_state_unaffected_by_future_laps`, `test_predictions_unaffected_by_future_laps`, and `test_events_unaffected_by_future_laps` prove that state, predictions, and events at lap N do not change when laps after N are altered.

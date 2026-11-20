@@ -1,0 +1,1200 @@
+{
+ "race_id": "2024-24-abu-dhabi-grand-prix",
+ "lap": 15,
+ "model": "lightgbm",
+ "analyzed": true,
+ "events": [
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:15:degradation_warning:COL",
+   "lap": 15,
+   "type": "degradation_warning",
+   "drivers": [
+    "COL"
+   ],
+   "severity": 80.0,
+   "title": "COL's HARD tyres hit a performance cliff",
+   "analysis": {
+    "what": "COL's last two clean laps up to lap 15 were more than 0.8 s slower than the stint's trend.",
+    "why": "The tyres are 12 laps old, and the stint's fuel-corrected lap times rise by 0.329 s per lap.",
+    "next": "Pitting on lap 18 is COL's fastest option in 35% of simulations."
+   },
+   "evidence": {
+    "cliff": true,
+    "compound": "HARD",
+    "deg_laps": 11,
+    "deg_s_per_lap": 0.3293,
+    "driver": "COL",
+    "stint": 2,
+    "strategy": {
+     "mean_s": 3873.879,
+     "name": "pit on lap 18",
+     "pit_lap": 18,
+     "win_probability": 0.352
+    },
+    "tyre_life": 12
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:15:pace_drop:DOO",
+   "lap": 15,
+   "type": "pace_drop",
+   "drivers": [
+    "DOO"
+   ],
+   "severity": 39.0,
+   "title": "DOO loses pace on lap 15",
+   "analysis": {
+    "what": "DOO lapped in 92.119 s on lap 15, 1.3 s slower than the predicted 90.819 s.",
+    "why": "The prediction comes from DOO's recent clean-lap pace on 15-lap-old MEDIUM tyres, so a gap this large points to traffic, a mistake, or grip fading faster than expected.",
+    "next": "If the next laps stay this slow, DOO is likely to lose time to nearby cars."
+   },
+   "evidence": {
+    "compound": "MEDIUM",
+    "driver": "DOO",
+    "lap_time_s": 92.119,
+    "predicted_s": 90.819,
+    "slower_s": 1.3,
+    "tyre_life": 15
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:14:pace_drop:COL",
+   "lap": 14,
+   "type": "pace_drop",
+   "drivers": [
+    "COL"
+   ],
+   "severity": 71.0,
+   "title": "COL loses pace on lap 14",
+   "analysis": {
+    "what": "COL lapped in 92.731 s on lap 14, 2.4 s slower than the predicted 90.365 s.",
+    "why": "The prediction comes from COL's recent clean-lap pace on 11-lap-old HARD tyres, so a gap this large points to traffic, a mistake, or grip fading faster than expected.",
+    "next": "If the next laps stay this slow, COL is likely to lose time to nearby cars."
+   },
+   "evidence": {
+    "compound": "HARD",
+    "driver": "COL",
+    "lap_time_s": 92.731,
+    "predicted_s": 90.365,
+    "slower_s": 2.366,
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:14:position_change:DOO",
+   "lap": 14,
+   "type": "position_change",
+   "drivers": [
+    "DOO"
+   ],
+   "severity": 40.0,
+   "title": "DOO moved up 2 places",
+   "analysis": {
+    "what": "DOO moved up from P12 to P10 on lap 14.",
+    "why": "DOO changed places while ALO, GAS, HUL made pit stops.",
+    "next": "With 44 laps remaining, P10 is provisional for DOO; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "DOO",
+    "from_position": 12,
+    "laps_remaining": 44,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALO",
+     "GAS",
+     "HUL"
+    ],
+    "places": 2,
+    "previous_leader": null,
+    "to_position": 10
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:14:position_change:HAM",
+   "lap": 14,
+   "type": "position_change",
+   "drivers": [
+    "HAM"
+   ],
+   "severity": 40.0,
+   "title": "HAM moved up 2 places",
+   "analysis": {
+    "what": "HAM moved up from P9 to P7 on lap 14.",
+    "why": "HAM changed places while ALO, GAS, HUL made pit stops.",
+    "next": "With 44 laps remaining, P7 is provisional for HAM; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "HAM",
+    "from_position": 9,
+    "laps_remaining": 44,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALO",
+     "GAS",
+     "HUL"
+    ],
+    "places": 2,
+    "previous_leader": null,
+    "to_position": 7
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:14:position_change:LAW",
+   "lap": 14,
+   "type": "position_change",
+   "drivers": [
+    "LAW"
+   ],
+   "severity": 40.0,
+   "title": "LAW moved up 2 places",
+   "analysis": {
+    "what": "LAW moved up from P10 to P8 on lap 14.",
+    "why": "LAW changed places while ALO, GAS, HUL made pit stops.",
+    "next": "With 44 laps remaining, P8 is provisional for LAW; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "LAW",
+    "from_position": 10,
+    "laps_remaining": 44,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALO",
+     "GAS",
+     "HUL"
+    ],
+    "places": 2,
+    "previous_leader": null,
+    "to_position": 8
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:14:position_change:TSU",
+   "lap": 14,
+   "type": "position_change",
+   "drivers": [
+    "TSU"
+   ],
+   "severity": 40.0,
+   "title": "TSU moved up 2 places",
+   "analysis": {
+    "what": "TSU moved up from P11 to P9 on lap 14.",
+    "why": "TSU changed places while ALO, GAS, HUL made pit stops.",
+    "next": "With 44 laps remaining, P9 is provisional for TSU; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "TSU",
+    "from_position": 11,
+    "laps_remaining": 44,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALO",
+     "GAS",
+     "HUL"
+    ],
+    "places": 2,
+    "previous_leader": null,
+    "to_position": 9
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:14:pace_drop:ZHO",
+   "lap": 14,
+   "type": "pace_drop",
+   "drivers": [
+    "ZHO"
+   ],
+   "severity": 30.7,
+   "title": "ZHO loses pace on lap 14",
+   "analysis": {
+    "what": "ZHO lapped in 90.128 s on lap 14, 1.0 s slower than the predicted 89.105 s.",
+    "why": "The prediction comes from ZHO's recent clean-lap pace on 2-lap-old HARD tyres, so a gap this large points to traffic, a mistake, or grip fading faster than expected.",
+    "next": "If the next laps stay this slow, ZHO is likely to lose time to nearby cars."
+   },
+   "evidence": {
+    "compound": "HARD",
+    "driver": "ZHO",
+    "lap_time_s": 90.128,
+    "predicted_s": 89.105,
+    "slower_s": 1.023,
+    "tyre_life": 2
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:14:pace_drop:STR",
+   "lap": 14,
+   "type": "pace_drop",
+   "drivers": [
+    "STR"
+   ],
+   "severity": 30.5,
+   "title": "STR loses pace on lap 14",
+   "analysis": {
+    "what": "STR lapped in 90.544 s on lap 14, 1.0 s slower than the predicted 89.526 s.",
+    "why": "The prediction comes from STR's recent clean-lap pace on 4-lap-old HARD tyres, so a gap this large points to traffic, a mistake, or grip fading faster than expected.",
+    "next": "If the next laps stay this slow, STR is likely to lose time to nearby cars."
+   },
+   "evidence": {
+    "compound": "HARD",
+    "driver": "STR",
+    "lap_time_s": 90.544,
+    "predicted_s": 89.526,
+    "slower_s": 1.018,
+    "tyre_life": 4
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:13:degradation_warning:PIA",
+   "lap": 13,
+   "type": "degradation_warning",
+   "drivers": [
+    "PIA"
+   ],
+   "severity": 72.4,
+   "title": "PIA's HARD tyres are fading",
+   "analysis": {
+    "what": "PIA is losing 0.145 s per lap on HARD tyres over 8 clean laps of stint 2.",
+    "why": "The tyres are 9 laps old, and the stint's fuel-corrected lap times rise by 0.145 s per lap.",
+    "next": "Pitting on lap 21 is PIA's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "HARD",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1448,
+    "driver": "PIA",
+    "stint": 2,
+    "strategy": {
+     "mean_s": 4052.83,
+     "name": "pit on lap 21",
+     "pit_lap": 21,
+     "win_probability": 1.0
+    },
+    "tyre_life": 9
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:13:position_change:DOO",
+   "lap": 13,
+   "type": "position_change",
+   "drivers": [
+    "DOO"
+   ],
+   "severity": 60.0,
+   "title": "DOO moved up 3 places",
+   "analysis": {
+    "what": "DOO moved up from P15 to P12 on lap 13.",
+    "why": "DOO changed places while ALB, ALO, HUL, MAG, ZHO made pit stops.",
+    "next": "With 45 laps remaining, P12 is provisional for DOO; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "DOO",
+    "from_position": 15,
+    "laps_remaining": 45,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALB",
+     "ALO",
+     "HUL",
+     "MAG",
+     "ZHO"
+    ],
+    "places": 3,
+    "previous_leader": null,
+    "to_position": 12
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:13:position_change:PIA",
+   "lap": 13,
+   "type": "position_change",
+   "drivers": [
+    "PIA"
+   ],
+   "severity": 60.0,
+   "title": "PIA moved up 3 places",
+   "analysis": {
+    "what": "PIA moved up from P17 to P14 on lap 13.",
+    "why": "PIA changed places while ALB, ALO, HUL, MAG, ZHO made pit stops.",
+    "next": "With 45 laps remaining, P14 is provisional for PIA; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "PIA",
+    "from_position": 17,
+    "laps_remaining": 45,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALB",
+     "ALO",
+     "HUL",
+     "MAG",
+     "ZHO"
+    ],
+    "places": 3,
+    "previous_leader": null,
+    "to_position": 14
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:13:position_change:STR",
+   "lap": 13,
+   "type": "position_change",
+   "drivers": [
+    "STR"
+   ],
+   "severity": 60.0,
+   "title": "STR moved up 3 places",
+   "analysis": {
+    "what": "STR moved up from P16 to P13 on lap 13.",
+    "why": "STR changed places while ALB, ALO, HUL, MAG, ZHO made pit stops.",
+    "next": "With 45 laps remaining, P13 is provisional for STR; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "STR",
+    "from_position": 16,
+    "laps_remaining": 45,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALB",
+     "ALO",
+     "HUL",
+     "MAG",
+     "ZHO"
+    ],
+    "places": 3,
+    "previous_leader": null,
+    "to_position": 13
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:13:undercut_window:DOO-TSU",
+   "lap": 13,
+   "type": "undercut_window",
+   "drivers": [
+    "DOO",
+    "TSU"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: DOO on TSU",
+   "analysis": {
+    "what": "DOO is 2.2 s behind TSU on lap 13.",
+    "why": "TSU's MEDIUM tyres are 13 laps old and losing 0.115 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 21 is DOO's fastest option in 100% of simulations, which would put pressure on TSU."
+   },
+   "evidence": {
+    "ahead": "TSU",
+    "ahead_compound": "MEDIUM",
+    "ahead_deg_s_per_lap": 0.1151,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 13,
+    "chaser": "DOO",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 13,
+    "gap_s": 2.197,
+    "strategy": {
+     "mean_s": 4101.379,
+     "name": "pit on lap 21",
+     "pit_lap": 21,
+     "win_probability": 1.0
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:13:position_change:TSU",
+   "lap": 13,
+   "type": "position_change",
+   "drivers": [
+    "TSU"
+   ],
+   "severity": 40.0,
+   "title": "TSU moved up 2 places",
+   "analysis": {
+    "what": "TSU moved up from P13 to P11 on lap 13.",
+    "why": "TSU changed places while ALB, ALO, HUL, MAG, ZHO made pit stops.",
+    "next": "With 45 laps remaining, P11 is provisional for TSU; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "TSU",
+    "from_position": 13,
+    "laps_remaining": 45,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALB",
+     "ALO",
+     "HUL",
+     "MAG",
+     "ZHO"
+    ],
+    "places": 2,
+    "previous_leader": null,
+    "to_position": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:degradation_warning:COL",
+   "lap": 12,
+   "type": "degradation_warning",
+   "drivers": [
+    "COL"
+   ],
+   "severity": 84.0,
+   "title": "COL's HARD tyres are fading",
+   "analysis": {
+    "what": "COL is losing 0.168 s per lap on HARD tyres over 8 clean laps of stint 2.",
+    "why": "The tyres are 9 laps old, and the stint's fuel-corrected lap times rise by 0.168 s per lap.",
+    "next": "Pitting on lap 20 is COL's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "HARD",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.168,
+    "driver": "COL",
+    "stint": 2,
+    "strategy": {
+     "mean_s": 4185.94,
+     "name": "pit on lap 20",
+     "pit_lap": 20,
+     "win_probability": 1.0
+    },
+    "tyre_life": 9
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:undercut_window:ALO-VER",
+   "lap": 12,
+   "type": "undercut_window",
+   "drivers": [
+    "ALO",
+    "VER"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: ALO on VER",
+   "analysis": {
+    "what": "ALO is 1.0 s behind VER on lap 12.",
+    "why": "VER's MEDIUM tyres are 12 laps old and losing 0.157 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 17 is ALO's fastest option in 46% of simulations, which would put pressure on VER."
+   },
+   "evidence": {
+    "ahead": "VER",
+    "ahead_compound": "MEDIUM",
+    "ahead_deg_s_per_lap": 0.1572,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 12,
+    "chaser": "ALO",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 13,
+    "gap_s": 1.031,
+    "strategy": {
+     "mean_s": 4142.534,
+     "name": "pit on lap 17",
+     "pit_lap": 17,
+     "win_probability": 0.464
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:undercut_window:HUL-LEC",
+   "lap": 12,
+   "type": "undercut_window",
+   "drivers": [
+    "HUL",
+    "LEC"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: HUL on LEC",
+   "analysis": {
+    "what": "HUL is 1.2 s behind LEC on lap 12.",
+    "why": "LEC's MEDIUM tyres are 12 laps old and losing 0.105 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 20 is HUL's fastest option in 97% of simulations, which would put pressure on LEC."
+   },
+   "evidence": {
+    "ahead": "LEC",
+    "ahead_compound": "MEDIUM",
+    "ahead_deg_s_per_lap": 0.1049,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 12,
+    "chaser": "HUL",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 12,
+    "gap_s": 1.209,
+    "strategy": {
+     "mean_s": 4163.821,
+     "name": "pit on lap 20",
+     "pit_lap": 20,
+     "win_probability": 0.974
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:undercut_window:LAW-HAM",
+   "lap": 12,
+   "type": "undercut_window",
+   "drivers": [
+    "LAW",
+    "HAM"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: LAW on HAM",
+   "analysis": {
+    "what": "LAW is 1.1 s behind HAM on lap 12.",
+    "why": "HAM's HARD tyres are 12 laps old and losing 0.141 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 20 is LAW's fastest option in 91% of simulations, which would put pressure on HAM."
+   },
+   "evidence": {
+    "ahead": "HAM",
+    "ahead_compound": "HARD",
+    "ahead_deg_s_per_lap": 0.1406,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 12,
+    "chaser": "LAW",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 12,
+    "gap_s": 1.113,
+    "strategy": {
+     "mean_s": 4177.631,
+     "name": "pit on lap 20",
+     "pit_lap": 20,
+     "win_probability": 0.906
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:undercut_window:LEC-RUS",
+   "lap": 12,
+   "type": "undercut_window",
+   "drivers": [
+    "LEC",
+    "RUS"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: LEC on RUS",
+   "analysis": {
+    "what": "LEC is 2.3 s behind RUS on lap 12.",
+    "why": "RUS's MEDIUM tyres are 13 laps old and losing 0.117 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 20 is LEC's fastest option in 100% of simulations, which would put pressure on RUS."
+   },
+   "evidence": {
+    "ahead": "RUS",
+    "ahead_compound": "MEDIUM",
+    "ahead_deg_s_per_lap": 0.1166,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 13,
+    "chaser": "LEC",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 12,
+    "gap_s": 2.295,
+    "strategy": {
+     "mean_s": 4180.911,
+     "name": "pit on lap 20",
+     "pit_lap": 20,
+     "win_probability": 1.0
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:undercut_window:RUS-GAS",
+   "lap": 12,
+   "type": "undercut_window",
+   "drivers": [
+    "RUS",
+    "GAS"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: RUS on GAS",
+   "analysis": {
+    "what": "RUS is 1.0 s behind GAS on lap 12.",
+    "why": "GAS's MEDIUM tyres are 12 laps old and losing 0.133 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 20 is RUS's fastest option in 100% of simulations, which would put pressure on GAS."
+   },
+   "evidence": {
+    "ahead": "GAS",
+    "ahead_compound": "MEDIUM",
+    "ahead_deg_s_per_lap": 0.133,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 12,
+    "chaser": "RUS",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 13,
+    "gap_s": 1.033,
+    "strategy": {
+     "mean_s": 4177.404,
+     "name": "pit on lap 20",
+     "pit_lap": 20,
+     "win_probability": 1.0
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:undercut_window:VER-HUL",
+   "lap": 12,
+   "type": "undercut_window",
+   "drivers": [
+    "VER",
+    "HUL"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: VER on HUL",
+   "analysis": {
+    "what": "VER is 1.8 s behind HUL on lap 12.",
+    "why": "HUL's MEDIUM tyres are 12 laps old and losing 0.249 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 20 is VER's fastest option in 100% of simulations, which would put pressure on HUL."
+   },
+   "evidence": {
+    "ahead": "HUL",
+    "ahead_compound": "MEDIUM",
+    "ahead_deg_s_per_lap": 0.2488,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 12,
+    "chaser": "VER",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 12,
+    "gap_s": 1.827,
+    "strategy": {
+     "mean_s": 4172.897,
+     "name": "pit on lap 20",
+     "pit_lap": 20,
+     "win_probability": 1.0
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:position_change:HAM",
+   "lap": 12,
+   "type": "position_change",
+   "drivers": [
+    "HAM"
+   ],
+   "severity": 40.0,
+   "title": "HAM moved up 2 places",
+   "analysis": {
+    "what": "HAM moved up from P12 to P10 on lap 12.",
+    "why": "HAM changed places while ALB, MAG, STR, ZHO made pit stops.",
+    "next": "With 46 laps remaining, P10 is provisional for HAM; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "HAM",
+    "from_position": 12,
+    "laps_remaining": 46,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALB",
+     "MAG",
+     "STR",
+     "ZHO"
+    ],
+    "places": 2,
+    "previous_leader": null,
+    "to_position": 10
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:12:position_change:TSU",
+   "lap": 12,
+   "type": "position_change",
+   "drivers": [
+    "TSU"
+   ],
+   "severity": 40.0,
+   "title": "TSU moved up 2 places",
+   "analysis": {
+    "what": "TSU moved up from P15 to P13 on lap 12.",
+    "why": "TSU changed places while ALB, MAG, STR, ZHO made pit stops.",
+    "next": "With 46 laps remaining, P13 is provisional for TSU; pit cycles and pace over the next laps decide whether it holds."
+   },
+   "evidence": {
+    "driver": "TSU",
+    "from_position": 15,
+    "laps_remaining": 46,
+    "leader_change": false,
+    "pit_drivers": [
+     "ALB",
+     "MAG",
+     "STR",
+     "ZHO"
+    ],
+    "places": 2,
+    "previous_leader": null,
+    "to_position": 13
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:HAM",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "HAM"
+   ],
+   "severity": 100.0,
+   "title": "HAM's HARD tyres are fading",
+   "analysis": {
+    "what": "HAM is losing 0.213 s per lap on HARD tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.213 s per lap.",
+    "next": "Pitting on lap 19 is HAM's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "HARD",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.2126,
+    "driver": "HAM",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4287.568,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:HUL",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "HUL"
+   ],
+   "severity": 100.0,
+   "title": "HUL's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "HUL is losing 0.209 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.209 s per lap.",
+    "next": "Pitting on lap 19 is HUL's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.2091,
+    "driver": "HUL",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4292.489,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:LAW",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "LAW"
+   ],
+   "severity": 100.0,
+   "title": "LAW's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "LAW is losing 0.206 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.206 s per lap.",
+    "next": "Pitting on lap 19 is LAW's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.2058,
+    "driver": "LAW",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4309.531,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:MAG",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "MAG"
+   ],
+   "severity": 100.0,
+   "title": "MAG's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "MAG is losing 0.286 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.286 s per lap.",
+    "next": "Pitting on lap 19 is MAG's fastest option in 98% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.2857,
+    "driver": "MAG",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4298.133,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 0.978
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:VER",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "VER"
+   ],
+   "severity": 84.8,
+   "title": "VER's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "VER is losing 0.170 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.170 s per lap.",
+    "next": "Pitting on lap 19 is VER's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1695,
+    "driver": "VER",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4293.73,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:DOO",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "DOO"
+   ],
+   "severity": 81.5,
+   "title": "DOO's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "DOO is losing 0.163 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.163 s per lap.",
+    "next": "Pitting on lap 19 is DOO's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1631,
+    "driver": "DOO",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4336.288,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:ALO",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "ALO"
+   ],
+   "severity": 80.0,
+   "title": "ALO's MEDIUM tyres hit a performance cliff",
+   "analysis": {
+    "what": "ALO's last two clean laps up to lap 11 were more than 0.8 s slower than the stint's trend.",
+    "why": "The tyres are 12 laps old, and the stint's fuel-corrected lap times rise by 0.303 s per lap.",
+    "next": "Pitting on lap 19 is ALO's fastest option in 89% of simulations."
+   },
+   "evidence": {
+    "cliff": true,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.3035,
+    "driver": "ALO",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4270.762,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 0.894
+    },
+    "tyre_life": 12
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:LEC",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "LEC"
+   ],
+   "severity": 77.5,
+   "title": "LEC's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "LEC is losing 0.155 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.155 s per lap.",
+    "next": "Pitting on lap 19 is LEC's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1549,
+    "driver": "LEC",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4295.919,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:ZHO",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "ZHO"
+   ],
+   "severity": 73.0,
+   "title": "ZHO's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "ZHO is losing 0.146 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.146 s per lap.",
+    "next": "Pitting on lap 19 is ZHO's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1459,
+    "driver": "ZHO",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4323.824,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:TSU",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "TSU"
+   ],
+   "severity": 69.8,
+   "title": "TSU's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "TSU is losing 0.140 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.140 s per lap.",
+    "next": "Pitting on lap 19 is TSU's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1397,
+    "driver": "TSU",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4333.347,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:ALB",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "ALB"
+   ],
+   "severity": 64.9,
+   "title": "ALB's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "ALB is losing 0.130 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.130 s per lap.",
+    "next": "Pitting on lap 19 is ALB's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1299,
+    "driver": "ALB",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4335.168,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:GAS",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "GAS"
+   ],
+   "severity": 64.7,
+   "title": "GAS's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "GAS is losing 0.129 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 11 laps old, and the stint's fuel-corrected lap times rise by 0.129 s per lap.",
+    "next": "Pitting on lap 19 is GAS's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1293,
+    "driver": "GAS",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4300.618,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 11
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:degradation_warning:RUS",
+   "lap": 11,
+   "type": "degradation_warning",
+   "drivers": [
+    "RUS"
+   ],
+   "severity": 61.8,
+   "title": "RUS's MEDIUM tyres are fading",
+   "analysis": {
+    "what": "RUS is losing 0.123 s per lap on MEDIUM tyres over 8 clean laps of stint 1.",
+    "why": "The tyres are 12 laps old, and the stint's fuel-corrected lap times rise by 0.123 s per lap.",
+    "next": "Pitting on lap 19 is RUS's fastest option in 100% of simulations."
+   },
+   "evidence": {
+    "cliff": false,
+    "compound": "MEDIUM",
+    "deg_laps": 8,
+    "deg_s_per_lap": 0.1235,
+    "driver": "RUS",
+    "stint": 1,
+    "strategy": {
+     "mean_s": 4299.424,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    },
+    "tyre_life": 12
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:undercut_window:HUL-RUS",
+   "lap": 11,
+   "type": "undercut_window",
+   "drivers": [
+    "HUL",
+    "RUS"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: HUL on RUS",
+   "analysis": {
+    "what": "HUL is 2.1 s behind RUS on lap 11.",
+    "why": "RUS's MEDIUM tyres are 12 laps old and losing 0.123 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 19 is HUL's fastest option in 100% of simulations, which would put pressure on RUS."
+   },
+   "evidence": {
+    "ahead": "RUS",
+    "ahead_compound": "MEDIUM",
+    "ahead_deg_s_per_lap": 0.1235,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 12,
+    "chaser": "HUL",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 11,
+    "gap_s": 2.099,
+    "strategy": {
+     "mean_s": 4292.489,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:11:undercut_window:VER-ALO",
+   "lap": 11,
+   "type": "undercut_window",
+   "drivers": [
+    "VER",
+    "ALO"
+   ],
+   "severity": 60.0,
+   "title": "Undercut window: VER on ALO",
+   "analysis": {
+    "what": "VER is 0.6 s behind ALO on lap 11.",
+    "why": "ALO's MEDIUM tyres are 12 laps old and losing 0.303 s per lap, so fresh tyres could gain time quickly.",
+    "next": "Pitting on lap 19 is VER's fastest option in 100% of simulations, which would put pressure on ALO."
+   },
+   "evidence": {
+    "ahead": "ALO",
+    "ahead_compound": "MEDIUM",
+    "ahead_deg_s_per_lap": 0.3035,
+    "ahead_stint": 1,
+    "ahead_tyre_life": 12,
+    "chaser": "VER",
+    "chaser_compound": "MEDIUM",
+    "chaser_tyre_life": 11,
+    "gap_s": 0.611,
+    "strategy": {
+     "mean_s": 4293.73,
+     "name": "pit on lap 19",
+     "pit_lap": 19,
+     "win_probability": 1.0
+    }
+   }
+  },
+  {
+   "id": "2024-24-abu-dhabi-grand-prix:10:pace_drop:ALO",
+   "lap": 10,
+   "type": "pace_drop",
+   "drivers": [
+    "ALO"
+   ],
+   "severity": 42.4,
+   "title": "ALO loses pace on lap 10",
+   "analysis": {
+    "what": "ALO lapped in 91.708 s on lap 10, 1.4 s slower than the predicted 90.295 s.",
+    "why": "The prediction comes from ALO's recent clean-lap pace on 11-lap-old MEDIUM tyres, so a gap this large points to traffic, a mistake, or grip fading faster than expected.",
+    "next": "If the next laps stay this slow, ALO is likely to lose time to nearby cars."
+   },
+   "evidence": {
+    "compound": "MEDIUM",
+    "driver": "ALO",
+    "lap_time_s": 91.708,
+    "predicted_s": 90.295,
+    "slower_s": 1.413,
+    "tyre_life": 11
+   }
+  }
+ ]
+}
