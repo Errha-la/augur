@@ -1,0 +1,166 @@
+{
+ "race_id": "2024-24-abu-dhabi-grand-prix",
+ "lap": 15,
+ "drivers": [
+  {
+   "code": "ALB",
+   "predicted_next_lap_s": 90.136,
+   "recent_pace_s": 89.994,
+   "deg_s_per_lap": null,
+   "deg_laps": 2,
+   "cliff": false
+  },
+  {
+   "code": "ALO",
+   "predicted_next_lap_s": 89.861,
+   "recent_pace_s": 91.088,
+   "deg_s_per_lap": null,
+   "deg_laps": 1,
+   "cliff": false
+  },
+  {
+   "code": "BOT",
+   "predicted_next_lap_s": 89.679,
+   "recent_pace_s": 89.572,
+   "deg_s_per_lap": 0.0287,
+   "deg_laps": 8,
+   "cliff": false
+  },
+  {
+   "code": "COL",
+   "predicted_next_lap_s": 92.939,
+   "recent_pace_s": 92.731,
+   "deg_s_per_lap": 0.3293,
+   "deg_laps": 11,
+   "cliff": true
+  },
+  {
+   "code": "DOO",
+   "predicted_next_lap_s": 90.801,
+   "recent_pace_s": 90.61,
+   "deg_s_per_lap": 0.138,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "GAS",
+   "predicted_next_lap_s": 88.922,
+   "recent_pace_s": 90.173,
+   "deg_s_per_lap": null,
+   "deg_laps": 0,
+   "cliff": false
+  },
+  {
+   "code": "HAM",
+   "predicted_next_lap_s": 90.082,
+   "recent_pace_s": 90.038,
+   "deg_s_per_lap": 0.0675,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "HUL",
+   "predicted_next_lap_s": 89.621,
+   "recent_pace_s": 90.744,
+   "deg_s_per_lap": null,
+   "deg_laps": 1,
+   "cliff": false
+  },
+  {
+   "code": "LAW",
+   "predicted_next_lap_s": 90.819,
+   "recent_pace_s": 90.795,
+   "deg_s_per_lap": 0.167,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "LEC",
+   "predicted_next_lap_s": 89.843,
+   "recent_pace_s": 89.675,
+   "deg_s_per_lap": 0.0658,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "MAG",
+   "predicted_next_lap_s": 90.034,
+   "recent_pace_s": 89.899,
+   "deg_s_per_lap": null,
+   "deg_laps": 2,
+   "cliff": false
+  },
+  {
+   "code": "NOR",
+   "predicted_next_lap_s": 89.25,
+   "recent_pace_s": 89.07,
+   "deg_s_per_lap": 0.0597,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "PER",
+   "predicted_next_lap_s": null,
+   "recent_pace_s": null,
+   "deg_s_per_lap": null,
+   "deg_laps": null,
+   "cliff": null
+  },
+  {
+   "code": "PIA",
+   "predicted_next_lap_s": 89.775,
+   "recent_pace_s": 89.567,
+   "deg_s_per_lap": 0.1212,
+   "deg_laps": 10,
+   "cliff": false
+  },
+  {
+   "code": "RUS",
+   "predicted_next_lap_s": 90.256,
+   "recent_pace_s": 90.08,
+   "deg_s_per_lap": 0.0994,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "SAI",
+   "predicted_next_lap_s": 89.331,
+   "recent_pace_s": 89.192,
+   "deg_s_per_lap": 0.0631,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "STR",
+   "predicted_next_lap_s": 90.096,
+   "recent_pace_s": 89.963,
+   "deg_s_per_lap": null,
+   "deg_laps": 3,
+   "cliff": false
+  },
+  {
+   "code": "TSU",
+   "predicted_next_lap_s": 90.883,
+   "recent_pace_s": 90.727,
+   "deg_s_per_lap": 0.1057,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "VER",
+   "predicted_next_lap_s": 90.214,
+   "recent_pace_s": 90.128,
+   "deg_s_per_lap": 0.1142,
+   "deg_laps": 12,
+   "cliff": false
+  },
+  {
+   "code": "ZHO",
+   "predicted_next_lap_s": 90.237,
+   "recent_pace_s": 90.128,
+   "deg_s_per_lap": null,
+   "deg_laps": 2,
+   "cliff": false
+  }
+ ]
+}

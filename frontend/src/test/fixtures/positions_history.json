@@ -1,0 +1,1882 @@
+{
+ "race_id": "2024-24-abu-dhabi-grand-prix",
+ "model": "lightgbm",
+ "analyzed": true,
+ "laps": [
+  {
+   "lap": 1,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 0.648,
+     "p_podium": 0.948,
+     "expected_position": 1.559
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.21,
+     "p_podium": 0.763,
+     "expected_position": 2.595
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.073,
+     "p_podium": 0.521,
+     "expected_position": 3.531
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.064,
+     "p_podium": 0.481,
+     "expected_position": 3.683
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.004,
+     "p_podium": 0.133,
+     "expected_position": 5.585
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.001,
+     "p_podium": 0.131,
+     "expected_position": 5.612
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.016,
+     "expected_position": 7.624
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.004,
+     "expected_position": 8.663
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.003,
+     "expected_position": 8.838
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.256
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.544
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.017
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.164
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.32
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.96
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.592
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.066
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.535
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.856
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 2,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 1.0,
+     "p_podium": 1.0,
+     "expected_position": 1.0
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.0,
+     "p_podium": 0.869,
+     "expected_position": 2.564
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.674,
+     "expected_position": 3.111
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.414,
+     "expected_position": 3.598
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.043,
+     "expected_position": 4.742
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 6.138
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 6.847
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 8.0
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.0
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.0
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.0
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.0
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.0
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.0
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.0
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.0
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.412
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.588
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 3,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 1.0,
+     "p_podium": 1.0,
+     "expected_position": 1.0
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.0,
+     "p_podium": 0.792,
+     "expected_position": 2.735
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.529,
+     "expected_position": 3.625
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.37,
+     "expected_position": 4.204
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.225,
+     "expected_position": 4.671
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.071,
+     "expected_position": 6.032
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.012,
+     "expected_position": 6.665
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.001,
+     "expected_position": 7.916
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 8.437
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.715
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.025
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.975
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.224
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.974
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.818
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.986
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.003
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.995
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 4,
+   "drivers": [
+    {
+     "code": "TSU",
+     "p_win": 0.94,
+     "p_podium": 1.0,
+     "expected_position": 1.06
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.06,
+     "p_podium": 1.0,
+     "expected_position": 1.94
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.583,
+     "expected_position": 3.417
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.417,
+     "expected_position": 3.583
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.0
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 6.014
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.128
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.858
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.379
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.621
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.0
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.162
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.838
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.716
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.665
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.67
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.949
+    },
+    {
+     "code": "NOR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 5,
+   "drivers": [
+    {
+     "code": "TSU",
+     "p_win": 1.0,
+     "p_podium": 1.0,
+     "expected_position": 1.0
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 1.0,
+     "expected_position": 2.482
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 1.0,
+     "expected_position": 2.518
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 4.639
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 4.852
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.509
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.023
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 8.192
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 8.785
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.0
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.615
+    },
+    {
+     "code": "NOR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.671
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.512
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.511
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.735
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.688
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.268
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 6,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 0.895,
+     "p_podium": 1.0,
+     "expected_position": 1.105
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.105,
+     "p_podium": 1.0,
+     "expected_position": 1.895
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.634,
+     "expected_position": 3.58
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.227,
+     "expected_position": 4.058
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.132,
+     "expected_position": 4.766
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.002,
+     "expected_position": 6.478
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.002,
+     "expected_position": 6.973
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.003,
+     "expected_position": 7.278
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 8.952
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.9
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.118
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.421
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.476
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.661
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.985
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.354
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.0
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 7,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 0.68,
+     "p_podium": 1.0,
+     "expected_position": 1.321
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.319,
+     "p_podium": 1.0,
+     "expected_position": 1.693
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.001,
+     "p_podium": 0.435,
+     "expected_position": 4.404
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.184,
+     "expected_position": 5.308
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.218,
+     "expected_position": 5.375
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.065,
+     "expected_position": 6.454
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.053,
+     "expected_position": 6.625
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.036,
+     "expected_position": 7.097
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.009,
+     "expected_position": 10.05
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.876
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.041
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.259
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.872
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.236
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.456
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.933
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.0
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 8,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 0.923,
+     "p_podium": 1.0,
+     "expected_position": 1.077
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.077,
+     "p_podium": 1.0,
+     "expected_position": 1.923
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.541,
+     "expected_position": 4.04
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.253,
+     "expected_position": 4.859
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.07,
+     "expected_position": 6.062
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.056,
+     "expected_position": 6.167
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.049,
+     "expected_position": 6.4
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.023,
+     "expected_position": 6.706
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.008,
+     "expected_position": 8.613
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.751
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.414
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.959
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.901
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.024
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.513
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.591
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.0
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 9,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 0.944,
+     "p_podium": 1.0,
+     "expected_position": 1.056
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.056,
+     "p_podium": 1.0,
+     "expected_position": 1.944
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.814,
+     "expected_position": 3.257
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.101,
+     "expected_position": 4.537
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.066,
+     "expected_position": 4.841
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.019,
+     "expected_position": 5.586
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.559
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.658
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.066
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.107
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.183
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.925
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.896
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.388
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.288
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.709
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.0
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 10,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 0.933,
+     "p_podium": 1.0,
+     "expected_position": 1.067
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.067,
+     "p_podium": 1.0,
+     "expected_position": 1.933
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.902,
+     "expected_position": 3.135
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.072,
+     "expected_position": 4.596
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.02,
+     "expected_position": 5.683
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.004,
+     "expected_position": 6.406
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.002,
+     "expected_position": 6.498
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.132
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.031
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.603
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.607
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.363
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.497
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.789
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.88
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.78
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.0
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 11,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 0.712,
+     "p_podium": 1.0,
+     "expected_position": 1.313
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.277,
+     "p_podium": 1.0,
+     "expected_position": 1.806
+    },
+    {
+     "code": "STR",
+     "p_win": 0.011,
+     "p_podium": 1.0,
+     "expected_position": 2.881
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.026
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.071
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.278
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.002
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 8.1
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 8.583
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.186
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.305
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.609
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.837
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.428
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.537
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.038
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.0
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 12,
+   "drivers": [
+    {
+     "code": "MAG",
+     "p_win": 0.614,
+     "p_podium": 1.0,
+     "expected_position": 1.569
+    },
+    {
+     "code": "NOR",
+     "p_win": 0.288,
+     "p_podium": 1.0,
+     "expected_position": 1.947
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.098,
+     "p_podium": 1.0,
+     "expected_position": 2.484
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 4.0
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.433
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.653
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.555
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.685
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.581
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.863
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.734
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.869
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.627
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.071
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.929
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.0
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.0
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 13,
+   "drivers": [
+    {
+     "code": "HUL",
+     "p_win": 0.828,
+     "p_podium": 1.0,
+     "expected_position": 1.172
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.172,
+     "p_podium": 0.885,
+     "expected_position": 2.195
+    },
+    {
+     "code": "NOR",
+     "p_win": 0.0,
+     "p_podium": 0.885,
+     "expected_position": 2.884
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.0,
+     "p_podium": 0.23,
+     "expected_position": 3.749
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.673
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 6.153
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 6.32
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.854
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.177
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.825
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.1
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 11.898
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.066
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.949
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.103
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.888
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.994
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 18.0
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 14,
+   "drivers": [
+    {
+     "code": "GAS",
+     "p_win": 1.0,
+     "p_podium": 1.0,
+     "expected_position": 1.0
+    },
+    {
+     "code": "NOR",
+     "p_win": 0.0,
+     "p_podium": 1.0,
+     "expected_position": 2.044
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.0,
+     "p_podium": 1.0,
+     "expected_position": 2.956
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 4.03
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 4.99
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 5.982
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.459
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.539
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.267
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.912
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.821
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.041
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.96
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.999
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.015
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.252
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 16.746
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.987
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  },
+  {
+   "lap": 15,
+   "drivers": [
+    {
+     "code": "NOR",
+     "p_win": 0.963,
+     "p_podium": 1.0,
+     "expected_position": 1.037
+    },
+    {
+     "code": "SAI",
+     "p_win": 0.037,
+     "p_podium": 1.0,
+     "expected_position": 1.963
+    },
+    {
+     "code": "LEC",
+     "p_win": 0.0,
+     "p_podium": 0.577,
+     "expected_position": 3.578
+    },
+    {
+     "code": "RUS",
+     "p_win": 0.0,
+     "p_podium": 0.321,
+     "expected_position": 3.918
+    },
+    {
+     "code": "VER",
+     "p_win": 0.0,
+     "p_podium": 0.102,
+     "expected_position": 4.505
+    },
+    {
+     "code": "LAW",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 6.507
+    },
+    {
+     "code": "HAM",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.451
+    },
+    {
+     "code": "GAS",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 7.64
+    },
+    {
+     "code": "BOT",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 8.407
+    },
+    {
+     "code": "DOO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 9.998
+    },
+    {
+     "code": "TSU",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 10.996
+    },
+    {
+     "code": "HUL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 12.0
+    },
+    {
+     "code": "ALO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 13.0
+    },
+    {
+     "code": "STR",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.401
+    },
+    {
+     "code": "MAG",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 14.627
+    },
+    {
+     "code": "ALB",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 15.979
+    },
+    {
+     "code": "ZHO",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.424
+    },
+    {
+     "code": "PIA",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 17.569
+    },
+    {
+     "code": "COL",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 19.0
+    },
+    {
+     "code": "PER",
+     "p_win": 0.0,
+     "p_podium": 0.0,
+     "expected_position": 20.0
+    }
+   ]
+  }
+ ]
+}

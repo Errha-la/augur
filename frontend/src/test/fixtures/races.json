@@ -1,0 +1,18 @@
+[
+ {
+  "race_id": "2024-24-abu-dhabi-grand-prix",
+  "year": 2024,
+  "round": 24,
+  "event_name": "Abu Dhabi Grand Prix",
+  "date": "2024-12-08",
+  "total_laps": 58
+ },
+ {
+  "race_id": "2024-01-bahrain-grand-prix",
+  "year": 2024,
+  "round": 1,
+  "event_name": "Bahrain Grand Prix",
+  "date": "2024-03-02",
+  "total_laps": 57
+ }
+]
