@@ -1,9 +1,13 @@
 import { useEffect, useReducer, useState } from "react";
 import { api, isAbortError } from "./api/client";
 import type { RaceSummary } from "./api/types";
+import { FocusPanel } from "./components/FocusPanel";
+import { LapChart } from "./components/LapChart";
 import { Layout } from "./components/Layout";
 import { BACKEND_DOWN, Banner, NO_RACES, notAnalyzedText, PanelMessage } from "./components/Messages";
 import { StatusBar } from "./components/StatusBar";
+import { TimingList } from "./components/TimingList";
+import { useFocusDriver } from "./hooks/useFocusDriver";
 import { useLapData } from "./hooks/useLapData";
 import { usePlayback, useReplayKeys } from "./hooks/useReplayControls";
 import { initialReplay, replayReducer } from "./state/replay";
@@ -35,6 +39,7 @@ export default function App() {
   const lapData = useLapData(replay.raceId, replay.lap, lapReload);
   const data = lapData.data;
   const rendered = data !== null && data.raceId === replay.raceId && data.lap === replay.lap;
+  const [focusCode, setFocusCode] = useFocusDriver(data);
 
   useEffect(() => {
     if (lapData.error && replay.playing) dispatch({ type: "stop" });
@@ -59,6 +64,26 @@ export default function App() {
     );
   }
 
+  const timing = data && (
+    <TimingList
+      lap={data.lap}
+      drivers={data.state.drivers}
+      laps={data.laps}
+      predictions={data.predictions.drivers}
+      positions={data.positions.drivers}
+      focusCode={focusCode}
+      onFocus={setFocusCode}
+    />
+  );
+
+  const focus = data && focusCode && (
+    <FocusPanel key={data.raceId} data={data} focusCode={focusCode} playing={replay.playing} />
+  );
+
+  const chart = data && (
+    <LapChart lap={data.lap} drivers={data.state.drivers} laps={data.laps} focusCode={focusCode} />
+  );
+
   const intelligence =
     data && !data.events.analyzed ? <PanelMessage text={notAnalyzedText(data.raceId)} /> : null;
 
@@ -70,6 +95,9 @@ export default function App() {
       statusBar={
         <StatusBar races={races} replay={replay} dispatch={dispatch} trackStatus={data?.state.track_status} />
       }
+      timing={timing}
+      focus={focus}
+      chart={chart}
       intelligence={intelligence}
     />
   );
