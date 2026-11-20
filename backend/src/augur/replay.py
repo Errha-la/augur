@@ -88,6 +88,13 @@ class ReplayStore:
         rows = self._query("SELECT ingested_at FROM races WHERE race_id = ?", (race_id,))
         return rows[0]["ingested_at"] if rows else None
 
+    def analyzed_at(self, race_id: str, model: str) -> str | None:
+        """When the race was last analyzed with ``model``; changes on every re-analyze."""
+        rows = self._query(
+            "SELECT analyzed_at FROM analyses WHERE race_id = ? AND model = ?", (race_id, model)
+        )
+        return rows[0]["analyzed_at"] if rows else None
+
     def is_analyzed(self, race_id: str, model: str) -> bool:
         rows = self._query(
             "SELECT 1 FROM analyses WHERE race_id = ? AND model = ?", (race_id, model)

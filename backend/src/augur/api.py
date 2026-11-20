@@ -26,6 +26,8 @@ from augur.schema import LAP_COLUMNS
 from augur.state import race_state, to_json_value
 
 ALLOWED_ORIGINS = ["http://localhost:5173"]
+# Prepared Wrapped races kept in memory (oldest dropped first).
+WRAPPED_CACHE_SIZE = 8
 
 # Response fields of /positions and /positions/history (design.md API contract;
 # the race-dashboard mocks follow the same shapes).
@@ -75,6 +77,7 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
 
     model_cache: dict[tuple[str, int], LapTimeModel] = {}
     prior_cache: dict[tuple, dict[str, float]] = {}
+    wrapped_cache: dict[tuple, wrapped_content.Prepared] = {}
 
     def priors_for(s: ReplayStore, race_id: str) -> dict[str, float]:
         """circuit_priors, cached per race until the prior race is re-ingested."""
@@ -214,10 +217,19 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
         name = model_name()
         if not s.is_analyzed(race_id, name) or not s.has_positions(race_id, name):
             raise HTTPException(status_code=409, detail="race not analyzed")
-        try:
-            return wrapped_content.build(s.data_dir, race_id, name, driver)
-        except registry.ModelNotTrainedError as exc:
-            raise HTTPException(status_code=503, detail=str(exc)) from None
+        model = served_model(s)  # 503 when untrained; cached across requests
+        path = registry.model_path(s.data_dir, name)
+        # The driver-independent part (orders, scores, events) is the same for every
+        # driver; rebuild it only when the race is re-ingested or re-analyzed, or the model changes.
+        key = (
+            str(s.data_dir), race_id, name, path.stat().st_mtime_ns,
+            s.analyzed_at(race_id, name), s.ingested_at(race_id),
+        )
+        if key not in wrapped_cache:
+            if len(wrapped_cache) >= WRAPPED_CACHE_SIZE:
+                wrapped_cache.pop(next(iter(wrapped_cache)))
+            wrapped_cache[key] = wrapped_content.prepare(s.data_dir, race_id, name, model=model)
+        return wrapped_content.build(wrapped_cache[key], driver)
 
     @app.get("/api/races/{race_id}/strategy")
     def strategy(

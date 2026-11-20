@@ -135,12 +135,24 @@ def scores(races: Iterable[RaceInputs]) -> dict:
     }
 
 
-def race_inputs(data_dir: Path, race_id: str, model_name: str) -> RaceInputs:
-    """Read one analyzed race for one model: checkpoint pairs, lap errors, events with outcomes."""
+def race_inputs(
+    data_dir: Path,
+    race_id: str,
+    model_name: str,
+    *,
+    model=None,
+    orders: Mapping[int, Mapping[str, int]] | None = None,
+) -> RaceInputs:
+    """Read one analyzed race for one model: checkpoint pairs, lap errors, events with outcomes.
+
+    ``model`` is an already loaded model (default: load ``model_name`` from disk);
+    ``orders`` are running orders already computed by the caller (``{lap: {code:
+    position}}``); any checkpoint or final lap missing from them is computed here.
+    """
     # Imported here: the loaders pull in the feature pipeline, which the pure scorers don't need.
     from augur.models import registry
     from augur.replay import ReplayStore
-    from augur.state import race_state
+    from augur.state import positions_by_lap
     from augur.train import race_table
 
     store = ReplayStore(data_dir)
@@ -148,25 +160,25 @@ def race_inputs(data_dir: Path, race_id: str, model_name: str) -> RaceInputs:
     if race is None:
         raise ValueError(f"missing race {race_id}, run augur.ingest first")
     total = int(race["total_laps"])
-    laps = store.laps_until(race_id, total)
-    drivers = store.list_drivers(race_id)
-    meta = {"race_id": race_id, "total_laps": total}
+    cps = checkpoints(total)
+    order: dict[int, Mapping[str, int]] = dict(orders or {})
+    missing = [n for n in (*cps, total) if n not in order]
+    if missing:
+        laps = store.laps_until(race_id, total)
+        meta = {"race_id": race_id, "total_laps": total}
+        order.update(positions_by_lap(laps, store.list_drivers(race_id), meta, missing))
 
-    def order(lap: int) -> dict[str, int]:
-        state = race_state(laps[laps["lap"] <= lap], drivers, meta, lap)
-        return {d["code"]: d["position"] for d in state["drivers"]}
-
-    final = order(total)
     p_podium_at: dict[int, dict[str, float]] = {}
     for row in store.positions_until(race_id, model_name, total):
         p_podium_at.setdefault(row["lap"], {})[row["code"]] = row["p_podium"]
     pairs = podium_pairs(
-        {c: order(c) for c in checkpoints(total)},
+        {c: order[c] for c in cps},
         p_podium_at,
-        [code for code, position in final.items() if position <= PODIUM],
+        [code for code, position in order[total].items() if position <= PODIUM],
     )
 
-    model = registry.load_trained(data_dir, model_name)
+    if model is None:
+        model = registry.load_trained(data_dir, model_name)
     x, y = race_table(store, race_id)
     if len(x):
         truth = y.to_numpy(dtype=float)

@@ -23,7 +23,7 @@ from typing import Any
 import pandas as pd
 
 from augur import config
-from augur.state import race_state
+from augur.state import positions_by_lap
 
 OUTCOME_FIELDS: tuple[str, ...] = ("outcome", "outcome_lap", "outcome_text")
 OUTCOME_TYPES = frozenset({"undercut_window", "degradation_warning"})
@@ -87,8 +87,7 @@ def resolve_outcomes(
 
     def position_at(n: int) -> dict[str, int]:
         if n not in cache:
-            state = race_state(laps[laps["lap"] <= n], drivers, race_meta, n)
-            cache[n] = {d["code"]: d["position"] for d in state["drivers"]}
+            cache.update(positions_by_lap(laps, drivers, race_meta, [n]))
         return cache[n]
 
     pit_laps: dict[str, list[int]] = {}

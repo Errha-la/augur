@@ -136,3 +136,22 @@ def race_state(
         "track_status": leader["_track_status"] if leader else None,
         "drivers": out_drivers,
     }
+
+
+def positions_by_lap(
+    laps: pd.DataFrame,
+    drivers: Iterable[Mapping[str, Any]],
+    race_meta: Mapping[str, Any],
+    at_laps: Iterable[int],
+) -> dict[int, dict[str, int]]:
+    """``{lap: {code: position}}`` after each lap in ``at_laps``, ranked as ``race_state`` ranks.
+
+    The one place outcomes, scoring and the Wrapped read the running order, so
+    they always agree on who was where (for example, how a retired driver ranks).
+    """
+    drivers = list(drivers)
+    out: dict[int, dict[str, int]] = {}
+    for lap in sorted({int(n) for n in at_laps}):
+        state = race_state(laps[laps["lap"] <= lap], drivers, race_meta, lap)
+        out[lap] = {d["code"]: d["position"] for d in state["drivers"]}
+    return out
