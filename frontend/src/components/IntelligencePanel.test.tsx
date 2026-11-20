@@ -11,9 +11,48 @@ beforeEach(() => {
   backend = fakeBackend();
 });
 
-function panel(events: RaceEvent[], focusCode: string | null = null, focusColor: string | null = null) {
-  return <IntelligencePanel raceId={ABU_DHABI} events={events} focusCode={focusCode} focusColor={focusColor} />;
+function panel(
+  events: RaceEvent[],
+  focusCode: string | null = null,
+  focusColor: string | null = null,
+  commentaryModel: string | null = null,
+) {
+  return (
+    <IntelligencePanel
+      raceId={ABU_DHABI}
+      events={events}
+      commentaryModel={commentaryModel}
+      focusCode={focusCode}
+      focusColor={focusColor}
+    />
+  );
 }
+
+describe("Commentary in the primary event card", () => {
+  // Scenario: Label from the response
+  it("shows the commentary first, labelled with commentary_model, before What / Why / Next", () => {
+    const event = { ...raceEvent("c", 20, "undercut_window", ["NOR", "PIA"]), commentary: "NOR could undercut PIA." };
+    render(panel([event], null, null, "glm"));
+    const quote = within(primary()).getByTestId("commentary");
+    expect(quote).toHaveTextContent("AUGUR commentary · glm");
+    expect(quote).toHaveTextContent("NOR could undercut PIA.");
+    const text = primary().textContent ?? "";
+    expect(text.indexOf("NOR could undercut PIA.")).toBeLessThan(text.indexOf("What of c"));
+  });
+
+  // Scenario: Event without commentary
+  it("shows only What / Why / Next when the event has no commentary", () => {
+    render(panel([{ ...raceEvent("n", 20, "pace_drop", ["VER"]), commentary: null }], null, null, "glm"));
+    expect(within(primary()).queryByTestId("commentary")).toBeNull();
+    expect(primary()).toHaveTextContent("What of n");
+  });
+
+  it("does not show commentary for history rows", () => {
+    const older = { ...raceEvent("old", 12, "pace_drop", ["LEC"]), commentary: "Older text." };
+    render(panel([raceEvent("new", 15, "pace_drop", ["VER"]), older], null, null, "glm"));
+    expect(screen.queryByText("Older text.")).toBeNull();
+  });
+});
 
 function primary() {
   return screen.getByTestId("primary-event");

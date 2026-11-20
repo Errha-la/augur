@@ -3,6 +3,7 @@
  "lap": 15,
  "model": "lightgbm",
  "analyzed": true,
+ "commentary_model": null,
  "events": [
   {
    "id": "2024-24-abu-dhabi-grand-prix:15:degradation_warning:COL",

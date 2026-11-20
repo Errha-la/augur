@@ -81,6 +81,8 @@ export interface RaceEvent {
   outcome?: "hit" | "miss" | "void" | null;
   outcome_lap?: number | null;
   outcome_text?: string | null;
+  /** LLM commentary cached by `augur.narrate`; present in /events, null when none is cached. */
+  commentary?: string | null;
 }
 
 export interface EventsResponse {
@@ -88,6 +90,8 @@ export interface EventsResponse {
   lap: number;
   model: string;
   analyzed: boolean;
+  /** Configured LLM model of the current narrator settings (label for commentary), or null. */
+  commentary_model: string | null;
   /** Lap descending, then severity descending. */
   events: RaceEvent[];
 }

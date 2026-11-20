@@ -16,6 +16,7 @@ import pandas as pd
 
 from augur import catalog
 from augur.events.outcomes import OUTCOME_FIELDS, visible
+from augur.narration.cache import CommentaryKey, cached_texts
 from augur.schema import LAP_COLUMNS
 
 RACE_FIELDS = ("race_id", "year", "round", "event_name", "date", "total_laps")
@@ -131,6 +132,20 @@ class ReplayStore:
                 }
             )
         return out
+
+    def commentary_texts(self, event_ids: list[str], key: CommentaryKey) -> dict[str, str]:
+        """{event_id: cached commentary} under ``key``; empty when nothing is cached."""
+        conn = self._connect()
+        if conn is None or not event_ids:
+            return {}
+        with closing(conn):
+            try:
+                return cached_texts(conn, event_ids, key)
+            except sqlite3.OperationalError as exc:
+                # Catalog written before augur.narrate created the commentary table.
+                if "no such table" in str(exc):
+                    return {}
+                raise
 
     def positions_until(self, race_id: str, model: str, lap: int, *, only_lap: bool = False) -> list[dict]:
         """Stored position predictions with ``lap <= lap`` (or ``== lap`` when ``only_lap``),

@@ -120,6 +120,7 @@ export default function App() {
         key={data.raceId}
         raceId={data.raceId}
         events={data.events.events}
+        commentaryModel={data.events.commentary_model}
         focusCode={focusCode}
         focusColor={focusColor}
       />

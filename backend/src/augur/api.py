@@ -18,6 +18,7 @@ from augur import wrapped as wrapped_content
 from augur.feed import RaceFeed, ReplayFeed
 from augur.models import registry
 from augur.models.base import LapTimeModel
+from augur.narration.serving import serving_key
 from augur.predictions import predictions_at
 from augur.priors import circuit_priors
 from augur.strategy import simulate
@@ -164,12 +165,19 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
         feed = open_feed(s, race_id, lap)
         name = model_name()
         analyzed = s.is_analyzed(race_id, name)
+        events = s.events_until(race_id, name, lap) if analyzed else []
+        # Commentary cached by augur.narrate for the current narrator settings; never generated here.
+        key = serving_key(name)
+        texts = s.commentary_texts([e["id"] for e in events], key) if key is not None else {}
+        for e in events:
+            e["commentary"] = texts.get(e["id"])
         return {
             "race_id": feed.race_id,
             "lap": lap,
             "model": name,
             "analyzed": analyzed,
-            "events": s.events_until(race_id, name, lap) if analyzed else [],
+            "commentary_model": key.llm_model if key is not None else None,
+            "events": events,
         }
 
     @app.get("/api/races/{race_id}/positions")

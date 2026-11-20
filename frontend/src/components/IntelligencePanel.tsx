@@ -11,8 +11,21 @@ interface IntelligencePanelProps {
   raceId: string;
   /** /events order: lap descending, then severity descending. */
   events: RaceEvent[];
+  /** /events `commentary_model`: labels the primary event's commentary. */
+  commentaryModel: string | null;
   focusCode: string | null;
   focusColor: string | null;
+}
+
+function Commentary({ text, model }: { text: string; model: string | null }) {
+  return (
+    <figure data-testid="commentary" className="border-l-2 border-zinc-600 pl-3">
+      <figcaption className="text-[10px] font-bold tracking-wider text-zinc-500">
+        {model ? `AUGUR commentary · ${model}` : "AUGUR commentary"}
+      </figcaption>
+      <blockquote className="text-sm italic text-zinc-200">{text}</blockquote>
+    </figure>
+  );
 }
 
 function formatEvidenceValue(value: unknown): string {
@@ -69,9 +82,10 @@ function highlightStyle(on: boolean, color: string | null): React.CSSProperties 
   return on && color ? { boxShadow: `inset 3px 0 0 ${color}`, backgroundColor: `${color}14` } : undefined;
 }
 
-function PrimaryCard({ raceId, event, highlighted, focusColor }: {
+function PrimaryCard({ raceId, event, commentaryModel, highlighted, focusColor }: {
   raceId: string;
   event: RaceEvent;
+  commentaryModel: string | null;
   highlighted: boolean;
   focusColor: string | null;
 }) {
@@ -111,6 +125,7 @@ function PrimaryCard({ raceId, event, highlighted, focusColor }: {
         </div>
       </div>
       <h2 className="text-lg font-bold">{event.title}</h2>
+      {event.commentary && <Commentary text={event.commentary} model={commentaryModel} />}
       <Analysis event={event} />
       {wantsStrategy && (
         <StrategyTable
@@ -123,7 +138,7 @@ function PrimaryCard({ raceId, event, highlighted, focusColor }: {
   );
 }
 
-export function IntelligencePanel({ raceId, events, focusCode, focusColor }: IntelligencePanelProps) {
+export function IntelligencePanel({ raceId, events, commentaryModel, focusCode, focusColor }: IntelligencePanelProps) {
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   if (events.length === 0) {
     return (
@@ -144,7 +159,13 @@ export function IntelligencePanel({ raceId, events, focusCode, focusColor }: Int
 
   return (
     <div className="flex flex-col gap-3 p-3">
-      <PrimaryCard raceId={raceId} event={primary} highlighted={involves(primary)} focusColor={focusColor} />
+      <PrimaryCard
+        raceId={raceId}
+        event={primary}
+        commentaryModel={commentaryModel}
+        highlighted={involves(primary)}
+        focusColor={focusColor}
+      />
       {history.length > 0 && (
         <section aria-label="Event history">
           <h3 className="mb-1 text-[10px] tracking-wider text-zinc-500">EVENT HISTORY</h3>

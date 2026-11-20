@@ -10,7 +10,7 @@
 
 ## 2. Serve and display
 
-- [ ] 2.1 [after: 1.6] Serve and show commentary: add `commentary` to `/events` events and the top-level `commentary_model` (configured model of the current narrator settings, null for `none` or invalid settings), and show the quote block labelled `AUGUR commentary · <commentary_model>` first in the dashboard's primary event card. Verify: TestClient tests for "Event without commentary", one with cached text, and `commentary_model`; frontend component test for "Label from the response" and the quote-before-What order.
+- [x] 2.1 [after: 1.6] Serve and show commentary: add `commentary` to `/events` events and the top-level `commentary_model` (configured model of the current narrator settings, null for `none` or invalid settings), and show the quote block labelled `AUGUR commentary · <commentary_model>` first in the dashboard's primary event card. Verify: TestClient tests for "Event without commentary", one with cached text, and `commentary_model`; frontend component test for "Label from the response" and the quote-before-What order.
 
 ## 3. End-to-end check
 

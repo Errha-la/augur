@@ -13,7 +13,7 @@ function lapData(lap: number, extra: Partial<LapData> = {}): LapData {
     state: { ...fixtures.state, lap, drivers: [driver("VER", 1), driver("HAM", 5, { team: "Mercedes" })] },
     laps: [],
     predictions: { race_id: ABU_DHABI, lap, drivers: [prediction("HAM", { deg_s_per_lap: 0.041, cliff: true })] },
-    events: { race_id: ABU_DHABI, lap, model: "lightgbm", analyzed: true, events: [] },
+    events: { race_id: ABU_DHABI, lap, model: "lightgbm", analyzed: true, commentary_model: null, events: [] },
     positions: { ...fixtures.positions, lap, drivers: [positions("HAM")] },
     ...extra,
   };
@@ -65,7 +65,7 @@ describe("Focus driver panel", () => {
 
   it("shows code, team, degradation with cliff, and only the driver's events", () => {
     const events = [raceEvent("e2", 12, "pace_drop", ["VER"]), raceEvent("e1", 10, "undercut_window", ["VER", "HAM"])];
-    renderPanel(lapData(12, { events: { race_id: ABU_DHABI, lap: 12, model: "m", analyzed: true, events } }));
+    renderPanel(lapData(12, { events: { race_id: ABU_DHABI, lap: 12, model: "m", analyzed: true, commentary_model: null, events } }));
     const panel = screen.getByTestId("focus-panel");
     expect(panel).toHaveTextContent("HAM");
     expect(panel).toHaveTextContent("Mercedes");
@@ -114,7 +114,7 @@ describe("Focus driver panel — Strategy requests during playback", () => {
   it("requests strategy and probability history for lap 15 only while playing 11 → 16", async () => {
     // No events, so the intelligence panel's event strategy requests stay out of this count.
     const { backend } = await renderApp({
-      handlers: { events: ({ raceId, lap }) => ({ race_id: raceId, lap, model: "m", analyzed: true, events: [] }) },
+      handlers: { events: ({ raceId, lap }) => ({ race_id: raceId, lap, model: "m", analyzed: true, commentary_model: null, events: [] }) },
     });
     await goToLap(11);
     await waitFor(() => expect(backend.of("strategy").some((r) => r.lap === 11)).toBe(true));
