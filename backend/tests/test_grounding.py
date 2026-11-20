@@ -76,6 +76,15 @@ def test_percentage_and_fraction_both_ways():
     assert not check_grounding("62 laps", EVENT).accepted  # a bare 62 is not the 0.62 fraction
 
 
+def test_percentage_matches_only_fractions():
+    """A percentage matches a fraction (0..1), never a lap, gap, or tyre age times 100."""
+    assert not check_grounding("a 2000% chance", EVENT).accepted  # lap 20
+    assert not check_grounding("a 184% chance", EVENT).accepted  # gap_s 1.84
+    assert not check_grounding("a 1400% chance", EVENT).accepted  # tyre_age 14
+    assert check_grounding("a 100% chance", {**EVENT, "evidence": {"p": 1.0}}).accepted
+    assert check_grounding("a 0% chance", {**EVENT, "evidence": {"p": 0.0}}).accepted
+
+
 def test_nested_evidence_and_driver_codes_in_evidence():
     event = {**EVENT, "drivers": ["NOR"], "evidence": {"ahead": "PIA", "strategy": {"pit_lap": 21}}}
     assert check_grounding("NOR may stop on lap 21 to pass PIA", event).accepted

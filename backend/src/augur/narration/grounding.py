@@ -79,8 +79,9 @@ def check_grounding(text: str, event: Mapping[str, Any]) -> Grounding:
     for m in _NUMBER_RE.finditer(text):
         shown, percent = m.group(1), m.group(2)
         if percent:
-            # 62% must match a fraction 0.62 (value * 100 at the shown precision).
-            ok = any(_matches(shown, v * 100) for v in numbers)
+            # 62% must match a fraction 0.62 (value * 100 at the shown precision); only
+            # values in 0..1 are fractions, so lap 20 never grounds "2000%".
+            ok = any(0.0 <= v <= 1.0 and _matches(shown, v * 100) for v in numbers)
         else:
             ok = any(_matches(shown, v) for v in numbers)
         if not ok:
