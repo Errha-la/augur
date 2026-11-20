@@ -74,6 +74,17 @@ CREATE TABLE IF NOT EXISTS analyses (
     analyzed_at TEXT,
     PRIMARY KEY (race_id, model)
 );
+CREATE TABLE IF NOT EXISTS commentary (
+    event_id       TEXT,
+    model          TEXT,
+    narrator       TEXT,
+    llm_model      TEXT,
+    lang           TEXT,
+    prompt_version INT,
+    text           TEXT,
+    created_at     TEXT,
+    PRIMARY KEY (event_id, model, narrator, llm_model, lang, prompt_version)
+);
 """
 
 

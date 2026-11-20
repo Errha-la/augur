@@ -1,0 +1,23 @@
+## 1. Backend narration
+
+- [x] 1.1 Implement the Narrator interface following Narrator interface with an offline default (`Narrator` protocol, `none` narrator, registry) and the prompt builder for Gemini call through google-genai (event type, lap, drivers, evidence, template analysis, language from `AUGUR_COMMENTARY_LANG`, no outcome fields). Verify: test for "Prompt excludes outcomes" and a test that `zh-TW` switches the language instruction.
+- [x] 1.2 [after: 1.1] Implement `GeminiNarrator` with the google-genai SDK (`GEMINI_MODEL` default `gemini-flash-latest`, temperature 0.4, 200 max tokens, two retries on 429/5xx with 2 s and 4 s waits). Verify: tests with a fake client for success, one retry then success, and three failures returning None.
+- [x] 1.3 [after: 1.1] Implement Grounding check before storing so only Grounded commentary only is kept: number extraction, percentage/fraction matching, rounding tolerance, driver-code check, rejection reason. Verify: parametrized test for every row of the "check results" table.
+- [x] 1.4 [after: 1.2, 1.3] Implement the Narrate command and cache following Generate in a separate command and cache (`commentary` table, cache key, summary line, missing-key message). Verify: tests for "Second run uses the cache" and "No key" with the fake client.
+- [x] 1.5 [after: 1.1] Implement `OpenAICompatNarrator` (registered as `openai_compat`) following OpenAI-compatible narrator for self-hosted servers: standard-library POST to `<AUGUR_LLM_BASE_URL>/chat/completions`, `AUGUR_LLM_MODEL` default `glm`, optional Bearer `AUGUR_LLM_API_KEY`, http/https-only base URL, 120 s timeout, `<think>` removal, two retries on 429/5xx with 2 s and 4 s waits. Verify: tests with a fake HTTP opener for the request body and headers, "Thinking block removed", "Invalid base URL", one retry then success, and three failures returning None.
+- [x] 1.6 [after: 1.4, 1.5] Implement Narrator selection: `AUGUR_NARRATOR` (default `gemini`) picks the `augur.narrate` narrator when `--narrator` is omitted, and the command prints `AUGUR_LLM_BASE_URL not set; nothing generated` (exit 0) for `openai_compat` without a base URL; reword the AGENTS.md hard rule from "Gemini commentary" to LLM commentary through `gemini` or an OpenAI-compatible server. Verify: tests for "Lab server selected by environment" and "No server".
+- [x] 1.7 [after: 1.3] Let the grounding check accept the event's own lap number (compensates completed 1.3, which accepted only evidence and template numbers), then rerun `augur.narrate` on `2024-24-abu-dhabi-grand-prix` with the lab server so the rejected and failed events are retried. Verify: test for "Event lap grounds the text"; the rerun's summary line recorded in the task notes.
+
+## 2. Serve and display
+
+- [ ] 2.1 [after: 1.6] Serve and show commentary: add `commentary` to `/events` events and the top-level `commentary_model` (configured model of the current narrator settings, null for `none` or invalid settings), and show the quote block labelled `AUGUR commentary · <commentary_model>` first in the dashboard's primary event card. Verify: TestClient tests for "Event without commentary", one with cached text, and `commentary_model`; frontend component test for "Label from the response" and the quote-before-What order.
+
+## 3. End-to-end check
+
+- [ ] 3.1 [after: 2.1] With the lab server (`AUGUR_NARRATOR=openai_compat`, `AUGUR_LLM_BASE_URL`, `AUGUR_LLM_MODEL=glm`), run `python -m augur.narrate --race 2024-24-abu-dhabi-grand-prix`, record the ok/rejected/failed counts and the number of events, read five accepted texts for tone (conditional, no team instructions), and add a README section "LLM commentary (optional)" with the environment variables for both `openai_compat` and `gemini`. Verify: counts and the five texts recorded in the task notes; `pytest backend` and `npm --prefix frontend run test` pass without a key or server.
+
+## Change notes
+
+- 2026-11-20: the user chose the lab's self-hosted OpenAI-compatible server (`glm`) for commentary before Gemini; 1.5 and 1.6 added, 2.1 now also serves `commentary_model` (the dashboard cannot read `GEMINI_MODEL`), and 3.1 runs against the lab server instead of a Gemini key. Supersedes: the design's "Other LLM providers" non-goal and "no other field changes" in `/events`.
+- 2026-11-20: first lab run on Abu Dhabi (116 events): 92 ok, 10 rejected, 14 failed (12 HTTP 503 in a burst at lap 11, 2 timeouts). All 10 rejections were the event's own lap number, which the prompt contains; 1.7 added so the grounding check accepts it.
+- 2026-11-20: after 1.7 the rerun printed `narrated 2024-24-abu-dhabi-grand-prix: 24 ok, 0 rejected, 0 failed, 92 cached`; all 116 Abu Dhabi events now have `glm` commentary.
