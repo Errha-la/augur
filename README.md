@@ -103,6 +103,35 @@ If the API is not running, the dashboard shows how to start it; if no race is in
 
 ![AUGUR dashboard, 2024 Abu Dhabi Grand Prix at lap 20](docs/screenshot.png)
 
+## LLM commentary (optional)
+
+AUGUR can add a short commentator-style paragraph to each analyzed event. The dashboard shows it first in the event card, labelled `AUGUR commentary · <model>`. Everything else works without it: analysis, tests, and the benchmark never call an LLM.
+
+Commentary is generated once per race and cached in `data/augur.sqlite`; the API only reads that cache. The LLM sees the event type, lap, drivers, evidence, and template text, never the event's outcome. A text is kept only if every number in it matches the event's lap, evidence, or template text and every three-letter driver code belongs to the event; otherwise the command prints `rejected <event_id>: <reason>` and the event keeps only the template analysis.
+
+```bash
+# after augur.analyze; reads the variables below (for example from a .env file)
+set -a; source .env; set +a
+backend/.venv/bin/python -m augur.narrate --race 2024-24-abu-dhabi-grand-prix
+# narrated 2024-24-abu-dhabi-grand-prix: <ok> ok, <rejected> rejected, <failed> failed, <cached> cached
+```
+
+Run it again to retry rejected or failed events; cached events are skipped. Restart the API after changing the narrator variables, since it serves only commentary cached for the current settings.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `AUGUR_NARRATOR` | `gemini` | `openai_compat` (any OpenAI-compatible server), `gemini`, or `none` |
+| `AUGUR_LLM_BASE_URL` | — | `openai_compat` server, for example `http://<host>:<port>/v1` (required for `openai_compat`) |
+| `AUGUR_LLM_MODEL` | `glm` | model id on that server (see `GET <base URL>/models`) |
+| `AUGUR_LLM_API_KEY` | — | optional; sent as `Authorization: Bearer <key>` |
+| `GEMINI_API_KEY` | — | Gemini API key (required for `gemini`) |
+| `GEMINI_MODEL` | `gemini-flash-latest` | Gemini model id; set a fixed id for reproducible text |
+| `AUGUR_COMMENTARY_LANG` | `en` | `en` or `zh-TW` |
+
+Without the required setting the command prints `<VARIABLE> not set; nothing generated` and exits 0.
+
+Measured on 2024 Abu Dhabi (116 events, 2026-11-20) with `openai_compat` and a self-hosted `glm` server: the first run gave 92 ok, 10 rejected, 14 failed (12 HTTP 503 in a burst, 2 timeouts) in 11 min 21 s; after the grounding check started accepting the event's own lap, a rerun gave 24 ok, 0 rejected, 0 failed, 92 cached, so all 116 events have commentary. Texts were 43–68 words (median 57); 24 exceeded the prompt's 60-word limit.
+
 ## Model results
 
 The lap-time model predicts each driver's next clean lap as their recent pace (median of the last 3 clean laps) plus a predicted delta. The baseline predicts a delta of 0. Numbers are mean absolute error on clean laps of the test races, from `data/models/lightgbm_metrics.json` (trained 2026-11-19):
