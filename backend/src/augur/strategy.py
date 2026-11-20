@@ -74,7 +74,7 @@ class DriverState:
     noise_s: float
 
 
-def _deg_or_fallback(value, compound: str | None, race_medians: dict[str, float]) -> float:
+def deg_or_fallback(value, compound: str | None, race_medians: dict[str, float]) -> float:
     if value is not None and not math.isnan(value):
         return float(value)
     if compound in race_medians:
@@ -89,7 +89,7 @@ def driver_state(laps: pd.DataFrame, total_laps: int, driver: str) -> DriverStat
     medians = compound_median_slopes(laps, total_laps)
     compound = deg["compound"]
     fit = deg["fit"]
-    current_deg = _deg_or_fallback(None if fit is None else fit.slope, compound, medians)
+    current_deg = deg_or_fallback(None if fit is None else fit.slope, compound, medians)
     if fit is not None:
         base = fit.intercept
     else:
@@ -106,7 +106,7 @@ def driver_state(laps: pd.DataFrame, total_laps: int, driver: str) -> DriverStat
         tyre_age=int(deg["tyre_life"] or 1),
         compound=compound,
         next_compound=nxt,
-        next_deg_s_per_lap=_deg_or_fallback(None, nxt, medians),
+        next_deg_s_per_lap=deg_or_fallback(None, nxt, medians),
         noise_s=max(config.NOISE_MIN_S, fit.residual_std if fit is not None else 0.0),
     )
 

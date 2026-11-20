@@ -49,6 +49,21 @@ CREATE TABLE IF NOT EXISTS events (
     evidence  TEXT,
     PRIMARY KEY (race_id, model, id)
 );
+CREATE TABLE IF NOT EXISTS position_predictions (
+    race_id           TEXT,
+    model             TEXT,
+    lap               INT,
+    code              TEXT,
+    p_win             REAL,
+    p_podium          REAL,
+    p_points          REAL,
+    expected_position REAL,
+    position_p10      REAL,
+    position_p90      REAL,
+    runs              INT,
+    seed              INT,
+    PRIMARY KEY (race_id, model, lap, code)
+);
 CREATE TABLE IF NOT EXISTS analyses (
     race_id     TEXT,
     model       TEXT,

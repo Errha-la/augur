@@ -26,6 +26,13 @@ from augur.state import race_state, to_json_value
 
 ALLOWED_ORIGINS = ["http://localhost:5173"]
 
+# Response fields of /positions and /positions/history (design.md API contract;
+# the race-dashboard mocks follow the same shapes).
+POSITION_FIELDS = (
+    "code", "p_win", "p_podium", "p_points", "expected_position", "position_p10", "position_p90",
+)
+POSITION_HISTORY_FIELDS = ("code", "p_win", "p_podium", "expected_position")
+
 LapParam = Annotated[int, Query(ge=1, description="Replay cutoff lap (1..total_laps)")]
 RunsParam = Annotated[
     int, Query(ge=config.STRATEGY_RUNS_MIN, le=config.STRATEGY_RUNS_MAX, description="Monte Carlo runs")
@@ -159,6 +166,39 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
             "model": name,
             "analyzed": analyzed,
             "events": s.events_until(race_id, name, lap) if analyzed else [],
+        }
+
+    @app.get("/api/races/{race_id}/positions")
+    def positions(race_id: str, lap: LapParam) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        name = model_name()
+        analyzed = s.has_positions(race_id, name)
+        rows = s.positions_until(race_id, name, lap, only_lap=True) if analyzed else []
+        return {
+            "race_id": feed.race_id,
+            "lap": lap,
+            "model": name,
+            "analyzed": analyzed,
+            "runs": rows[0]["runs"] if rows else None,
+            "seed": rows[0]["seed"] if rows else None,
+            "drivers": [{k: r[k] for k in POSITION_FIELDS} for r in rows],
+        }
+
+    @app.get("/api/races/{race_id}/positions/history")
+    def positions_history(race_id: str, lap: LapParam) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        name = model_name()
+        analyzed = s.has_positions(race_id, name)
+        by_lap: dict[int, list[dict]] = {}
+        for r in s.positions_until(race_id, name, lap) if analyzed else []:
+            by_lap.setdefault(r["lap"], []).append({k: r[k] for k in POSITION_HISTORY_FIELDS})
+        return {
+            "race_id": feed.race_id,
+            "model": name,
+            "analyzed": analyzed,
+            "laps": [{"lap": n, "drivers": drivers} for n, drivers in sorted(by_lap.items())],
         }
 
     @app.get("/api/races/{race_id}/strategy")

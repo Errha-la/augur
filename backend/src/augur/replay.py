@@ -115,6 +115,24 @@ class ReplayStore:
             for r in rows
         ]
 
+    def positions_until(self, race_id: str, model: str, lap: int, *, only_lap: bool = False) -> list[dict]:
+        """Stored position predictions with ``lap <= lap`` (or ``== lap`` when ``only_lap``),
+        lap ascending, then expected position."""
+        op = "=" if only_lap else "<="
+        rows = self._query(
+            "SELECT lap, code, p_win, p_podium, p_points, expected_position, position_p10, position_p90,"
+            f" runs, seed FROM position_predictions WHERE race_id = ? AND model = ? AND lap {op} ?"
+            " ORDER BY lap, expected_position, code",
+            (race_id, model, int(lap)),
+        )
+        return [dict(r) for r in rows]
+
+    def has_positions(self, race_id: str, model: str) -> bool:
+        rows = self._query(
+            "SELECT 1 FROM position_predictions WHERE race_id = ? AND model = ? LIMIT 1", (race_id, model)
+        )
+        return bool(rows)
+
     def list_drivers(self, race_id: str) -> list[dict]:
         rows = self._query(
             "SELECT code, full_name, team, team_color, grid_position "
