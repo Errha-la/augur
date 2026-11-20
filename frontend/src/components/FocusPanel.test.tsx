@@ -92,7 +92,10 @@ describe("Focus driver panel — Strategy requests during playback", () => {
   });
 
   it("requests strategy and probability history for lap 15 only while playing 11 → 16", async () => {
-    const { backend } = await renderApp();
+    // No events, so the intelligence panel's event strategy requests stay out of this count.
+    const { backend } = await renderApp({
+      handlers: { events: ({ raceId, lap }) => ({ race_id: raceId, lap, model: "m", analyzed: true, events: [] }) },
+    });
     await goToLap(11);
     await waitFor(() => expect(backend.of("strategy").some((r) => r.lap === 11)).toBe(true));
     const before = backend.requests.length;

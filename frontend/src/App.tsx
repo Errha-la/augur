@@ -1,7 +1,9 @@
 import { useEffect, useReducer, useState } from "react";
 import { api, isAbortError } from "./api/client";
 import type { RaceSummary } from "./api/types";
+import { EventTimeline } from "./components/EventTimeline";
 import { FocusPanel } from "./components/FocusPanel";
+import { IntelligencePanel } from "./components/IntelligencePanel";
 import { LapChart } from "./components/LapChart";
 import { Layout } from "./components/Layout";
 import { BACKEND_DOWN, Banner, NO_RACES, notAnalyzedText, PanelMessage } from "./components/Messages";
@@ -84,8 +86,36 @@ export default function App() {
     <LapChart lap={data.lap} drivers={data.state.drivers} laps={data.laps} focusCode={focusCode} />
   );
 
-  const intelligence =
-    data && !data.events.analyzed ? <PanelMessage text={notAnalyzedText(data.raceId)} /> : null;
+  const focusColor = data?.state.drivers.find((d) => d.code === focusCode)?.team_color ?? null;
+
+  const timeline = data && data.events.analyzed && (
+    <EventTimeline
+      lap={data.lap}
+      totalLaps={replay.totalLaps}
+      events={data.events.events}
+      focusCode={focusCode}
+      focusColor={focusColor}
+      onJump={(lap) => {
+        dispatch({ type: "stop" });
+        dispatch({ type: "setLap", lap });
+      }}
+    />
+  );
+
+  let intelligence = null;
+  if (data && !data.events.analyzed) {
+    intelligence = <PanelMessage text={notAnalyzedText(data.raceId)} />;
+  } else if (data) {
+    intelligence = (
+      <IntelligencePanel
+        key={data.raceId}
+        raceId={data.raceId}
+        events={data.events.events}
+        focusCode={focusCode}
+        focusColor={focusColor}
+      />
+    );
+  }
 
   return (
     <Layout
@@ -98,6 +128,7 @@ export default function App() {
       timing={timing}
       focus={focus}
       chart={chart}
+      timeline={timeline}
       intelligence={intelligence}
     />
   );

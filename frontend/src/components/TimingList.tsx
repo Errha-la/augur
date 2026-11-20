@@ -59,6 +59,7 @@ export function TimingList({ lap, drivers, laps, predictions, positions, focusCo
                 if (e.key === "Enter") onFocus(d.code);
               }}
               className="cursor-pointer border-t border-zinc-800/60 hover:bg-zinc-900"
+              style={focused ? { backgroundColor: `${d.team_color}24`, outline: `1px solid ${d.team_color}` } : undefined}
             >
               <td className="w-1.5 p-0" style={{ backgroundColor: d.team_color }} />
               <td data-field="position" className="px-2 py-1 text-2xl font-bold text-zinc-400">
