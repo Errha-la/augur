@@ -60,10 +60,6 @@ def compute_analysis(
     return events, positions
 
 
-def compute_events(data_dir: Path, race_id: str, model_name: str) -> list[dict]:
-    return compute_analysis(data_dir, race_id, model_name)[0]
-
-
 def replace_events(data_dir: Path, race_id: str, model_name: str, events: list[dict]) -> None:
     """Replace the race's events for the model in one transaction."""
     conn = catalog.connect(data_dir)

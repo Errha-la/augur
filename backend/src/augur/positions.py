@@ -28,7 +28,7 @@ from augur.models.base import LapTimeModel
 from augur.models.degradation import compound_median_slopes, current_stint_degradation
 from augur.predictions import predictions_at
 from augur.state import race_state
-from augur.strategy import _deg_or_fallback, next_compound, pit_loss
+from augur.strategy import deg_or_fallback, next_compound, pit_loss
 
 # Large enough to dominate any race time when ordering by (laps desc, time asc).
 _LAP_WEIGHT = 1e7
@@ -92,7 +92,7 @@ def projected_deg(fit, compound: str | None, medians: Mapping[str, float]) -> fl
     """Degradation projected to the flag: own fit from enough clean laps, else the compound
     median or default; never negative (tyres do not get faster with age)."""
     trusted = fit is not None and fit.n >= config.POSITION_DEG_MIN_FIT_LAPS and fit.slope >= 0
-    return max(0.0, _deg_or_fallback(fit.slope if trusted else None, compound, medians))
+    return max(0.0, deg_or_fallback(fit.slope if trusted else None, compound, medians))
 
 
 def driver_starts(
@@ -125,7 +125,7 @@ def driver_starts(
                 time_s=float(times.iloc[-1]) if not times.empty else math.inf,
                 base_s=base[code],
                 deg_s_per_lap=projected_deg(fit, compound, medians),
-                next_deg_s_per_lap=max(0.0, _deg_or_fallback(None, next_compound(compound), medians)),
+                next_deg_s_per_lap=max(0.0, deg_or_fallback(None, next_compound(compound), medians)),
                 tyre_age=int(d.get("tyre_life") or 0),
                 compound=compound,
                 stops=len(used) < 2,
