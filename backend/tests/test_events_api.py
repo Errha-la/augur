@@ -34,7 +34,8 @@ def test_events_filtered_by_lap(data):
     body = TestClient(create_app(data)).get(f"/api/races/{RACE}/events?lap=12").json()
     assert body["model"] == "baseline" and body["analyzed"] is True and body["lap"] == 12
     assert [e["lap"] for e in body["events"]] == [12, 5]
-    assert set(body["events"][0]) == {"id", "lap", "type", "drivers", "severity", "title", "analysis", "evidence"}
+    assert set(body["events"][0]) == {"id", "lap", "type", "drivers", "severity", "title", "analysis", "evidence",
+                                      "outcome", "outcome_lap", "outcome_text"}
 
 
 def test_same_lap_ordered_by_severity(data):

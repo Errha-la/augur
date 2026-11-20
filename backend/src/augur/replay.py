@@ -15,6 +15,7 @@ from pathlib import Path
 import pandas as pd
 
 from augur import catalog
+from augur.events.outcomes import OUTCOME_FIELDS, visible
 from augur.schema import LAP_COLUMNS
 
 RACE_FIELDS = ("race_id", "year", "round", "event_name", "date", "total_laps")
@@ -87,6 +88,13 @@ class ReplayStore:
         rows = self._query("SELECT ingested_at FROM races WHERE race_id = ?", (race_id,))
         return rows[0]["ingested_at"] if rows else None
 
+    def analyzed_at(self, race_id: str, model: str) -> str | None:
+        """When the race was last analyzed with ``model``; changes on every re-analyze."""
+        rows = self._query(
+            "SELECT analyzed_at FROM analyses WHERE race_id = ? AND model = ?", (race_id, model)
+        )
+        return rows[0]["analyzed_at"] if rows else None
+
     def is_analyzed(self, race_id: str, model: str) -> bool:
         rows = self._query(
             "SELECT 1 FROM analyses WHERE race_id = ? AND model = ?", (race_id, model)
@@ -94,26 +102,35 @@ class ReplayStore:
         return bool(rows)
 
     def events_until(self, race_id: str, model: str, lap: int) -> list[dict]:
-        """Stored events with ``lap <= lap``, newest lap first, then by severity."""
+        """Stored events with ``lap <= lap``, newest lap first, then by severity.
+
+        Outcome fields are null until the replay reaches ``outcome_lap``, so no
+        caller sees a verdict before the lap that decided it.
+        """
+        # SELECT * so catalogs written before the outcome columns existed still read.
         rows = self._query(
-            "SELECT id, lap, type, drivers, severity, title, analysis, evidence FROM events"
-            " WHERE race_id = ? AND model = ? AND lap <= ?"
+            "SELECT * FROM events WHERE race_id = ? AND model = ? AND lap <= ?"
             " ORDER BY lap DESC, severity DESC, id",
             (race_id, model, int(lap)),
         )
-        return [
-            {
-                "id": r["id"],
-                "lap": r["lap"],
-                "type": r["type"],
-                "drivers": json.loads(r["drivers"]),
-                "severity": r["severity"],
-                "title": r["title"],
-                "analysis": json.loads(r["analysis"]),
-                "evidence": json.loads(r["evidence"]),
-            }
-            for r in rows
-        ]
+        out = []
+        for r in rows:
+            keys = r.keys()
+            stored = {k: (r[k] if k in keys else None) for k in OUTCOME_FIELDS}
+            out.append(
+                {
+                    "id": r["id"],
+                    "lap": r["lap"],
+                    "type": r["type"],
+                    "drivers": json.loads(r["drivers"]),
+                    "severity": r["severity"],
+                    "title": r["title"],
+                    "analysis": json.loads(r["analysis"]),
+                    "evidence": json.loads(r["evidence"]),
+                    **visible(stored, int(lap)),
+                }
+            )
+        return out
 
     def positions_until(self, race_id: str, model: str, lap: int, *, only_lap: bool = False) -> list[dict]:
         """Stored position predictions with ``lap <= lap`` (or ``== lap`` when ``only_lap``),

@@ -22,8 +22,10 @@ function isTextEntry(target: EventTarget | null): boolean {
 }
 
 /** Left / Right step one lap, Space toggles playback. */
-export function useReplayKeys(dispatch: Dispatch<ReplayAction>) {
+export function useReplayKeys(dispatch: Dispatch<ReplayAction>, enabled = true) {
   useEffect(() => {
+    // Off while an overlay (the Wrapped story) owns the arrow keys.
+    if (!enabled) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.altKey || e.ctrlKey || e.metaKey || isTextEntry(e.target)) return;
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
@@ -37,5 +39,5 @@ export function useReplayKeys(dispatch: Dispatch<ReplayAction>) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [dispatch]);
+  }, [dispatch, enabled]);
 }

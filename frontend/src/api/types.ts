@@ -77,6 +77,10 @@ export interface RaceEvent {
   title: string;
   analysis: { what: string; why: string; next: string };
   evidence: Record<string, unknown>;
+  /** Null until the replay reaches `outcome_lap`, and always null for types without an outcome rule. */
+  outcome?: "hit" | "miss" | "void" | null;
+  outcome_lap?: number | null;
+  outcome_text?: string | null;
 }
 
 export interface EventsResponse {
@@ -146,4 +150,56 @@ export interface LapData {
   predictions: PredictionsResponse;
   events: EventsResponse;
   positions: PositionsResponse;
+}
+
+export interface HitRate {
+  undercut: { hits: number; resolved: number };
+  degradation: { hits: number; resolved: number };
+  hits: number;
+  resolved: number;
+  overall_pct: number | null;
+}
+
+/** GET /api/races/{race_id}/wrapped at the final lap (backend augur/wrapped.py). */
+export interface WrappedResponse {
+  race_id: string;
+  event_name: string;
+  year: number;
+  model: { name: string; author: string | null };
+  summary: {
+    winner: string | null;
+    podium: string[];
+    total_laps: number;
+    n_events: number;
+    n_events_by_type: Record<string, number>;
+  };
+  podium_call: {
+    lap: number;
+    predicted: { code: string; p_podium: number | null }[];
+    actual: string[];
+    correct: number;
+  };
+  score: {
+    position_skill_pct: number | null;
+    brier_model: number | null;
+    brier_baseline: number | null;
+    lap_improvement_pct: number | null;
+    mae_model_s: number | null;
+    mae_baseline_s: number | null;
+  };
+  hit_rate: HitRate;
+  best_call: RaceEvent | null;
+  biggest_miss: RaceEvent | null;
+  biggest_moment: RaceEvent | null;
+  driver: {
+    code: string;
+    team: string | null;
+    team_color: string | null;
+    grid_position: number | null;
+    final_position: number | null;
+    positions_by_lap: { lap: number; position: number | null }[];
+    p_podium_by_lap: { lap: number; p_podium: number | null }[];
+    stints: { compound: string | null; laps: number }[];
+    events: RaceEvent[];
+  };
 }

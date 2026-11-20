@@ -1,0 +1,77 @@
+{
+  "model": "lightgbm",
+  "author": "AUGUR",
+  "races": [
+    "2024-01-bahrain-grand-prix",
+    "2024-24-abu-dhabi-grand-prix"
+  ],
+  "position_skill_pct": -15.9,
+  "brier_model": 0.058,
+  "brier_baseline": 0.05,
+  "lap_improvement_pct": 19.8,
+  "mae_model_s": 0.305,
+  "mae_baseline_s": 0.3802,
+  "hit_rate": {
+    "undercut": {
+      "hits": 37,
+      "resolved": 69
+    },
+    "degradation": {
+      "hits": 24,
+      "resolved": 68
+    },
+    "hits": 61,
+    "resolved": 137,
+    "overall_pct": 44.5
+  },
+  "per_race": [
+    {
+      "race_id": "2024-01-bahrain-grand-prix",
+      "position_skill_pct": -47.7,
+      "brier_model": 0.0492,
+      "brier_baseline": 0.0333,
+      "lap_improvement_pct": 26.9,
+      "mae_model_s": 0.3086,
+      "mae_baseline_s": 0.4221,
+      "hit_rate": {
+        "undercut": {
+          "hits": 17,
+          "resolved": 35
+        },
+        "degradation": {
+          "hits": 17,
+          "resolved": 39
+        },
+        "hits": 34,
+        "resolved": 74,
+        "overall_pct": 45.9
+      }
+    },
+    {
+      "race_id": "2024-24-abu-dhabi-grand-prix",
+      "position_skill_pct": 0.0,
+      "brier_model": 0.0667,
+      "brier_baseline": 0.0667,
+      "lap_improvement_pct": 9.4,
+      "mae_model_s": 0.301,
+      "mae_baseline_s": 0.3323,
+      "hit_rate": {
+        "undercut": {
+          "hits": 20,
+          "resolved": 34
+        },
+        "degradation": {
+          "hits": 7,
+          "resolved": 29
+        },
+        "hits": 27,
+        "resolved": 63,
+        "overall_pct": 42.9
+      }
+    }
+  ],
+  "seed": 42,
+  "data_source": "openf1",
+  "augur_version": "0.1.0",
+  "generated_at": "2026-11-20T09:04:15+00:00"
+}

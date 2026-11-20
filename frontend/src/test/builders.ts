@@ -1,4 +1,4 @@
-import type { DriverPositions, DriverPrediction, DriverState, LapRow, RaceEvent } from "../api/types";
+import type { DriverPositions, DriverPrediction, DriverState, LapRow, RaceEvent, WrappedResponse } from "../api/types";
 
 export function driver(code: string, position: number, extra: Partial<DriverState> = {}): DriverState {
   return {
@@ -63,5 +63,72 @@ export function raceEvent(id: string, lap: number, type: string, drivers: string
     title: `${type} ${drivers.join(" ")} lap ${lap}`,
     analysis: { what: `What of ${id}`, why: `Why of ${id}`, next: `Next of ${id}` },
     evidence: { driver: drivers[0] },
+  };
+}
+
+/** A Wrapped response using the spec's example values (podium call at lap 29, 2 of 3). */
+export function wrappedResponse(
+  extra: Partial<WrappedResponse> = {},
+  driverExtra: Partial<WrappedResponse["driver"]> = {},
+): WrappedResponse {
+  const hit = { ...raceEvent("best", 18, "undercut_window", ["NOR", "PIA"], 60), outcome: "hit" as const, outcome_lap: 26, outcome_text: "NOR was ahead of PIA on lap 26 (P3 vs P4)." };
+  const miss = { ...raceEvent("miss", 30, "degradation_warning", ["HAM"], 70), outcome: "miss" as const, outcome_lap: 38, outcome_text: "HAM did not pit by lap 38, 8 laps after the warning." };
+  const moment = raceEvent("moment", 44, "position_change", ["VER"], 90);
+  return {
+    race_id: "2024-24-abu-dhabi-grand-prix",
+    event_name: "Abu Dhabi Grand Prix",
+    year: 2024,
+    model: { name: "lightgbm", author: "AUGUR" },
+    summary: {
+      winner: "VER",
+      podium: ["VER", "LEC", "PIA"],
+      total_laps: 58,
+      n_events: 3,
+      n_events_by_type: { degradation_warning: 1, position_change: 1, undercut_window: 1 },
+    },
+    podium_call: {
+      lap: 29,
+      predicted: [
+        { code: "VER", p_podium: 0.92 },
+        { code: "NOR", p_podium: 0.71 },
+        { code: "LEC", p_podium: 0.55 },
+      ],
+      actual: ["VER", "LEC", "PIA"],
+      correct: 2,
+    },
+    score: {
+      position_skill_pct: -3.2,
+      brier_model: 0.1032,
+      brier_baseline: 0.1,
+      lap_improvement_pct: 12.5,
+      mae_model_s: 0.875,
+      mae_baseline_s: 1.0,
+    },
+    hit_rate: {
+      undercut: { hits: 1, resolved: 1 },
+      degradation: { hits: 0, resolved: 1 },
+      hits: 1,
+      resolved: 2,
+      overall_pct: 50,
+    },
+    best_call: hit,
+    biggest_miss: miss,
+    biggest_moment: moment,
+    driver: {
+      code: "NOR",
+      team: "McLaren",
+      team_color: "#FF8000",
+      grid_position: 1,
+      final_position: 2,
+      positions_by_lap: Array.from({ length: 58 }, (_, i) => ({ lap: i + 1, position: i < 20 ? 1 : 2 })),
+      p_podium_by_lap: Array.from({ length: 58 }, (_, i) => ({ lap: i + 1, p_podium: i < 20 ? 0.9 : 0.7 })),
+      stints: [
+        { compound: "MEDIUM", laps: 25 },
+        { compound: "HARD", laps: 33 },
+      ],
+      events: [hit],
+      ...driverExtra,
+    },
+    ...extra,
   };
 }

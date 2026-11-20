@@ -1,6 +1,6 @@
 # Swapping the lap-time model
 
-> **Status:** sections 2–4 and steps 1–4 of section 3 were run against the code on 2026-11-19 (`prediction-and-events` task 6.1). Step 5's settings panel, step 6 (`augur.bench`), and the matching errors in section 5 come from later changes (`race-dashboard`, `race-wrapped`, `polish`) and are not implemented yet; task 5.1 of `race-wrapped` checks them.
+> **Status:** sections 2–4 and steps 1–4 of section 3 were run against the code on 2026-11-19 (`prediction-and-events` task 6.1); step 6 (`augur.bench`) and its errors in section 5 were run on 2026-11-20 (`race-wrapped` task 5.1). Only step 5's settings panel is not implemented yet; it comes with change `polish` (Stage 3). Until then, use `AUGUR_MODEL`.
 
 AUGUR lets you plug in your own **lap-time model**, then compare it with the built-in models on the same benchmark. This page explains what your model changes, how to add it, and what you cannot swap yet.
 
@@ -119,10 +119,20 @@ If both are set, the settings panel choice wins.
 
 ```bash
 python -m augur.bench --model mymodel
-# mymodel: podium skill 40.0% vs current order, lap times beat baseline by 18.0%, event hit rate 64% (9/14)
 ```
 
-The result goes to `bench/mymodel.json`. Your model's name and author appear on every Wrapped card.
+The command scores the model on the two benchmark races (2024 Bahrain and 2024 Abu Dhabi) and prints one line. For the built-in models on 2026-11-20:
+
+```
+lightgbm: podium skill -15.9% vs current order, lap times beat baseline by 19.8%, event hit rate 44% (61/137)
+baseline: podium skill 61.7% vs current order, lap times match baseline (0.0%), event hit rate 44% (61/137)
+```
+
+- **Podium skill** (headline): how much better your `p_podium` forecasts are than assuming the current top 3 finish on the podium, at 25%, 50% and 75% race distance. Negative means worse than that assumption; `n/a` means the top 3 never changed.
+- **Lap times**: mean absolute error against the baseline model, which predicts no change from recent pace. `beat`, `trail`, or `match`.
+- **Event hit rate**: undercut and degradation calls that came true, over hits plus misses (calls the race ended before deciding are left out). These calls are rule-based, so the rate is the same for every model.
+
+The result goes to `bench/mymodel.json`, with the pooled scores, each race's scores (`per_race`), `seed`, `data_source`, and `augur_version`. A benchmark race without events or position predictions for your model (or analyzed before event outcomes existed) is analyzed first, which takes about half a minute per race. Your model's name and author appear on every Wrapped card.
 
 ## 4. Rules
 
@@ -134,13 +144,14 @@ The result goes to `bench/mymodel.json`. Your model's name and author appear on 
 
 | Message | Cause | Fix |
 |---|---|---|
-| `unknown model mymodel` | The class is not registered | Step 2 |
-| `model mymodel is not trained, run augur.train first` (`augur.analyze`, or HTTP 503 from the API) | `data/models/mymodel.joblib` is missing | Step 3 |
+| `unknown model mymodel` (`augur.train`, `augur.bench`) | The class is not registered | Step 2 |
+| `model mymodel is not trained, run augur.train first` (`augur.analyze`, `augur.bench`, or HTTP 503 from the API) | `data/models/mymodel.joblib` is missing | Step 3 |
 | `race <race_id> is in the training set of model mymodel` | `augur.analyze` on a training race | Analyze a test race instead |
 | `train and test races overlap: <race_id>` | The same race is in `--train` and `--test` | Remove it from one list |
 | "Race not analyzed" in the dashboard | No events for this race and model | Step 4 |
-| `benchmark race ... is in the training set` | The training races include 2024 Bahrain or Abu Dhabi | Retrain without them |
+| `benchmark race 2024-24-abu-dhabi-grand-prix is in the training set` (`augur.bench`, no file written) | The training races include 2024 Bahrain or Abu Dhabi | Retrain without them |
 | `missing race 2024-05, run augur.ingest first` | A training or test race is not downloaded (shown as `<year>-<round>` until ingested) | `python -m augur.ingest --year <year> --rounds <rounds>` |
+| `missing race 2024-01-bahrain-grand-prix, run augur.ingest first` (`augur.bench`, no file written) | A benchmark race is not downloaded | `python -m augur.ingest --year 2024 --rounds 1 24` |
 
 ## 6. Not supported yet
 

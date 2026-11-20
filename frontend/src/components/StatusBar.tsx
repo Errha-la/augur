@@ -10,6 +10,9 @@ interface StatusBarProps {
   replay: ReplayState;
   dispatch: Dispatch<ReplayAction>;
   trackStatus: string | null | undefined;
+  /** True until the final lap is on screen. */
+  wrappedLocked?: boolean;
+  onOpenWrapped?: () => void;
 }
 
 export function TrackStatusPill({ status }: { status: string | null | undefined }) {
@@ -30,7 +33,14 @@ export function TrackStatusPill({ status }: { status: string | null | undefined 
 const button =
   "rounded border border-zinc-800 px-2 py-1 text-sm text-zinc-300 hover:bg-zinc-800 disabled:opacity-40 disabled:hover:bg-transparent";
 
-export function StatusBar({ races, replay, dispatch, trackStatus }: StatusBarProps) {
+export function StatusBar({
+  races,
+  replay,
+  dispatch,
+  trackStatus,
+  wrappedLocked = true,
+  onOpenWrapped,
+}: StatusBarProps) {
   const { raceId, lap, totalLaps, playing, speed } = replay;
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -105,6 +115,24 @@ export function StatusBar({ races, replay, dispatch, trackStatus }: StatusBarPro
         LAP {lap}/{totalLaps}
       </span>
       <TrackStatusPill status={trackStatus} />
+      {onOpenWrapped && (
+        <button
+          type="button"
+          aria-label={wrappedLocked ? "Wrapped (unlocks at the final lap)" : "Wrapped"}
+          title={wrappedLocked ? "Unlocks at the final lap" : "Open the race Wrapped"}
+          data-locked={wrappedLocked || undefined}
+          disabled={wrappedLocked}
+          onClick={onOpenWrapped}
+          className={`${button} font-bold tracking-wider ${wrappedLocked ? "" : "border-purple-400 text-purple-300"}`}
+        >
+          {wrappedLocked && (
+            <span data-testid="wrapped-lock" aria-hidden className="mr-1">
+              🔒
+            </span>
+          )}
+          WRAPPED
+        </button>
+      )}
     </div>
   );
 }

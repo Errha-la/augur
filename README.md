@@ -124,6 +124,29 @@ Events precomputed with `lightgbm`, before and after tuning two rules (measured 
 | 2024 Abu Dhabi, before | 23 | 37 | 42 | 43 | 145 |
 | 2024 Abu Dhabi, after | 23 | 32 | 42 | 19 | 116 |
 
+## Benchmark your model
+
+One command scores a lap-time model on the fixed benchmark races (2024 Bahrain and 2024 Abu Dhabi) and writes `bench/<model>.json`:
+
+```bash
+python -m augur.train --model baseline       # once, if the baseline has not been trained
+python -m augur.bench --model lightgbm
+python -m augur.bench --model baseline
+```
+
+Results on 2026-11-20 (`bench/lightgbm.json`, `bench/baseline.json`):
+
+```
+lightgbm: podium skill -15.9% vs current order, lap times beat baseline by 19.8%, event hit rate 44% (61/137)
+baseline: podium skill 61.7% vs current order, lap times match baseline (0.0%), event hit rate 44% (61/137)
+```
+
+- **Podium skill** (headline): Brier score of `p_podium` at 25%, 50% and 75% race distance against "the current top 3 finish on the podium". `lightgbm` predicts lap times better than the baseline but its finishing-position probabilities score worse than that simple rule, so the position simulator with `lightgbm` needs work (for example, at lap 13 of Abu Dhabi it gives HUL, then P7, an 83% win chance).
+- **Lap times:** mean absolute error against the baseline (next lap = recent pace).
+- **Event hit rate:** undercut and degradation calls resolved 8 laps later. Hit / miss / void with `lightgbm`: Bahrain undercut 17 / 18 / 5, degradation 17 / 22 / 9; Abu Dhabi undercut 20 / 14 / 8, degradation 7 / 22 / 3. These rules do not use the lap-time model, so every model gets the same rate.
+
+To plug in your own model, follow [docs/swap-model.md](docs/swap-model.md). At the final lap of a replay, the dashboard's **WRAPPED** button opens the race summary as seven story cards; "Download card" saves each one as a 1080×1920 PNG.
+
 ## Test
 
 ```bash
