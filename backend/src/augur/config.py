@@ -33,6 +33,9 @@ PIT_LOSS_FALLBACK_S = 22.0
 # Illustrative values seen in public hobby projects, unverified.
 DEG_FALLBACK_S_PER_LAP: dict[str, float] = {"SOFT": 0.085, "MEDIUM": 0.050, "HARD": 0.028}
 NOISE_MIN_S = 0.2
+# Pace of a compound relative to MEDIUM, s/lap (estimates; checked against fuel-corrected
+# stint intercepts on the evaluation races, see position-sim-calibration tasks.md).
+COMPOUND_PACE_OFFSET_S: dict[str, float] = {"SOFT": -0.6, "MEDIUM": 0.0, "HARD": 0.4}
 STRATEGY_RUNS_DEFAULT = 1000
 STRATEGY_RUNS_MIN = 100
 STRATEGY_RUNS_MAX = 5000
@@ -73,6 +76,19 @@ PIT_JITTER_LAPS = 3
 # Measured on Bahrain lap 15: a 5-lap fit of -0.164 s/lap made a backmarker the
 # favourite (p_win 0.81) after 42 projected laps.
 POSITION_DEG_MIN_FIT_LAPS = 8
+# Guarded compound slope for the simulators (position-sim-calibration): the median of
+# stint fits with at least POSITION_DEG_MIN_FIT_LAPS clean laps, shrunk toward the circuit
+# prior (else DEG_FALLBACK_S_PER_LAP) with this many pseudo-stints, clamped to
+# [0, DEG_CAP_S_PER_LAP]. Estimates; the cap sits above the SOFT default with margin.
+DEG_SHRINK_STINTS = 3
+DEG_CAP_S_PER_LAP = 0.20
+# The lap-time model's next-lap delta (prediction minus recent pace) is multiplied by this
+# per simulated lap, so a one-lap forecast does not become a race-long pace gap
+# (estimate, tuned on the evaluation races by augur.tune_sim).
+MODEL_DELTA_DECAY = 0.5
+# Standard deviation of the per-run, per-driver pace offset, s/lap, added to every
+# simulated lap of a run (estimate, tuned on the evaluation races by augur.tune_sim).
+PACE_OFFSET_SD_S = 0.15
 # Dirty air: the PITWALL project's documented prior, 0.40 s/lap within 1.0 s.
 DIRTY_AIR_GAP_S = 1.0
 DIRTY_AIR_PENALTY_S = 0.4

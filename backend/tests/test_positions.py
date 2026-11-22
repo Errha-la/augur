@@ -167,14 +167,16 @@ def test_projected_deg_ignores_short_or_negative_fits():
 # --- Dirty-air penalty -------------------------------------------------------
 
 
-def test_slightly_faster_car_stays_behind():
+def test_slightly_faster_car_stays_behind(monkeypatch):
+    monkeypatch.setattr(config, "PACE_OFFSET_SD_S", 0.0)  # isolate dirty air from the per-run offset
     ahead = start("AHD", 0.0, 90.0)
     chaser = start("CHS", 0.5, 89.8)
     pos = simulate_finish([ahead, chaser], 10, 20, 100, 0, loss_s=22.0)
     assert (pos[:, 0] == 1).all() and (pos[:, 1] == 2).all()
 
 
-def test_much_faster_car_passes():
+def test_much_faster_car_passes(monkeypatch):
+    monkeypatch.setattr(config, "PACE_OFFSET_SD_S", 0.0)
     ahead = start("AHD", 0.0, 90.0)
     chaser = start("CHS", 0.5, 89.0)
     pos = simulate_finish([ahead, chaser], 10, 20, 100, 0, loss_s=22.0)
@@ -196,7 +198,8 @@ def test_probability_sums(lap):
     assert all(1 <= d["position_p10"] <= d["position_p90"] <= 20 for d in out)
     assert all(1 <= d["expected_position"] <= 20 for d in out)
     assert set(out[0]) == {
-        "code", "p_win", "p_podium", "p_points", "expected_position", "position_p10", "position_p90"
+        "code", "p_win", "p_podium", "p_points", "expected_position", "position_p10", "position_p90",
+        "position_distribution",
     }
 
 

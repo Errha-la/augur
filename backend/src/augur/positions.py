@@ -1,8 +1,12 @@
 """Full-field Monte Carlo simulation of the rest of a race from lap N.
 
 For every driver, a simulated lap j > N takes
-    base + deg * (tyre_age(j) - tyre_age_now) - fuel_s_per_lap * (j - N) + noise
-where ``base`` is the predicted next lap time at lap N. A simulated pit stop
+    base + delta * MODEL_DELTA_DECAY ** (j - N - 1) + deg * (tyre_age(j) - tyre_age_now)
+        - fuel_s_per_lap * (j - N) + noise
+where ``base`` is the driver's recent pace at lap N and ``delta`` the lap-time model's
+predicted change for lap N+1, which fades instead of lasting to the flag. Each run
+also draws one pace offset per driver (PACE_OFFSET_SD_S) that lasts the whole run, and
+a simulated stop changes pace by the compound offset (COMPOUND_PACE_OFFSET_S). A simulated pit stop
 adds the pit loss on its lap and restarts tyre age on the next compound. A
 driver ending a lap less than DIRTY_AIR_GAP_S behind the car ahead (same lap
 count) loses DIRTY_AIR_PENALTY_S on the next lap. Finishing order per run is by
@@ -25,10 +29,10 @@ from augur import config
 from augur.feed import RaceFeed
 from augur.features import fuel_s_per_lap
 from augur.models.base import LapTimeModel
-from augur.models.degradation import compound_median_slopes, current_stint_degradation
+from augur.models.degradation import current_stint_degradation, guarded_compound_slopes, guarded_slope
 from augur.predictions import predictions_at
 from augur.state import race_state
-from augur.strategy import deg_or_fallback, next_compound, pit_loss
+from augur.strategy import compound_offset, next_compound, pit_loss
 
 # Large enough to dominate any race time when ordering by (laps desc, time asc).
 _LAP_WEIGHT = 1e7
@@ -41,13 +45,14 @@ class DriverStart:
     code: str
     laps_completed: int
     time_s: float  # cumulative session time at the last completed lap
-    base_s: float  # predicted next lap time
+    base_s: float  # recent pace (median of the last clean laps), else a fallback pace
     deg_s_per_lap: float
     next_deg_s_per_lap: float
     tyre_age: int
     compound: str | None
     stops: bool  # True: one more simulated stop (two dry compounds not yet used)
     noise_s: float
+    delta_s: float = 0.0  # model's next-lap delta from base_s; decays by MODEL_DELTA_DECAY per lap
 
 
 def _validate(lap: int, total_laps: int, runs: int, seed: int) -> None:
@@ -64,35 +69,42 @@ def _validate(lap: int, total_laps: int, runs: int, seed: int) -> None:
 
 def _base_paces(
     laps: pd.DataFrame, total_laps: int, lap: int, model: LapTimeModel | None, prior, codes: list[str]
-) -> dict[str, float]:
-    """Model prediction, else median of own laps after lap 1, else the field median."""
-    out: dict[str, float] = {}
+) -> dict[str, tuple[float, float]]:
+    """code -> (base pace, model delta for lap N+1).
+
+    With a model prediction the base is the driver's recent pace (median of the last clean
+    laps) and the delta is ``predicted_next_lap_s - recent_pace_s``; otherwise the base is
+    the median of own laps after lap 1, else the field median, and the delta is 0.
+    """
+    out: dict[str, tuple[float, float]] = {}
     if model is not None:
         for p in predictions_at(laps, total_laps, lap, model, prior):
-            if p["predicted_next_lap_s"] is not None:
-                out[p["code"]] = float(p["predicted_next_lap_s"])
+            if p["predicted_next_lap_s"] is not None and p["recent_pace_s"] is not None:
+                recent = float(p["recent_pace_s"])
+                out[p["code"]] = (recent, float(p["predicted_next_lap_s"]) - recent)
     timed = laps[laps["lap_time_s"].notna()]
     after_one = timed[timed["lap"] > 1]
     for code in codes:
         if code not in out:
             own = after_one.loc[after_one["driver"] == code, "lap_time_s"]
             if not own.empty:
-                out[code] = float(median(own.astype(float)))
+                out[code] = (float(median(own.astype(float))), 0.0)
     if out:
-        field = float(median(out.values()))
+        field = float(median(b for b, _ in out.values()))
     elif not timed.empty:
         # Only lap 1 so far: every car gets the same pace (design gap, recorded in tasks.md).
         field = float(median(timed["lap_time_s"].astype(float)))
     else:
         field = 90.0
-    return {code: out.get(code, field) for code in codes}
+    return {code: out.get(code, (field, 0.0)) for code in codes}
 
 
-def projected_deg(fit, compound: str | None, medians: Mapping[str, float]) -> float:
-    """Degradation projected to the flag: own fit from enough clean laps, else the compound
-    median or default; never negative (tyres do not get faster with age)."""
+def projected_deg(fit, compound: str | None, guarded: Mapping[str, float]) -> float:
+    """Degradation projected to the flag: own fit from enough clean laps with a non-negative
+    slope, else the guarded compound slope; always within [0, DEG_CAP_S_PER_LAP]."""
     trusted = fit is not None and fit.n >= config.POSITION_DEG_MIN_FIT_LAPS and fit.slope >= 0
-    return max(0.0, deg_or_fallback(fit.slope if trusted else None, compound, medians))
+    value = fit.slope if trusted else guarded_slope(compound, guarded)
+    return min(config.DEG_CAP_S_PER_LAP, max(0.0, float(value)))
 
 
 def driver_starts(
@@ -108,7 +120,7 @@ def driver_starts(
     codes = [d["code"] for d in standings if d["laps_completed"] > 0]
     base = _base_paces(laps, total_laps, lap, model, prior, codes)
     deg = current_stint_degradation(laps, total_laps)
-    medians = compound_median_slopes(laps, total_laps)
+    guarded = guarded_compound_slopes(laps, total_laps, prior)
 
     starts = []
     for code in codes:
@@ -123,9 +135,10 @@ def driver_starts(
                 code=code,
                 laps_completed=int(own["lap"].max()),
                 time_s=float(times.iloc[-1]) if not times.empty else math.inf,
-                base_s=base[code],
-                deg_s_per_lap=projected_deg(fit, compound, medians),
-                next_deg_s_per_lap=max(0.0, deg_or_fallback(None, next_compound(compound), medians)),
+                base_s=base[code][0],
+                delta_s=base[code][1],
+                deg_s_per_lap=projected_deg(fit, compound, guarded),
+                next_deg_s_per_lap=projected_deg(None, next_compound(compound), guarded),
                 tyre_age=int(d.get("tyre_life") or 0),
                 compound=compound,
                 stops=len(used) < 2,
@@ -165,19 +178,42 @@ def simulate_finish(
     loss_s: float,
 ) -> np.ndarray:
     """(runs, drivers) finishing positions, 1-based, from laps N+1..total_laps."""
+    time, laps_done, _ = _simulate(starts, lap, total_laps, runs, seed, loss_s)
+    return _positions(time, laps_done)
+
+
+def _simulate(
+    starts: list[DriverStart],
+    lap: int,
+    total_laps: int,
+    runs: int,
+    seed: int,
+    loss_s: float,
+    record: bool = False,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
+    """(cumulative time, laps completed) per (run, driver) at the flag, plus with ``record``
+    the (runs, laps, drivers) lap times of laps N+1..total_laps."""
     n = len(starts)
     rng = np.random.default_rng(seed + lap)
     pit = sample_pit_laps(starts, lap, total_laps, runs, rng)
     laps_done = np.tile(np.array([s.laps_completed for s in starts], dtype=float), (runs, 1))
     time = np.tile(np.array([s.time_s for s in starts], dtype=float), (runs, 1))
     base = np.array([s.base_s for s in starts])
+    delta = np.array([s.delta_s for s in starts])
     deg = np.array([s.deg_s_per_lap for s in starts])
     next_deg = np.array([s.next_deg_s_per_lap for s in starts])
     age_now = np.array([s.tyre_age for s in starts], dtype=float)
     noise_sd = np.array([s.noise_s for s in starts])
-    fresh_base = base - deg * age_now  # pace on new tyres at the current fuel load
+    # Pace on new tyres of the next compound at the current fuel load: the current
+    # compound's wear removed, plus the offset between the two compounds.
+    switch = np.array([compound_offset(next_compound(s.compound)) - compound_offset(s.compound) for s in starts])
+    fresh_base = base - deg * age_now + switch
+    # One pace offset per run and driver for the whole run: uncertainty about a driver's
+    # pace that does not average out over the laps remaining.
+    offset = rng.normal(0.0, config.PACE_OFFSET_SD_S, (runs, n))
     fuel = fuel_s_per_lap(total_laps)
     penalty = np.zeros((runs, n))
+    history = np.empty((runs, total_laps - lap, n)) if record else None
 
     for j in range(lap + 1, total_laps + 1):
         stopped = (pit > 0) & (pit < j)
@@ -185,15 +221,18 @@ def simulate_finish(
         pace = np.where(
             stopped,
             fresh_base + next_deg * age_after_stop,
-            base + deg * (j - lap),  # deg * (tyre_age(j) - tyre_age_now)
+            # deg * (tyre_age(j) - tyre_age_now); the model's next-lap delta fades lap by lap
+            base + delta * config.MODEL_DELTA_DECAY ** (j - lap - 1) + deg * (j - lap),
         )
-        lap_time = pace - fuel * (j - lap) + rng.normal(0.0, 1.0, (runs, n)) * noise_sd + penalty
+        lap_time = pace + offset - fuel * (j - lap) + rng.normal(0.0, 1.0, (runs, n)) * noise_sd + penalty
         lap_time = lap_time + np.where(pit == j, loss_s, 0.0)
+        if history is not None:
+            history[:, j - lap - 1, :] = lap_time
         time = time + lap_time
         laps_done = laps_done + 1
         penalty = _dirty_air(time, laps_done)
 
-    return _positions(time, laps_done)
+    return time, laps_done, history
 
 
 def _dirty_air(time: np.ndarray, laps_done: np.ndarray) -> np.ndarray:
@@ -216,11 +255,13 @@ def _positions(time: np.ndarray, laps_done: np.ndarray) -> np.ndarray:
 
 
 def summarize(codes: list[str], positions: np.ndarray) -> list[dict]:
-    """Per driver probabilities and position spread, ordered by expected position."""
+    """Per driver probabilities, position spread, and finishing-position distribution,
+    ordered by expected position."""
     n = len(codes)
     rows = []
     for i, code in enumerate(codes):
         p = positions[:, i].astype(float)
+        counts = np.bincount(positions[:, i].astype(np.int64) - 1, minlength=n)[:n]
         rows.append(
             {
                 "code": code,
@@ -230,6 +271,8 @@ def summarize(codes: list[str], positions: np.ndarray) -> list[dict]:
                 "expected_position": round(float(p.mean()), 3),
                 "position_p10": round(float(np.percentile(p, 10)), 2),
                 "position_p90": round(float(np.percentile(p, 90)), 2),
+                # Share of runs finishing P1..Pn.
+                "position_distribution": [round(float(c) / len(p), 6) for c in counts],
             }
         )
     rows.sort(key=lambda r: (r["expected_position"], r["code"]))

@@ -104,12 +104,13 @@ def replace_positions(
             )
             conn.executemany(
                 "INSERT INTO position_predictions (race_id, model, lap, code, p_win, p_podium, p_points,"
-                " expected_position, position_p10, position_p90, runs, seed)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                " expected_position, position_p10, position_p90, runs, seed, position_distribution)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
                     (
                         race_id, model_name, lap, d["code"], d["p_win"], d["p_podium"], d["p_points"],
                         d["expected_position"], d["position_p10"], d["position_p90"], runs, seed,
+                        json.dumps(d["position_distribution"]) if d.get("position_distribution") is not None else None,
                     )
                     for lap, drivers in sorted(positions.items())
                     for d in drivers

@@ -147,17 +147,26 @@ class ReplayStore:
                     return {}
                 raise
 
-    def positions_until(self, race_id: str, model: str, lap: int, *, only_lap: bool = False) -> list[dict]:
+    def positions_until(
+        self, race_id: str, model: str, lap: int, *, only_lap: bool = False, include_distribution: bool = False
+    ) -> list[dict]:
         """Stored position predictions with ``lap <= lap`` (or ``== lap`` when ``only_lap``),
-        lap ascending, then expected position."""
+        lap ascending, then expected position. ``include_distribution`` adds
+        ``position_distribution`` (list of P1..Pn shares, None for rows stored before it existed)."""
         op = "=" if only_lap else "<="
+        extra = ", position_distribution" if include_distribution else ""
         rows = self._query(
             "SELECT lap, code, p_win, p_podium, p_points, expected_position, position_p10, position_p90,"
-            f" runs, seed FROM position_predictions WHERE race_id = ? AND model = ? AND lap {op} ?"
+            f" runs, seed{extra} FROM position_predictions WHERE race_id = ? AND model = ? AND lap {op} ?"
             " ORDER BY lap, expected_position, code",
             (race_id, model, int(lap)),
         )
-        return [dict(r) for r in rows]
+        out = [dict(r) for r in rows]
+        if include_distribution:
+            for r in out:
+                raw = r["position_distribution"]
+                r["position_distribution"] = None if raw is None else json.loads(raw)
+        return out
 
     def has_positions(self, race_id: str, model: str) -> bool:
         rows = self._query(

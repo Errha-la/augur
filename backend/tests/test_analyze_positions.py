@@ -49,3 +49,40 @@ def test_invalid_runs_refused(trained, capsys):
     ) == 1
     assert "runs must be" in capsys.readouterr().out
     assert rows(trained) == []
+
+
+def test_old_database_gains_distribution_column(trained, monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from augur.api import create_app
+    from augur.replay import ReplayStore
+
+    # Rebuild position_predictions as it was before position_distribution existed.
+    with sqlite3.connect(catalog.db_path(trained.data_dir)) as conn:
+        conn.execute("DROP TABLE IF EXISTS position_predictions")
+        conn.execute(
+            "CREATE TABLE position_predictions (race_id TEXT, model TEXT, lap INT, code TEXT, p_win REAL,"
+            " p_podium REAL, p_points REAL, expected_position REAL, position_p10 REAL, position_p90 REAL,"
+            " runs INT, seed INT, PRIMARY KEY (race_id, model, lap, code))"
+        )
+        conn.execute(
+            "INSERT INTO position_predictions VALUES ('old-race', 'baseline', 1, 'AAA', 1, 1, 1, 1, 1, 1, 200, 42)"
+        )
+    assert run(trained) == 0
+    with sqlite3.connect(catalog.db_path(trained.data_dir)) as conn:
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(position_predictions)")}
+    assert "position_distribution" in cols
+
+    store = ReplayStore(trained.data_dir)
+    old = store.positions_until("old-race", "baseline", 1, include_distribution=True)
+    assert old[0]["position_distribution"] is None
+    new = store.positions_until(trained.race_id, "baseline", 3, only_lap=True, include_distribution=True)
+    n = len(trained.driver_codes)
+    assert new and all(len(r["position_distribution"]) == n for r in new)
+    assert "position_distribution" not in store.positions_until(trained.race_id, "baseline", 3)[0]
+
+    monkeypatch.setenv("AUGUR_MODEL", "baseline")
+    body = TestClient(create_app(trained.data_dir)).get(f"/api/races/{trained.race_id}/positions?lap=3").json()
+    assert set(body["drivers"][0]) == {
+        "code", "p_win", "p_podium", "p_points", "expected_position", "position_p10", "position_p90"
+    }
