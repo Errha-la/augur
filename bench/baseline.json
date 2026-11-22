@@ -5,45 +5,45 @@
     "2024-01-bahrain-grand-prix",
     "2024-24-abu-dhabi-grand-prix"
   ],
-  "position_skill_pct": 48.7,
-  "brier_model": 0.0256,
+  "position_skill_pct": 49.6,
+  "brier_model": 0.0252,
   "brier_baseline": 0.05,
-  "log_loss_model": 0.086,
+  "log_loss_model": 0.0844,
   "log_loss_baseline": 0.3463,
   "reliability": [
     {
       "bin_low": 0.0,
       "bin_high": 0.2,
       "count": 99,
-      "mean_forecast": 0.0176,
+      "mean_forecast": 0.0171,
       "observed_rate": 0.0101
     },
     {
       "bin_low": 0.2,
       "bin_high": 0.4,
       "count": 3,
-      "mean_forecast": 0.3163,
+      "mean_forecast": 0.314,
       "observed_rate": 0.3333
     },
     {
       "bin_low": 0.4,
       "bin_high": 0.6,
       "count": 2,
-      "mean_forecast": 0.457,
+      "mean_forecast": 0.4605,
       "observed_rate": 0.5
     },
     {
       "bin_low": 0.6,
       "bin_high": 0.8,
       "count": 3,
-      "mean_forecast": 0.6587,
+      "mean_forecast": 0.6643,
       "observed_rate": 1.0
     },
     {
       "bin_low": 0.8,
       "bin_high": 1.0,
       "count": 13,
-      "mean_forecast": 0.9555,
+      "mean_forecast": 0.9575,
       "observed_rate": 0.9231
     }
   ],
@@ -66,17 +66,17 @@
   "per_race": [
     {
       "race_id": "2024-01-bahrain-grand-prix",
-      "position_skill_pct": -9.1,
-      "brier_model": 0.0364,
+      "position_skill_pct": -8.1,
+      "brier_model": 0.036,
       "brier_baseline": 0.0333,
-      "log_loss_model": 0.1104,
+      "log_loss_model": 0.1091,
       "log_loss_baseline": 0.2312,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 50,
-          "mean_forecast": 0.0155,
+          "mean_forecast": 0.0154,
           "observed_rate": 0.02
         },
         {
@@ -97,14 +97,14 @@
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 1,
-          "mean_forecast": 0.713,
+          "mean_forecast": 0.715,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 7,
-          "mean_forecast": 0.9501,
+          "mean_forecast": 0.951,
           "observed_rate": 0.8571
         }
       ],
@@ -127,45 +127,45 @@
     },
     {
       "race_id": "2024-24-abu-dhabi-grand-prix",
-      "position_skill_pct": 77.6,
-      "brier_model": 0.0149,
+      "position_skill_pct": 78.4,
+      "brier_model": 0.0144,
       "brier_baseline": 0.0667,
-      "log_loss_model": 0.0616,
+      "log_loss_model": 0.0598,
       "log_loss_baseline": 0.4615,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 49,
-          "mean_forecast": 0.0197,
+          "mean_forecast": 0.019,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 2,
-          "mean_forecast": 0.2765,
+          "mean_forecast": 0.273,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.45,
+          "mean_forecast": 0.457,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 2,
-          "mean_forecast": 0.6315,
+          "mean_forecast": 0.639,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 6,
-          "mean_forecast": 0.9618,
+          "mean_forecast": 0.965,
           "observed_rate": 1.0
         }
       ],
@@ -190,5 +190,5 @@
   "seed": 42,
   "data_source": "openf1",
   "augur_version": "0.1.0",
-  "generated_at": "2026-11-22T14:48:17+00:00"
+  "generated_at": "2026-11-22T15:33:46+00:00"
 }

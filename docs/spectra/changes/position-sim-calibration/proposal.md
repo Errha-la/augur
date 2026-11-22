@@ -30,7 +30,7 @@ Recorded in design.md.
 ## Success Criteria
 
 - Pooled podium skill on the benchmark races is reported for `lightgbm` and `baseline` after the change, measured by `python -m augur.bench`. Target: above 0% for both. If the target is missed, the measured number is still reported and the gap is recorded as an open issue; no number is hidden or tuned on the benchmark races.
-- The share of checkpoint `p_podium` values below 0.02 or above 0.98 drops from 85–100% per race (measured 2026-11-22) to at most 60% on each benchmark race.
+- The share of checkpoint `p_podium` values below 0.02 or above 0.98 drops from 85–100% per race (measured 2026-11-22) to at most 60% on each benchmark race. Outcome (2026-11-22): 73% on both races, missed; recorded as an open issue in tasks.md for a follow-up change.
 - On Bahrain lap 14 no driver outside the top 6 has `p_win` above 0.5.
 - All leakage tests still pass, and the new tests in tasks.md pass.
 

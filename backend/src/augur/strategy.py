@@ -131,6 +131,17 @@ def _expected_time(state: DriverState, lap: int, total_laps: int, pit_lap: int |
     return total + (loss if pit_lap is not None else 0.0)
 
 
+def _plan_terms(state: DriverState, lap: int, total_laps: int, pit_lap: int | None) -> tuple[float, float, float, float]:
+    """Linear terms of a plan's remaining time: (time with zero degradation and no pit loss,
+    tyre-age laps on the current compound, tyre-age laps on the next compound, stops)."""
+    flat = DriverState(state.base_s, 0.0, state.tyre_age, state.compound, state.next_compound, 0.0, state.noise_s)
+    fixed = _expected_time(flat, lap, total_laps, pit_lap, 0.0)
+    end = total_laps if pit_lap is None else pit_lap
+    age_current = float(sum(state.tyre_age + j - lap for j in range(lap + 1, end + 1)))
+    age_next = 0.0 if pit_lap is None else float(sum(j - pit_lap for j in range(pit_lap + 1, total_laps + 1)))
+    return fixed, age_current, age_next, 0.0 if pit_lap is None else 1.0
+
+
 def _check_runs(runs: int) -> None:
     if isinstance(runs, bool) or not isinstance(runs, (int, np.integer)):
         raise TypeError(f"runs must be an int, got {runs!r}")
@@ -157,8 +168,11 @@ def _plan_totals(
 ) -> tuple[float, np.ndarray | None]:
     """(pit loss, (plans, runs) simulated remaining times or None without driver state).
 
-    Every plan of one call shares the same random draw per run (common random numbers),
-    so differences between plans come from the plans, not from independent noise.
+    Every plan of one call shares the same random draws per run (common random numbers):
+    the summed lap noise, the pit loss, and the degradation slopes of the current and the
+    next compound. Lap noise shifts every plan equally; the slopes and the pit loss weigh
+    differently per plan (laps on each set of tyres, stop or no stop), so ``win_probability``
+    measures how often one plan beats the others under the same conditions.
     """
     laps = laps[laps["lap"] <= lap]
     observed = pit_loss(laps)
@@ -168,11 +182,16 @@ def _plan_totals(
     if state is None or remaining <= 0:
         return loss, None
     rng = np.random.default_rng(seed)
+    n = int(runs)
     noise_sd = state.noise_s * math.sqrt(remaining)  # sum of `remaining` iid lap noises
-    shared = rng.normal(0.0, noise_sd, int(runs))
-    totals = np.empty((len(pit_laps), int(runs)))
+    shared = rng.normal(0.0, noise_sd, n)
+    deg_now = np.maximum(0.0, state.deg_s_per_lap + rng.normal(0.0, config.STRATEGY_DEG_SD_S_PER_LAP, n))
+    deg_next = np.maximum(0.0, state.next_deg_s_per_lap + rng.normal(0.0, config.STRATEGY_DEG_SD_S_PER_LAP, n))
+    loss_run = np.maximum(0.0, loss + rng.normal(0.0, config.STRATEGY_PIT_LOSS_SD_S, n))
+    totals = np.empty((len(pit_laps), n))
     for i, pit_lap in enumerate(pit_laps):
-        totals[i] = _expected_time(state, lap, total_laps, pit_lap, loss) + shared
+        fixed, age_now, age_next, stops = _plan_terms(state, lap, total_laps, pit_lap)
+        totals[i] = fixed + deg_now * age_now + deg_next * age_next + stops * loss_run + shared
     return loss, totals
 
 

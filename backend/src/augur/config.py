@@ -40,6 +40,10 @@ STRATEGY_RUNS_DEFAULT = 1000
 STRATEGY_RUNS_MIN = 100
 STRATEGY_RUNS_MAX = 5000
 STRATEGY_SEED_DEFAULT = 42
+# Per-run uncertainty shared by every candidate plan (common random numbers): the
+# degradation slope of the current and of the next compound, and the pit loss (estimates).
+STRATEGY_DEG_SD_S_PER_LAP = 0.02
+STRATEGY_PIT_LOSS_SD_S = 1.5
 
 # Event detectors.
 PACE_DROP_S = 1.0

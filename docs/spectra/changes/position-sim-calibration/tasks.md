@@ -32,7 +32,7 @@ Scripts used for the checks below are in `measurements/` of this change (run fro
 
 ### 1.1 Shared draws
 
-- With common random numbers and purely additive lap noise, the difference between two plans is the same in every run, so the plan with the lowest `mean_s` always gets `win_probability` 1.0 (others 0.0). This follows the design ("measures the plans' difference"), but event `next` texts now read "fastest option in 100% of simulations". **Open decision:** keep, or add plan-dependent randomness (for example per-run degradation uncertainty) in a later change.
+- With common random numbers and purely additive lap noise, the difference between two plans is the same in every run, so the plan with the lowest `mean_s` always gets `win_probability` 1.0 (others 0.0). This follows the design ("measures the plans' difference"), but event `next` texts now read "fastest option in 100% of simulations". Resolved after review: see "Review and verify follow-up" below.
 - Tasks 1.1 and 2.4 were not merged to `main` by this session (merging is left to the user); they are on branch `worktree-position-sim-calibration` (checkpoint commit 03bb5c0).
 
 ### 2.1 Guarded slope in strategy
@@ -92,33 +92,43 @@ offset_sd=0.30 decay=0.7 brier=0.0733 log_loss=0.2843
 
 - Simulated safety cars are below the actual count: a run holds at most one period, so the first-draw rule gives about 0.31 safety cars per 57 laps, not the design's 0.45 estimate.
 
-### 5.1 Measured results (`measurements/run51.sh`, 727 s; baseline model trained first with `python -m augur.train --model baseline --train 2024:2-11 --test 2024:1,24`)
+### 5.1 Measured results (`measurements/run51.sh`, rerun after the review fixes: 884 s; baseline model trained first with `python -m augur.train --model baseline --train 2024:2-11 --test 2024:1,24`)
 
 | | Podium skill | Brier model / baseline | Log loss model / baseline |
 |---|---|---|---|
-| lightgbm, benchmark (before: −15.9%) | **49.0%** | 0.0255 / 0.05 | 0.0843 / 0.3463 |
-| baseline, benchmark (before: 61.7%) | **48.7%** | 0.0256 / 0.05 | 0.086 / 0.3463 |
-| lightgbm, evaluation races | 4.3% | 0.0744 / 0.0778 | 0.275 / 0.5382 |
-| baseline, evaluation races | 2.7% | 0.0757 / 0.0778 | 0.2818 / 0.5382 |
+| lightgbm, benchmark (before: −15.9%) | **49.8%** | 0.0251 / 0.05 | 0.0828 / 0.3463 |
+| baseline, benchmark (before: 61.7%) | **49.6%** | 0.0252 / 0.05 | 0.0844 / 0.3463 |
+| lightgbm, evaluation races | 4.2% | 0.0745 / 0.0778 | 0.276 / 0.5382 |
+| baseline, evaluation races | 2.7% | 0.0757 / 0.0778 | 0.2819 / 0.5382 |
 
-- Per race, lightgbm: Bahrain −2.8% (log loss 0.1027 vs 0.2312), Abu Dhabi 74.9% (0.0659 vs 0.4615). Baseline: Bahrain −9.1%, Abu Dhabi 77.6%.
-- Per evaluation race, lightgbm: British 40.4%, Hungarian −432.0%, Belgian 65.0%, Dutch −12.2%, Italian −19.3%, Azerbaijan 9.9%, Singapore −109.6%, United States 40.7%, Mexico City −32.0%, São Paulo −25.2%, Las Vegas 33.3%, Qatar 41.8%.
-- Reliability, lightgbm benchmark (count, mean forecast, observed): [0,0.2) 97, 0.0137, 0.0; [0.2,0.4) 5, 0.2898, 0.4; [0.4,0.6) 2, 0.4365, 0.5; [0.6,0.8) 3, 0.6527, 1.0; [0.8,1.0] 13, 0.953, 0.9231. Evaluation races: [0,0.2) 576, 0.0119, 0.0365; [0.2,0.4) 28, 0.3009, 0.3929; [0.4,0.6) 25, 0.4821, 0.48; [0.6,0.8) 18, 0.6942, 0.5; [0.8,1.0] 73, 0.934, 0.7534 (high forecasts are still overconfident).
-- Checkpoint `p_podium` outside [0.02, 0.98]: Bahrain 72% (43/60), Abu Dhabi 73% (44/60), both models (before: 85–100%).
-- Bahrain lap 14 `p_win` leaders, lightgbm: VER 0.979, SAI 0.011, LEC 0.010 (before: HUL 1.0). No driver outside the top 6 has `p_win` above 0.5 (both models).
-- Cached commentary (lightgbm, openai_compat glm, en): 91 of 116 still pass grounding, **25 no longer pass** after re-analysis. Regenerating them is a separate `python -m augur.narrate` run.
-- Full backend suite: 439 passed, 1 skipped (was 403 + 1 skipped).
+- Per race, lightgbm: Bahrain −2.2% (log loss 0.1016 vs 0.2312), Abu Dhabi 75.8% (0.064 vs 0.4615). Baseline: Bahrain −8.1%, Abu Dhabi 78.4%.
+- Per evaluation race, lightgbm: British 40.2%, Hungarian −430.1%, Belgian 65.2%, Dutch −12.2%, Italian −19.0%, Azerbaijan 9.5%, Singapore −110.3%, United States 40.8%, Mexico City −31.9%, São Paulo −25.4%, Las Vegas 33.2%, Qatar 41.4%.
+- Reliability, lightgbm benchmark (count, mean forecast, observed): [0,0.2) 98, 0.0152, 0.0; [0.2,0.4) 4, 0.309, 0.5; [0.4,0.6) 2, 0.4415, 0.5; [0.6,0.8) 3, 0.6577, 1.0; [0.8,1.0] 13, 0.9552, 0.9231. Evaluation races: [0,0.2) 577, 0.0119, 0.0381; [0.2,0.4) 27, 0.3029, 0.4074; [0.4,0.6) 24, 0.4791, 0.4583; [0.6,0.8) 19, 0.6908, 0.4737; [0.8,1.0] 73, 0.9357, 0.7534 (high forecasts are still overconfident).
+- Checkpoint `p_podium` outside [0.02, 0.98]: lightgbm Bahrain 73% (44/60), Abu Dhabi 73% (44/60); baseline 72% (43/60) and 73% (before: 85–100%).
+- Bahrain lap 14 `p_win` leaders, lightgbm: VER 0.980, SAI 0.011, LEC 0.009 (before: HUL 1.0). No driver outside the top 6 has `p_win` above 0.5 (both models).
+- Cached commentary (lightgbm, openai_compat glm, en): 89 of 116 still pass grounding, **27 no longer pass** after re-analysis. Regenerating them is a separate `python -m augur.narrate` run.
+- Full backend suite: 442 passed, 1 skipped (was 403 + 1 skipped).
+- The 3.4 tuning table was measured before 4.1 and the review fixes, as the task order requires; it was not rerun.
 
 Success criteria:
 
-- Pooled podium skill above 0% for both models: **met** (49.0%, 48.7%).
-- Extreme-forecast share at most 60% per benchmark race: **missed** (72%, 73%). Many of the 20 drivers are far from the podium, so near-0 forecasts are partly correct; the tuning trend suggests a larger pace offset would lower the share. **Open issue.**
+- Pooled podium skill above 0% for both models: **met** (49.8%, 49.6%).
+- Extreme-forecast share at most 60% per benchmark race: **missed** (73%, 73%). Many of the 20 drivers are far from the podium, so near-0 forecasts are partly correct; the tuning trend suggests a larger pace offset would lower the share. **Open issue** for a follow-up change.
 - Bahrain lap 14, no driver outside the top 6 with `p_win` above 0.5: **met**.
 - Leakage tests and new tests pass: **met**.
-- lightgbm beats the baseline model by only 0.3 points on the benchmark: with the delta decaying, the simulator mostly follows recent pace.
+- lightgbm beats the baseline model by only 0.2 points on the benchmark: with the delta decaying, the simulator mostly follows recent pace.
 
 README notes for `portfolio-release`:
 
-- Headline: "Finishing-position forecasts beat 'current order holds' by 49.0% (podium Brier skill, Bahrain and Abu Dhabi 2024, lightgbm); 4.3% on twelve held-out 2024 races (rounds 12 to 23)."
+- Headline: "Finishing-position forecasts beat 'current order holds' by 49.8% (podium Brier skill, Bahrain and Abu Dhabi 2024, lightgbm); 4.2% on twelve held-out 2024 races (rounds 12 to 23)."
 - Method: Monte Carlo of the remaining laps from recent pace, a fading lap-time-model delta, guarded tyre degradation, a per-run pace offset, and safety-car / VSC periods; constants tuned on rounds 12 to 23 only.
-- Caveat: the per-race skill varies widely (Hungary −432%, Singapore −110%), and forecasts above 0.8 are overconfident on the evaluation races.
+- Caveat: the per-race skill varies widely (Hungary −430%, Singapore −110%), and forecasts above 0.8 are overconfident on the evaluation races.
+
+### Review and verify follow-up (2026-11-22)
+
+- Review warning (strategy `win_probability` always 1.0 or 0.0) fixed: each run now also draws the pit loss (`STRATEGY_PIT_LOSS_SD_S` 1.5 s) and the current and next compound slopes (`STRATEGY_DEG_SD_S_PER_LAP` 0.02 s/lap), shared by every plan; test `test_close_plans_split_the_wins`. design.md and the strategy spec were updated.
+- Review suggestion: neutralised laps now add the same slowdown to every car, (factor − 1) × the field's median base pace, instead of multiplying each lap, so a virtual safety car keeps the gaps; test `test_virtual_safety_car_keeps_gaps`. design.md and the position spec were updated.
+- Review suggestion: safety-car bunching leaves cars without a timed lap (time inf) unchanged; test `test_safety_car_leaves_untimed_cars_out_of_the_bunch`. The pre-existing `inf - inf` RuntimeWarning in `_dirty_air` is silenced (the comparison was already False).
+- Verify warning: the position spec now states that only the offset change at a simulated stop is added (the code's behaviour). The design states that the 8-lap trust rule and the cap apply to the position simulator only.
+- Verify suggestions: "Model delta fades" now turns safety cars off; `sample_periods` checks the empty lap range before drawing.
+- Still open (follow-up change): extreme-forecast share (73%); tuning grid edge; compound pace offsets not confirmed; safety-car rate below race control; merge of this branch to `main` for `strategy-charts-api` (left to the user).

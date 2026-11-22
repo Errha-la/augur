@@ -18,43 +18,43 @@
   "position_skill_pct": 2.7,
   "brier_model": 0.0757,
   "brier_baseline": 0.0778,
-  "log_loss_model": 0.2818,
+  "log_loss_model": 0.2819,
   "log_loss_baseline": 0.5382,
   "reliability": [
     {
       "bin_low": 0.0,
       "bin_high": 0.2,
-      "count": 576,
-      "mean_forecast": 0.0116,
-      "observed_rate": 0.0365
+      "count": 577,
+      "mean_forecast": 0.0117,
+      "observed_rate": 0.0364
     },
     {
       "bin_low": 0.2,
       "bin_high": 0.4,
-      "count": 34,
-      "mean_forecast": 0.3163,
-      "observed_rate": 0.4706
+      "count": 32,
+      "mean_forecast": 0.316,
+      "observed_rate": 0.5
     },
     {
       "bin_low": 0.4,
       "bin_high": 0.6,
-      "count": 17,
-      "mean_forecast": 0.4984,
-      "observed_rate": 0.3529
+      "count": 18,
+      "mean_forecast": 0.4936,
+      "observed_rate": 0.3333
     },
     {
       "bin_low": 0.6,
       "bin_high": 0.8,
-      "count": 21,
-      "mean_forecast": 0.6915,
-      "observed_rate": 0.5238
+      "count": 20,
+      "mean_forecast": 0.6878,
+      "observed_rate": 0.5
     },
     {
       "bin_low": 0.8,
       "bin_high": 1.0,
-      "count": 72,
-      "mean_forecast": 0.9383,
-      "observed_rate": 0.75
+      "count": 73,
+      "mean_forecast": 0.9384,
+      "observed_rate": 0.7534
     }
   ],
   "lap_improvement_pct": 0.0,
@@ -79,28 +79,28 @@
       "position_skill_pct": 38.9,
       "brier_model": 0.0611,
       "brier_baseline": 0.1,
-      "log_loss_model": 0.1929,
+      "log_loss_model": 0.1924,
       "log_loss_baseline": 0.6917,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 48,
-          "mean_forecast": 0.0119,
+          "mean_forecast": 0.0115,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 3,
-          "mean_forecast": 0.3373,
+          "mean_forecast": 0.3367,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 2,
-          "mean_forecast": 0.448,
+          "mean_forecast": 0.457,
           "observed_rate": 0.5
         },
         {
@@ -114,7 +114,7 @@
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 7,
-          "mean_forecast": 0.9316,
+          "mean_forecast": 0.9321,
           "observed_rate": 0.7143
         }
       ],
@@ -137,17 +137,17 @@
     },
     {
       "race_id": "2024-13-hungarian-grand-prix",
-      "position_skill_pct": -436.7,
-      "brier_model": 0.1789,
+      "position_skill_pct": -435.1,
+      "brier_model": 0.1784,
       "brier_baseline": 0.0333,
-      "log_loss_model": 0.8442,
+      "log_loss_model": 0.84,
       "log_loss_baseline": 0.2312,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 50,
-          "mean_forecast": 0.0115,
+          "mean_forecast": 0.0113,
           "observed_rate": 0.12
         },
         {
@@ -168,14 +168,14 @@
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 5,
-          "mean_forecast": 0.7098,
+          "mean_forecast": 0.7104,
           "observed_rate": 0.2
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 5,
-          "mean_forecast": 0.9754,
+          "mean_forecast": 0.9768,
           "observed_rate": 0.4
         }
       ],
@@ -198,45 +198,45 @@
     },
     {
       "race_id": "2024-14-belgian-grand-prix",
-      "position_skill_pct": 60.2,
-      "brier_model": 0.0531,
+      "position_skill_pct": 60.4,
+      "brier_model": 0.0529,
       "brier_baseline": 0.1333,
-      "log_loss_model": 0.1651,
+      "log_loss_model": 0.1642,
       "log_loss_baseline": 0.9219,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 45,
-          "mean_forecast": 0.0126,
+          "mean_forecast": 0.0125,
           "observed_rate": 0.0222
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 5,
-          "mean_forecast": 0.3072,
+          "mean_forecast": 0.306,
           "observed_rate": 0.2
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 3,
-          "mean_forecast": 0.427,
+          "mean_forecast": 0.426,
           "observed_rate": 0.3333
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 4,
-          "mean_forecast": 0.7157,
+          "mean_forecast": 0.7185,
           "observed_rate": 0.75
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 3,
-          "mean_forecast": 0.9183,
+          "mean_forecast": 0.919,
           "observed_rate": 1.0
         }
       ],
@@ -259,31 +259,31 @@
     },
     {
       "race_id": "2024-15-dutch-grand-prix",
-      "position_skill_pct": -10.4,
-      "brier_model": 0.0368,
+      "position_skill_pct": -9.4,
+      "brier_model": 0.0365,
       "brier_baseline": 0.0333,
-      "log_loss_model": 0.1181,
+      "log_loss_model": 0.1169,
       "log_loss_baseline": 0.2312,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 47,
-          "mean_forecast": 0.0192,
+          "mean_forecast": 0.0188,
           "observed_rate": 0.0213
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 6,
-          "mean_forecast": 0.3445,
+          "mean_forecast": 0.3447,
           "observed_rate": 0.3333
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.5,
+          "mean_forecast": 0.501,
           "observed_rate": 0.0
         },
         {
@@ -297,7 +297,7 @@
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 6,
-          "mean_forecast": 0.9218,
+          "mean_forecast": 0.9245,
           "observed_rate": 1.0
         }
       ],
@@ -320,46 +320,46 @@
     },
     {
       "race_id": "2024-16-italian-grand-prix",
-      "position_skill_pct": -23.0,
-      "brier_model": 0.041,
+      "position_skill_pct": -22.4,
+      "brier_model": 0.0408,
       "brier_baseline": 0.0333,
-      "log_loss_model": 0.147,
+      "log_loss_model": 0.1473,
       "log_loss_baseline": 0.2312,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 48,
-          "mean_forecast": 0.014,
+          "mean_forecast": 0.0137,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 2,
-          "mean_forecast": 0.3625,
+          "mean_forecast": 0.3605,
           "observed_rate": 0.5
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 2,
-          "mean_forecast": 0.5535,
+          "mean_forecast": 0.5485,
           "observed_rate": 0.5
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
-          "count": 4,
-          "mean_forecast": 0.6713,
+          "count": 3,
+          "mean_forecast": 0.6323,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
-          "count": 4,
-          "mean_forecast": 0.9532,
-          "observed_rate": 0.75
+          "count": 5,
+          "mean_forecast": 0.9254,
+          "observed_rate": 0.8
         }
       ],
       "lap_improvement_pct": 0.0,
@@ -381,31 +381,31 @@
     },
     {
       "race_id": "2024-17-azerbaijan-grand-prix",
-      "position_skill_pct": 9.7,
-      "brier_model": 0.0903,
+      "position_skill_pct": 9.4,
+      "brier_model": 0.0906,
       "brier_baseline": 0.1,
-      "log_loss_model": 0.407,
+      "log_loss_model": 0.4102,
       "log_loss_baseline": 0.6917,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
-          "count": 49,
-          "mean_forecast": 0.0076,
-          "observed_rate": 0.0612
+          "count": 50,
+          "mean_forecast": 0.0109,
+          "observed_rate": 0.06
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
-          "count": 2,
-          "mean_forecast": 0.2635,
+          "count": 1,
+          "mean_forecast": 0.325,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.591,
+          "mean_forecast": 0.593,
           "observed_rate": 0.0
         },
         {
@@ -419,7 +419,7 @@
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 8,
-          "mean_forecast": 0.9389,
+          "mean_forecast": 0.942,
           "observed_rate": 0.75
         }
       ],
@@ -442,31 +442,31 @@
     },
     {
       "race_id": "2024-18-singapore-grand-prix",
-      "position_skill_pct": -118.6,
-      "brier_model": 0.0729,
+      "position_skill_pct": -119.2,
+      "brier_model": 0.0731,
       "brier_baseline": 0.0333,
-      "log_loss_model": 0.3042,
+      "log_loss_model": 0.3067,
       "log_loss_baseline": 0.2312,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 49,
-          "mean_forecast": 0.0084,
+          "mean_forecast": 0.0082,
           "observed_rate": 0.0408
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 2,
-          "mean_forecast": 0.2605,
+          "mean_forecast": 0.259,
           "observed_rate": 0.5
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.459,
+          "mean_forecast": 0.464,
           "observed_rate": 0.0
         },
         {
@@ -480,7 +480,7 @@
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 8,
-          "mean_forecast": 0.9513,
+          "mean_forecast": 0.9519,
           "observed_rate": 0.75
         }
       ],
@@ -506,35 +506,35 @@
       "position_skill_pct": 38.5,
       "brier_model": 0.0615,
       "brier_baseline": 0.1,
-      "log_loss_model": 0.1835,
+      "log_loss_model": 0.183,
       "log_loss_baseline": 0.6917,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 48,
-          "mean_forecast": 0.003,
+          "mean_forecast": 0.0029,
           "observed_rate": 0.0208
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 2,
-          "mean_forecast": 0.35,
+          "mean_forecast": 0.3495,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.441,
+          "mean_forecast": 0.439,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 3,
-          "mean_forecast": 0.6523,
+          "mean_forecast": 0.6547,
           "observed_rate": 0.3333
         },
         {
@@ -564,31 +564,31 @@
     },
     {
       "race_id": "2024-20-mexico-city-grand-prix",
-      "position_skill_pct": -30.9,
-      "brier_model": 0.0436,
+      "position_skill_pct": -30.2,
+      "brier_model": 0.0434,
       "brier_baseline": 0.0333,
-      "log_loss_model": 0.1415,
+      "log_loss_model": 0.1405,
       "log_loss_baseline": 0.2312,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 47,
-          "mean_forecast": 0.0132,
+          "mean_forecast": 0.0129,
           "observed_rate": 0.0213
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 4,
-          "mean_forecast": 0.2368,
+          "mean_forecast": 0.2345,
           "observed_rate": 0.25
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 3,
-          "mean_forecast": 0.57,
+          "mean_forecast": 0.572,
           "observed_rate": 0.3333
         },
         {
@@ -602,7 +602,7 @@
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 6,
-          "mean_forecast": 0.9535,
+          "mean_forecast": 0.957,
           "observed_rate": 1.0
         }
       ],
@@ -625,45 +625,45 @@
     },
     {
       "race_id": "2024-21-s-o-paulo-grand-prix",
-      "position_skill_pct": -25.2,
-      "brier_model": 0.1252,
+      "position_skill_pct": -25.4,
+      "brier_model": 0.1254,
       "brier_baseline": 0.1,
-      "log_loss_model": 0.3913,
+      "log_loss_model": 0.3938,
       "log_loss_baseline": 0.6917,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 49,
-          "mean_forecast": 0.0243,
+          "mean_forecast": 0.0239,
           "observed_rate": 0.0816
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 2,
-          "mean_forecast": 0.368,
+          "mean_forecast": 0.366,
           "observed_rate": 0.5
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.563,
+          "mean_forecast": 0.57,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 3,
-          "mean_forecast": 0.6707,
+          "mean_forecast": 0.6697,
           "observed_rate": 0.3333
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 5,
-          "mean_forecast": 0.9,
+          "mean_forecast": 0.9036,
           "observed_rate": 0.4
         }
       ],
@@ -686,45 +686,45 @@
     },
     {
       "race_id": "2024-22-las-vegas-grand-prix",
-      "position_skill_pct": 33.4,
-      "brier_model": 0.0666,
+      "position_skill_pct": 33.5,
+      "brier_model": 0.0665,
       "brier_baseline": 0.1,
-      "log_loss_model": 0.2649,
+      "log_loss_model": 0.2648,
       "log_loss_baseline": 0.6917,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 49,
-          "mean_forecast": 0.0092,
+          "mean_forecast": 0.0091,
           "observed_rate": 0.0408
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 2,
-          "mean_forecast": 0.3775,
+          "mean_forecast": 0.379,
           "observed_rate": 0.5
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.491,
+          "mean_forecast": 0.484,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 1,
-          "mean_forecast": 0.715,
+          "mean_forecast": 0.712,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 7,
-          "mean_forecast": 0.941,
+          "mean_forecast": 0.9431,
           "observed_rate": 0.8571
         }
       ],
@@ -747,45 +747,45 @@
     },
     {
       "race_id": "2024-23-qatar-grand-prix",
-      "position_skill_pct": 42.1,
-      "brier_model": 0.0773,
+      "position_skill_pct": 41.5,
+      "brier_model": 0.0779,
       "brier_baseline": 0.1333,
-      "log_loss_model": 0.2214,
+      "log_loss_model": 0.2233,
       "log_loss_baseline": 0.9219,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 47,
-          "mean_forecast": 0.0048,
+          "mean_forecast": 0.0047,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
-          "count": 4,
-          "mean_forecast": 0.3067,
-          "observed_rate": 0.75
+          "count": 3,
+          "mean_forecast": 0.2707,
+          "observed_rate": 1.0
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
-          "count": 1,
-          "mean_forecast": 0.433,
-          "observed_rate": 1.0
+          "count": 2,
+          "mean_forecast": 0.4145,
+          "observed_rate": 0.5
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 1,
-          "mean_forecast": 0.74,
+          "mean_forecast": 0.748,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 7,
-          "mean_forecast": 0.9104,
+          "mean_forecast": 0.9131,
           "observed_rate": 0.5714
         }
       ],
@@ -810,5 +810,5 @@
   "seed": 42,
   "data_source": "openf1",
   "augur_version": "0.1.0",
-  "generated_at": "2026-11-22T14:48:20+00:00"
+  "generated_at": "2026-11-22T15:33:49+00:00"
 }

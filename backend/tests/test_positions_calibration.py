@@ -72,6 +72,8 @@ def test_model_delta_fades(monkeypatch):
     monkeypatch.setattr(config, "FUEL_S_PER_KG", 0.0)
     monkeypatch.setattr(config, "MODEL_DELTA_DECAY", 0.5)
     monkeypatch.setattr(config, "PACE_OFFSET_SD_S", 0.0)
+    monkeypatch.setattr(config, "SC_PROB_PER_LAP", 0.0)
+    monkeypatch.setattr(config, "VSC_PROB_PER_LAP", 0.0)
     s = DriverStart(code="AAA", laps_completed=10, time_s=0.0, base_s=90.0, delta_s=-2.0,
                     deg_s_per_lap=0.0, next_deg_s_per_lap=0.0, tyre_age=5, compound="HARD",
                     stops=False, noise_s=0.0)
@@ -217,3 +219,27 @@ def test_stop_taken_under_a_safety_car(quiet):
     expected = 90.0 * config.SC_LAP_FACTOR + config.SC_PIT_LOSS_FACTOR * 22.0
     assert history[:, 0, 0] == pytest.approx(np.full(200, expected))
     assert (history[:, 1:, 0] < 22.0 + 90.0 * config.SC_LAP_FACTOR).all()  # no second stop
+
+
+
+def test_virtual_safety_car_keeps_gaps(quiet):
+    from augur.positions import _simulate
+
+    quiet.setattr(config, "SC_PROB_PER_LAP", 0.0)
+    quiet.setattr(config, "VSC_PROB_PER_LAP", 1.0)
+    quiet.setattr(config, "SC_PIT_PROB", 0.0)
+    starts = [_start("P1", 0.0), _start("P2", 12.0)]
+    _, _, history = _simulate(starts, 10, 30, 50, 0, 22.0, record=True)
+    after = np.array([0.0, 12.0]) + history[:, :3, :].sum(axis=1)  # after the 3 VSC laps
+    assert (after[:, 1] - after[:, 0]) == pytest.approx(np.full(50, 12.0))
+    assert history[:, 0, 0] == pytest.approx(90.0 + (config.VSC_LAP_FACTOR - 1.0) * 90.0)
+
+
+def test_safety_car_leaves_untimed_cars_out_of_the_bunch(quiet):
+    from augur.positions import _simulate
+
+    quiet.setattr(config, "SC_PROB_PER_LAP", 1.0)
+    quiet.setattr(config, "SC_PIT_PROB", 0.0)
+    starts = [_start("P1", 0.0), _start("P2", 12.0), _start("NOT", float("inf")), _start("NO2", float("inf"))]
+    time, _, _ = _simulate(starts, 10, 30, 20, 0, 22.0)
+    assert np.isinf(time[:, 2:]).all() and np.isfinite(time[:, :2]).all()

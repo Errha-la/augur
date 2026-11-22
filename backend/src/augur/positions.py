@@ -8,7 +8,7 @@ predicted change for lap N+1, which fades instead of lasting to the flag. Each r
 also draws one pace offset per driver (PACE_OFFSET_SD_S) that lasts the whole run, and
 a simulated stop changes pace by the compound offset (COMPOUND_PACE_OFFSET_S). A run may
 contain one safety car or virtual safety car period (``sample_periods``): its laps are
-slower, have no dirty air and cheaper stops, a safety car closes the gaps, and a driver
+slower by the same amount for every car, have no dirty air and cheaper stops, a safety car closes the gaps, and a driver
 still due a stop usually takes it at the start of the period. A simulated pit stop
 adds the pit loss on its lap and restarts tyre age on the next compound. A
 driver ending a lap less than DIRTY_AIR_GAP_S behind the car ahead (same lap
@@ -185,9 +185,9 @@ def sample_periods(lap: int, total_laps: int, runs: int, rng: np.random.Generato
     first = np.full(runs, total_laps + 1, dtype=np.int64)
     kind = np.zeros(runs, dtype=np.int64)
     laps = np.arange(lap + 1, total_laps - 1)  # N+1 .. total_laps-2
-    u = rng.random((runs, len(laps)))
     if len(laps) == 0:
         return np.zeros(runs, dtype=np.int64), kind
+    u = rng.random((runs, len(laps)))
     p_sc = config.SC_PROB_PER_LAP
     p_vsc = (1.0 - p_sc) * config.VSC_PROB_PER_LAP
     started = u < p_sc + p_vsc
@@ -209,7 +209,8 @@ def _compress(time: np.ndarray, laps_done: np.ndarray, rows: np.ndarray) -> np.n
         t, lc = time[r, order], laps_done[r, order]
         new = t.copy()
         for k in range(1, len(t)):
-            if lc[k] == lc[k - 1]:
+            # Cars without a timed lap (time inf) stay where they are, out of the chain.
+            if lc[k] == lc[k - 1] and np.isfinite(t[k]) and np.isfinite(t[k - 1]):
                 new[k] = new[k - 1] + min(t[k] - t[k - 1], config.SC_GAP_S)
         out[r, order] = new
     return out
@@ -245,7 +246,6 @@ def _simulate(
     sc_first, sc_kind = sample_periods(lap, total_laps, runs, rng)
     sc_len = np.where(sc_kind == SAFETY_CAR, config.SC_LAPS, np.where(sc_kind == VIRTUAL_SAFETY_CAR, config.VSC_LAPS, 0))
     sc_last = sc_first + sc_len - 1  # truncated at the flag by the lap loop
-    lap_factor = np.where(sc_kind == SAFETY_CAR, config.SC_LAP_FACTOR, config.VSC_LAP_FACTOR)
     loss_factor = np.where(sc_kind == SAFETY_CAR, config.SC_PIT_LOSS_FACTOR, config.VSC_PIT_LOSS_FACTOR)
     # A driver whose sampled stop comes after the period starts takes it on the period's
     # first lap with probability SC_PIT_PROB (a cheaper stop).
@@ -255,6 +255,10 @@ def _simulate(
     time = np.tile(np.array([s.time_s for s in starts], dtype=float), (runs, 1))
     base = np.array([s.base_s for s in starts])
     delta = np.array([s.delta_s for s in starts])
+    # Neutralised laps add the same slowdown to every car, (factor - 1) x the field's median
+    # pace, so a virtual safety car keeps the gaps and a safety car only closes them.
+    field_pace = float(np.median(base)) if n else 0.0
+    slowdown = np.where(sc_kind == SAFETY_CAR, config.SC_LAP_FACTOR - 1.0, config.VSC_LAP_FACTOR - 1.0) * field_pace
     deg = np.array([s.deg_s_per_lap for s in starts])
     next_deg = np.array([s.next_deg_s_per_lap for s in starts])
     age_now = np.array([s.tyre_age for s in starts], dtype=float)
@@ -282,7 +286,7 @@ def _simulate(
         neutral = (sc_kind != NO_PERIOD) & (sc_first <= j) & (j <= sc_last)  # (runs,)
         lap_time = pace + offset - fuel * (j - lap) + rng.normal(0.0, 1.0, (runs, n)) * noise_sd
         # Neutralised laps: slower by the period's factor, no dirty air, cheaper stops.
-        lap_time = np.where(neutral[:, None], lap_time * lap_factor[:, None], lap_time + penalty)
+        lap_time = np.where(neutral[:, None], lap_time + slowdown[:, None], lap_time + penalty)
         stop_loss = np.where(neutral, loss_s * loss_factor, loss_s)
         lap_time = lap_time + np.where(pit == j, stop_loss[:, None], 0.0)
         new_time = time + lap_time
@@ -305,7 +309,9 @@ def _dirty_air(time: np.ndarray, laps_done: np.ndarray) -> np.ndarray:
     t = np.take_along_axis(time, order, axis=1)
     lc = np.take_along_axis(laps_done, order, axis=1)
     close = np.zeros_like(t, dtype=bool)
-    close[:, 1:] = (lc[:, 1:] == lc[:, :-1]) & (t[:, 1:] - t[:, :-1] < config.DIRTY_AIR_GAP_S)
+    # Two untimed cars (time inf) give inf - inf = nan, which compares False: no penalty.
+    with np.errstate(invalid="ignore"):
+        close[:, 1:] = (lc[:, 1:] == lc[:, :-1]) & (t[:, 1:] - t[:, :-1] < config.DIRTY_AIR_GAP_S)
     penalty = np.zeros_like(time)
     np.put_along_axis(penalty, order, np.where(close, config.DIRTY_AIR_PENALTY_S, 0.0), axis=1)
     return penalty

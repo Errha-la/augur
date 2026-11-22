@@ -92,3 +92,13 @@ def test_harder_compound_costs_time():
     hard = _expected_time(state("HARD"), 15, 57, 20, 22.0)
     medium = _expected_time(state("MEDIUM"), 15, 57, 20, 22.0)
     assert hard - medium == pytest.approx(0.4 * (57 - 20))
+
+
+
+def test_close_plans_split_the_wins():
+    # Mild degradation: nearby pit laps are close, and the shared per-run degradation and
+    # pit-loss draws decide differently per run, so no plan wins every run.
+    out = simulate(one_driver(deg=0.05), 57, "DDD", 15, runs=2000, seed=42)
+    wins = [s["win_probability"] for s in out["strategies"]]
+    assert max(wins) < 1.0 and sum(w > 0 for w in wins) >= 2
+    assert sum(wins) == pytest.approx(1.0, abs=0.001)

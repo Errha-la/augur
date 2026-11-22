@@ -22,7 +22,7 @@ For driver D at lap N, the system SHALL simulate "pit on lap N+k" for each k in 
 ---
 ### Requirement: Reproducible Monte Carlo results
 
-For each strategy the system SHALL report `mean_s`, `p10_s`, `p90_s` of the simulated remaining race time and `win_probability` (share of runs in which it is fastest). All candidates of one call SHALL use the same random draws per run. Strategies SHALL be ordered by `mean_s`. The win probabilities SHALL sum to 1 within 0.001. The same `runs`, `seed`, race, driver, and lap SHALL produce identical output.
+For each strategy the system SHALL report `mean_s`, `p10_s`, `p90_s` of the simulated remaining race time and `win_probability` (share of runs in which it is fastest). All candidates of one call SHALL use the same random draws per run: the summed lap noise, the pit loss (standard deviation `STRATEGY_PIT_LOSS_SD_S`), and the degradation slopes of the current and the next compound (standard deviation `STRATEGY_DEG_SD_S_PER_LAP` each, clipped at 0). Strategies SHALL be ordered by `mean_s`. The win probabilities SHALL sum to 1 within 0.001. The same `runs`, `seed`, race, driver, and lap SHALL produce identical output.
 
 #### Scenario: Same seed twice
 

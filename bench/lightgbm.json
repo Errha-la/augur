@@ -5,45 +5,45 @@
     "2024-01-bahrain-grand-prix",
     "2024-24-abu-dhabi-grand-prix"
   ],
-  "position_skill_pct": 49.0,
-  "brier_model": 0.0255,
+  "position_skill_pct": 49.8,
+  "brier_model": 0.0251,
   "brier_baseline": 0.05,
-  "log_loss_model": 0.0843,
+  "log_loss_model": 0.0828,
   "log_loss_baseline": 0.3463,
   "reliability": [
     {
       "bin_low": 0.0,
       "bin_high": 0.2,
-      "count": 97,
-      "mean_forecast": 0.0137,
+      "count": 98,
+      "mean_forecast": 0.0152,
       "observed_rate": 0.0
     },
     {
       "bin_low": 0.2,
       "bin_high": 0.4,
-      "count": 5,
-      "mean_forecast": 0.2898,
-      "observed_rate": 0.4
+      "count": 4,
+      "mean_forecast": 0.309,
+      "observed_rate": 0.5
     },
     {
       "bin_low": 0.4,
       "bin_high": 0.6,
       "count": 2,
-      "mean_forecast": 0.4365,
+      "mean_forecast": 0.4415,
       "observed_rate": 0.5
     },
     {
       "bin_low": 0.6,
       "bin_high": 0.8,
       "count": 3,
-      "mean_forecast": 0.6527,
+      "mean_forecast": 0.6577,
       "observed_rate": 1.0
     },
     {
       "bin_low": 0.8,
       "bin_high": 1.0,
       "count": 13,
-      "mean_forecast": 0.953,
+      "mean_forecast": 0.9552,
       "observed_rate": 0.9231
     }
   ],
@@ -66,45 +66,45 @@
   "per_race": [
     {
       "race_id": "2024-01-bahrain-grand-prix",
-      "position_skill_pct": -2.8,
-      "brier_model": 0.0343,
+      "position_skill_pct": -2.2,
+      "brier_model": 0.0341,
       "brier_baseline": 0.0333,
-      "log_loss_model": 0.1027,
+      "log_loss_model": 0.1016,
       "log_loss_baseline": 0.2312,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
           "count": 49,
-          "mean_forecast": 0.0116,
+          "mean_forecast": 0.0114,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
           "count": 2,
-          "mean_forecast": 0.3065,
+          "mean_forecast": 0.307,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.46,
+          "mean_forecast": 0.462,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 1,
-          "mean_forecast": 0.726,
+          "mean_forecast": 0.725,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 7,
-          "mean_forecast": 0.9473,
+          "mean_forecast": 0.9489,
           "observed_rate": 0.8571
         }
       ],
@@ -127,45 +127,45 @@
     },
     {
       "race_id": "2024-24-abu-dhabi-grand-prix",
-      "position_skill_pct": 74.9,
-      "brier_model": 0.0167,
+      "position_skill_pct": 75.8,
+      "brier_model": 0.0161,
       "brier_baseline": 0.0667,
-      "log_loss_model": 0.0659,
+      "log_loss_model": 0.064,
       "log_loss_baseline": 0.4615,
       "reliability": [
         {
           "bin_low": 0.0,
           "bin_high": 0.2,
-          "count": 48,
-          "mean_forecast": 0.0159,
+          "count": 49,
+          "mean_forecast": 0.0191,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.2,
           "bin_high": 0.4,
-          "count": 3,
-          "mean_forecast": 0.2787,
+          "count": 2,
+          "mean_forecast": 0.311,
           "observed_rate": 0.0
         },
         {
           "bin_low": 0.4,
           "bin_high": 0.6,
           "count": 1,
-          "mean_forecast": 0.413,
+          "mean_forecast": 0.421,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.6,
           "bin_high": 0.8,
           "count": 2,
-          "mean_forecast": 0.616,
+          "mean_forecast": 0.624,
           "observed_rate": 1.0
         },
         {
           "bin_low": 0.8,
           "bin_high": 1.0,
           "count": 6,
-          "mean_forecast": 0.9597,
+          "mean_forecast": 0.9625,
           "observed_rate": 1.0
         }
       ],
@@ -190,5 +190,5 @@
   "seed": 42,
   "data_source": "openf1",
   "augur_version": "0.1.0",
-  "generated_at": "2026-11-22T14:48:12+00:00"
+  "generated_at": "2026-11-22T15:33:41+00:00"
 }
