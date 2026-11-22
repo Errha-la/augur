@@ -6,14 +6,14 @@ here for catalog lookups (race list, drivers, team colours) only.
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from augur import catalog, config
+from augur import settings as runtime_settings
 from augur import wrapped as wrapped_content
 from augur.feed import RaceFeed, ReplayFeed
 from augur.models import registry
@@ -91,7 +91,8 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
         return prior_cache[key]
 
     def model_name() -> str:
-        name = os.environ.get(config.MODEL_ENV) or config.DEFAULT_MODEL
+        # data/settings.json > $AUGUR_MODEL > lightgbm, read per request (no restart needed).
+        name = runtime_settings.current(store().data_dir).model
         try:
             registry.get_model_class(name)
         except registry.UnknownModelError as exc:
@@ -159,6 +160,19 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
         )
         return {"race_id": feed.race_id, "lap": lap, "drivers": drivers}
 
+    @app.get("/api/settings")
+    def get_settings() -> dict:
+        return runtime_settings.describe(store().data_dir)
+
+    @app.put("/api/settings")
+    def put_settings(body: Any = Body(...)) -> dict:
+        data_dir = store().data_dir
+        try:
+            runtime_settings.update(data_dir, body)
+        except runtime_settings.SettingsError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+        return runtime_settings.describe(data_dir)
+
     @app.get("/api/races/{race_id}/events")
     def events(race_id: str, lap: LapParam) -> dict:
         s = store()
@@ -167,7 +181,7 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
         analyzed = s.is_analyzed(race_id, name)
         events = s.events_until(race_id, name, lap) if analyzed else []
         # Commentary cached by augur.narrate for the current narrator settings; never generated here.
-        key = serving_key(name)
+        key = serving_key(name, runtime_settings.current(s.data_dir).commentary_lang)
         texts = s.commentary_texts([e["id"] for e in events], key) if key is not None else {}
         for e in events:
             e["commentary"] = texts.get(e["id"])

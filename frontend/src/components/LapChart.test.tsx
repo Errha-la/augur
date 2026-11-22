@@ -119,6 +119,44 @@ describe("Lap-time chart — Chart stops at the current lap", () => {
     expect(model.rows.map((r) => r.D01)).toEqual([91, null, 90]);
   });
 
+  it("plots chart lap k with the prediction made at lap k-1, none for lap 1, none above the current lap", () => {
+    const predicted = new Map<number, Record<string, number | null>>([
+      [1, { D01: 92.5, D02: 93 }],
+      [2, { D01: 91.4, D02: null }],
+      [3, { D01: 99 }], // made at lap 3 for lap 4: beyond the current lap 3
+    ]);
+    const model = chartModel(grid(2), [], "D01", 3, predicted);
+    expect(model.rows.map((r) => r["D01:pred"])).toEqual([null, 92.5, 91.4]);
+    expect(model.rows.map((r) => r["D02:pred"])).toEqual([null, 93, null]);
+    expect(model.series.map((s) => s.predKey)).toEqual(["D01:pred", "D02:pred"]);
+    expect(model.hasPredictions).toBe(true);
+    expect(chartModel(grid(2), [], "D01", 3).hasPredictions).toBe(false);
+  });
+
+  it("draws a dashed predicted line in the team colour next to each actual line", () => {
+    const drivers = grid(5);
+    const predicted = new Map<number, Record<string, number | null>>(
+      Array.from({ length: 19 }, (_, i) => [i + 1, { D02: 90.5, D03: 90.6, D04: 90.7 }] as const),
+    );
+    const { container } = render(
+      <LapChart
+        lap={20}
+        drivers={drivers}
+        laps={lapsFor(["D02", "D03", "D04"], 20)}
+        predicted={predicted}
+        focusCode="D03"
+        size={{ width: 600, height: 300 }}
+      />,
+    );
+    const curves = [...container.querySelectorAll("path.recharts-line-curve")];
+    const dashed = curves.filter((c) => c.getAttribute("stroke-dasharray"));
+    expect(curves).toHaveLength(6);
+    expect(dashed).toHaveLength(3);
+    const colorOf = Object.fromEntries(drivers.map((d) => [d.code, d.team_color]));
+    expect(dashed.map((c) => c.getAttribute("stroke")).sort()).toEqual([colorOf.D02, colorOf.D03, colorOf.D04].sort());
+    expect(screen.getByTestId("chart-legend")).toHaveTextContent("dashed: predicted");
+  });
+
   it("renders one SVG line per plotted driver with the focus line 3 px", () => {
     const drivers = grid(5);
     const { container } = render(

@@ -29,6 +29,7 @@ class DetectorState:
     deg_fired: set[tuple[str, int]] = field(default_factory=set)
     cliff_fired: set[tuple[str, int]] = field(default_factory=set)
     undercut_fired: set[tuple[str, str, int]] = field(default_factory=set)
+    overcut_fired: set[tuple[str, str, int]] = field(default_factory=set)
     prev_positions: dict[str, int] | None = None
 
 
@@ -163,6 +164,55 @@ def detect_undercut(lap: int, cars: Iterable[CarStatus], state: DetectorState) -
                     "ahead_deg_s_per_lap": ahead.deg_s_per_lap,
                     "chaser_tyre_life": chaser.tyre_life,
                     "chaser_compound": chaser.compound,
+                },
+            )
+        )
+    return out
+
+
+def detect_overcut(
+    lap: int,
+    prev_cars: Iterable[CarStatus],
+    pit_in: set[str],
+    deg_s_per_lap: Mapping[str, float | None],
+    state: DetectorState,
+) -> list[dict]:
+    """The car directly ahead (order after lap N-1) pits on lap N while the driver stays out,
+    less than 3.0 s behind it at lap N-1, with tyres losing under 0.05 s per lap; once per
+    pair per stop."""
+    ordered = sorted(prev_cars, key=lambda c: c.position)
+    out = []
+    for ahead, driver in zip(ordered, ordered[1:]):
+        if ahead.driver not in pit_in or driver.driver in pit_in:
+            continue
+        if ahead.laps_completed != driver.laps_completed or ahead.laps_completed < 1:
+            continue
+        if ahead.session_time_s is None or driver.session_time_s is None:
+            continue
+        gap = driver.session_time_s - ahead.session_time_s
+        if not 0.0 <= gap < config.OVERCUT_GAP_S:
+            continue
+        deg = deg_s_per_lap.get(driver.driver)
+        if deg is None or deg >= config.OVERCUT_MAX_DEG_S_PER_LAP:
+            continue
+        key = (driver.driver, ahead.driver, lap)
+        if key in state.overcut_fired:
+            continue
+        state.overcut_fired.add(key)
+        out.append(
+            _event(
+                lap,
+                "overcut_window",
+                [driver.driver, ahead.driver],
+                config.OVERCUT_SEVERITY,
+                {
+                    "driver": driver.driver,
+                    "ahead": ahead.driver,
+                    "gap_s": round(gap, 3),
+                    "deg_s_per_lap": deg,
+                    "compound": driver.compound,
+                    "tyre_life": driver.tyre_life,
+                    "ahead_compound": ahead.compound,
                 },
             )
         )

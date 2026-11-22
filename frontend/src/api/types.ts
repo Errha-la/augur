@@ -66,7 +66,7 @@ export interface PredictionsResponse {
   drivers: DriverPrediction[];
 }
 
-export type EventType = "degradation_warning" | "undercut_window" | "position_change" | "pace_drop";
+export type EventType = "degradation_warning" | "undercut_window" | "overcut_window" | "position_change" | "pace_drop";
 
 export interface RaceEvent {
   id: string;
@@ -207,3 +207,31 @@ export interface WrappedResponse {
     events: RaceEvent[];
   };
 }
+
+export interface ModelOption {
+  name: string;
+  author: string | null;
+  trained: boolean;
+}
+
+export interface CommentaryStatus {
+  /** The server's AUGUR_NARRATOR (read-only: set on the server, never from the browser). */
+  narrator: string;
+  llm_model: string | null;
+  configured: boolean;
+  /** Name of the missing environment variable, never its value. */
+  missing: string | null;
+}
+
+export interface SettingsResponse {
+  model: string;
+  commentary_lang: string;
+  data_source: string;
+  models: ModelOption[];
+  commentary_langs: string[];
+  data_sources: { name: string; available: boolean }[];
+  commentary: CommentaryStatus;
+}
+
+/** The fields PUT /api/settings accepts. */
+export type SettingsUpdate = Partial<Pick<SettingsResponse, "model" | "commentary_lang" | "data_source">>;

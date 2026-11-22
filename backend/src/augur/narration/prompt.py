@@ -25,7 +25,7 @@ _LANG_INSTRUCTIONS: dict[str, str] = {
 SUPPORTED_LANGS: tuple[str, ...] = tuple(_LANG_INSTRUCTIONS)
 
 
-def _check_lang(lang: str) -> str:
+def check_lang(lang: str) -> str:
     if lang not in _LANG_INSTRUCTIONS:
         raise ValueError(f"{LANG_ENV} must be one of {', '.join(SUPPORTED_LANGS)}, got {lang!r}")
     return lang
@@ -33,7 +33,7 @@ def _check_lang(lang: str) -> str:
 
 def commentary_lang() -> str:
     """Commentary language from $AUGUR_COMMENTARY_LANG (unset or empty: en)."""
-    return _check_lang(os.environ.get(LANG_ENV) or DEFAULT_LANG)
+    return check_lang(os.environ.get(LANG_ENV) or DEFAULT_LANG)
 
 
 def _contains_outcome_key(value: Any) -> bool:
@@ -46,7 +46,7 @@ def _contains_outcome_key(value: Any) -> bool:
 
 def build_prompt(event: Mapping[str, Any], lang: str) -> str:
     """Prompt for one event; never includes outcome, outcome_lap or outcome_text."""
-    _check_lang(lang)
+    check_lang(lang)
     evidence = event["evidence"]
     if _contains_outcome_key(evidence):
         raise ValueError("event evidence must not contain outcome fields")
