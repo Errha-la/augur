@@ -12,7 +12,7 @@ from typing import Annotated, Any
 from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from augur import catalog, config
+from augur import catalog, charts, config
 from augur import settings as runtime_settings
 from augur import wrapped as wrapped_content
 from augur.feed import RaceFeed, ReplayFeed
@@ -275,6 +275,35 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
             "pit_loss_s": result["pit_loss_s"],
             "strategies": result["strategies"],
         }
+
+    @app.get("/api/races/{race_id}/trace")
+    def trace(race_id: str, lap: LapParam) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        meta = {"race_id": feed.race_id, "total_laps": feed.total_laps}
+        return charts.race_trace(feed.laps_until(lap), s.list_drivers(race_id), meta, lap)
+
+    @app.get("/api/races/{race_id}/rejoin")
+    def rejoin(race_id: str, lap: LapParam, driver: str) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        catalog_drivers = s.list_drivers(race_id)
+        if driver not in {d["code"] for d in catalog_drivers}:
+            raise HTTPException(status_code=404, detail="driver not found")
+        meta = {"race_id": feed.race_id, "total_laps": feed.total_laps}
+        return charts.rejoin(feed.laps_until(lap), catalog_drivers, meta, lap, driver)
+
+    @app.get("/api/races/{race_id}/stints")
+    def stints(race_id: str, lap: LapParam) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        meta = {"race_id": feed.race_id, "total_laps": feed.total_laps}
+        return charts.stints(feed.laps_until(lap), s.list_drivers(race_id), meta, lap)
+
+    @app.get("/api/races/{race_id}/degradation")
+    def degradation(race_id: str, lap: LapParam) -> dict:
+        feed = open_feed(store(), race_id, lap)
+        return charts.degradation_points(feed.laps_until(lap), feed.total_laps, feed.race_id, lap)
 
     return app
 
