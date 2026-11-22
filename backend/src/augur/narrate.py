@@ -19,12 +19,13 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from augur import catalog, config
+from augur import settings as runtime_settings
 from augur.events.outcomes import OUTCOME_FIELDS
 from augur.narration import base
 from augur.narration.base import MissingSettingError, is_connection_error
 from augur.narration.cache import CommentaryKey, cached_texts, store_text
 from augur.narration.grounding import check_grounding
-from augur.narration.prompt import PROMPT_VERSION, commentary_lang
+from augur.narration.prompt import PROMPT_VERSION, check_lang
 from augur.replay import ReplayStore
 
 __all__ = ["MAX_CONNECTION_ERRORS", "PROMPT_VERSION", "main"]
@@ -77,6 +78,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1
     try:
         narrator = base.get_narrator(args.narrator or base.selected_narrator_name())
+        # The dashboard's language setting (data/settings.json > $AUGUR_COMMENTARY_LANG), so
+        # /events finds what this run stores.
+        lang = check_lang(runtime_settings.current(data_dir).commentary_lang)
     except MissingSettingError as exc:
         print(f"{exc.setting} not set; nothing generated", flush=True)
         return 0
@@ -86,12 +90,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     if narrator.name == base.NoneNarrator.name:
         print("narrator none; nothing generated", flush=True)
         return 0
+    if hasattr(narrator, "lang"):
+        narrator.lang = lang
 
     key = CommentaryKey(
         model=args.model,
         narrator=narrator.name,
         llm_model=getattr(narrator, "llm_model", narrator.name),
-        lang=getattr(narrator, "lang", None) or commentary_lang(),
+        lang=lang,
         prompt_version=PROMPT_VERSION,
     )
     events = _events_without_outcomes(store, args.race, args.model, int(race["total_laps"]))

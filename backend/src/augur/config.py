@@ -49,6 +49,11 @@ UNDERCUT_GAP_S = 2.5
 UNDERCUT_MIN_TYRE_AGE = 12
 UNDERCUT_NO_PIT_LAPS = 3
 POSITION_CHANGE_MIN_PLACES = 2
+# Overcut: the car directly ahead pits on lap N, the driver was less than this many
+# seconds behind it after lap N-1, and the driver's tyres lose less than this per lap.
+OVERCUT_GAP_S = 3.0
+OVERCUT_MAX_DEG_S_PER_LAP = 0.05
+OVERCUT_SEVERITY = 55.0
 
 # Event outcomes: laps after an undercut or degradation call that decide it (estimate;
 # check hit/miss/void counts on the demo races).

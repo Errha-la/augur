@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { WrappedState } from "../../hooks/useWrapped";
+import { DownloadAllButton } from "./DownloadAllButton";
 import { DownloadCardButton } from "./DownloadCardButton";
 import { WrappedStory } from "./WrappedStory";
 
@@ -43,7 +44,12 @@ export function WrappedOverlay({ state, onClose, teamColors }: WrappedOverlayPro
           data={state.data}
           onClose={onClose}
           teamColors={teamColors}
-          actions={({ getNode, fileName }) => <DownloadCardButton getNode={getNode} fileName={fileName} />}
+          actions={({ getNode, fileName, exportAll, zipName }) => (
+            <>
+              <DownloadCardButton getNode={getNode} fileName={fileName} />
+              <DownloadAllButton exportAll={exportAll} zipName={zipName} />
+            </>
+          )}
         />
       )}
     </div>

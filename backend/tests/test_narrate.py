@@ -83,15 +83,18 @@ def test_second_run_uses_the_cache(data, fake, capsys):
     assert len(fake.seen) == n  # no LLM call on the second run
 
 
-def test_cache_key_includes_llm_model_and_lang(data, fake, capsys):
+def test_cache_key_includes_llm_model_and_lang(data, fake, capsys, monkeypatch):
     n = n_events(data)
+    monkeypatch.delenv("AUGUR_COMMENTARY_LANG", raising=False)
     assert run(data) == 0
     fake.llm_model = "gemini-other"
     assert run(data) == 0
     assert f"{n} ok" in capsys.readouterr().out.strip().splitlines()[-1]
-    fake.lang = "zh-TW"
+    # The language comes from the settings (here the environment), not the narrator.
+    monkeypatch.setenv("AUGUR_COMMENTARY_LANG", "zh-TW")
     assert run(data) == 0
     assert f"{n} ok" in capsys.readouterr().out.strip().splitlines()[-1]
+    assert fake.lang == "zh-TW"
 
 
 def test_no_key(data, monkeypatch, capsys):

@@ -80,6 +80,23 @@ def _undercut(lap: int, ev: dict) -> tuple[str, dict]:
     }
 
 
+def _overcut(lap: int, ev: dict) -> tuple[str, dict]:
+    d, a = ev["driver"], ev["ahead"]
+    compound = ev.get("compound") or "current"
+    deg = ev["deg_s_per_lap"]
+    # A negative fit means lap times are still falling (fuel burn outpaces tyre wear).
+    wear = (
+        f"are losing only {deg:.3f} s per lap"
+        if deg > 0
+        else f"are not losing time yet (lap times falling {abs(deg):.3f} s per lap)"
+    )
+    return f"Overcut window: {d} on {a}", {
+        "what": f"{a} pitted on lap {lap} with {d} {ev['gap_s']:.1f} s behind on lap {lap - 1}.",
+        "why": f"{d}'s {compound} tyres {wear}, so laps in clear air while {a} completes its stop could gain time.",
+        "next": strategy_outlook(d, ev.get("strategy"), rival=a),
+    }
+
+
 def _position_change(lap: int, ev: dict) -> tuple[str, dict]:
     d = ev["driver"]
     pits = list(ev.get("pit_drivers") or [])
@@ -122,6 +139,7 @@ _TEMPLATES = {
     "pace_drop": _pace_drop,
     "degradation_warning": _degradation,
     "undercut_window": _undercut,
+    "overcut_window": _overcut,
     "position_change": _position_change,
 }
 

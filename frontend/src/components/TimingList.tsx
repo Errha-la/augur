@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { MotionConfig, motion } from "motion/react";
+import { useEffect, useMemo, useRef } from "react";
 import type { DriverPositions, DriverPrediction, DriverState, LapRow } from "../api/types";
 import { formatDeg, formatGap, formatLapTime, formatPct, formatPosition } from "../lib/format";
 import { lastLapMarks } from "../lib/laps";
@@ -17,13 +18,23 @@ interface TimingListProps {
 
 const MARK_CLASS = { fastest: "text-purple-400", "personal-best": "text-emerald-400" } as const;
 
+/** Row slide when the order changes: the race-dashboard design's ease and duration. */
+export const ROW_TRANSITION = { duration: 0.75, ease: [0.2, 1, 0.2, 1] as [number, number, number, number] };
+
 export function TimingList({ lap, drivers, laps, predictions, positions, focusCode, onFocus }: TimingListProps) {
   const ordered = useMemo(() => [...drivers].sort((a, b) => a.position - b.position), [drivers]);
+  // Positions shown last render: rows whose position changed are the ones that slide.
+  const shown = useRef<Map<string, number> | null>(null);
+  const previous = shown.current;
+  useEffect(() => {
+    shown.current = new Map(drivers.map((d) => [d.code, d.position]));
+  }, [drivers]);
   const marks = useMemo(() => lastLapMarks(laps, lap), [laps, lap]);
   const predByCode = useMemo(() => new Map(predictions.map((p) => [p.code, p])), [predictions]);
   const posByCode = useMemo(() => new Map(positions.map((p) => [p.code, p])), [positions]);
 
   return (
+    <MotionConfig reducedMotion="user">
     <table className="w-full border-collapse text-sm tabular-nums">
       <thead className="sticky top-0 bg-card text-left text-[10px] tracking-wider text-zinc-500">
         <tr>
@@ -49,9 +60,14 @@ export function TimingList({ lap, drivers, laps, predictions, positions, focusCo
           const letter = compoundLetter(d.compound);
           const podium = pos?.p_podium ?? null;
           const focused = d.code === focusCode;
+          const before = previous?.get(d.code);
+          const moved = before !== undefined && before !== d.position;
           return (
-            <tr
+            <motion.tr
               key={d.code}
+              layout="position"
+              transition={ROW_TRANSITION}
+              data-moved={moved || undefined}
               data-testid={`row-${d.code}`}
               data-focus={focused || undefined}
               aria-selected={focused}
@@ -111,10 +127,11 @@ export function TimingList({ lap, drivers, laps, predictions, positions, focusCo
                   />
                 </div>
               </td>
-            </tr>
+            </motion.tr>
           );
         })}
       </tbody>
     </table>
+    </MotionConfig>
   );
 }

@@ -41,6 +41,8 @@ class EventEngine:
         self.prior = dict(prior or {})
         self.state = detectors.DetectorState()
         self._next_lap = 1
+        # Car states after the previous lap, for the overcut detector's lap N-1 order and gaps.
+        self._prev_cars: list[detectors.CarStatus] = []
 
     @property
     def next_lap(self) -> int:
@@ -88,11 +90,15 @@ class EventEngine:
         events += detectors.detect_pace_drop(lap, observations, self.state)
         events += detectors.detect_degradation(lap, degradation, self.state)
         events += detectors.detect_undercut(lap, cars, self.state)
+        pit_in = set(laps.loc[(laps["lap"] == lap) & laps["pit_in"].astype(bool), "driver"])
+        deg = {code: v.get("deg_s_per_lap") for code, v in degradation.items()}
+        events += detectors.detect_overcut(lap, self._prev_cars, pit_in, deg, self.state)
+        self._prev_cars = cars
         events += detectors.detect_position_change(lap, positions, self.state, total, pitted=pit_drivers)
         for e in events:
             if e["type"] == "position_change":
                 e["evidence"]["pit_drivers"] = pit_drivers
-            elif e["type"] in ("degradation_warning", "undercut_window"):
+            elif e["type"] in ("degradation_warning", "undercut_window", "overcut_window"):
                 e["evidence"]["strategy"] = self._best_strategy(laps, e["drivers"][0], lap)
         self._next_lap += 1
         return [self._finish(e) for e in events]

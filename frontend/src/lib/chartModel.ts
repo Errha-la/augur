@@ -1,4 +1,5 @@
 import type { DriverState, LapRow } from "../api/types";
+import type { PredictionHistory } from "../hooks/usePredictionHistory";
 
 export interface ChartSeries {
   code: string;
@@ -8,23 +9,34 @@ export interface ChartSeries {
   opacity: number;
   /** Dots mark a teammate neighbour, whose line shares the focus driver's colour. */
   dots: boolean;
+  /** Row key of the driver's predicted lap time (dashed line). */
+  predKey: string;
 }
 
 export interface ChartModel {
   lap: number;
   series: ChartSeries[];
-  /** One row per lap 1..lap: { lap, [code]: seconds | null }. */
+  /** One row per lap 1..lap: { lap, [code]: seconds | null, [predKey]: seconds | null }. */
   rows: Record<string, number | null>[];
   domain: [number, number] | null;
+  /** At least one predicted value is plotted. */
+  hasPredictions: boolean;
 }
 
 /**
  * Focus driver plus the cars directly ahead and behind at `lap`, with their
  * actual lap times for laps 1..lap only. Null lap times stay null (gaps).
+ * Chart lap k (k >= 2) also gets the lap time predicted at lap k-1.
  */
-export function chartModel(drivers: DriverState[], laps: LapRow[], focusCode: string | null, lap: number): ChartModel {
+export function chartModel(
+  drivers: DriverState[],
+  laps: LapRow[],
+  focusCode: string | null,
+  lap: number,
+  predicted: PredictionHistory = new Map(),
+): ChartModel {
   const focus = drivers.find((d) => d.code === focusCode);
-  if (!focus) return { lap, series: [], rows: [], domain: null };
+  if (!focus) return { lap, series: [], rows: [], domain: null, hasPredictions: false };
 
   const at = (position: number) => drivers.find((d) => d.position === position);
   const picked: [DriverState, ChartSeries["role"]][] = [];
@@ -41,13 +53,21 @@ export function chartModel(drivers: DriverState[], laps: LapRow[], focusCode: st
     strokeWidth: role === "focus" ? 3 : 1.5,
     opacity: role === "focus" ? 1 : 0.75,
     dots: role !== "focus" && d.team === focus.team,
+    predKey: `${d.code}:pred`,
   }));
 
   const codes = new Set(series.map((s) => s.code));
   const rows: Record<string, number | null>[] = [];
+  let hasPredictions = false;
   for (let n = 1; n <= lap; n++) {
     const row: Record<string, number | null> = { lap: n };
-    for (const c of codes) row[c] = null;
+    const made = n >= 2 ? predicted.get(n - 1) : undefined;
+    for (const s of series) {
+      row[s.code] = null;
+      const value = made?.[s.code] ?? null;
+      row[s.predKey] = value;
+      if (value !== null) hasPredictions = true;
+    }
     rows.push(row);
   }
   const times: number[] = [];
@@ -57,7 +77,7 @@ export function chartModel(drivers: DriverState[], laps: LapRow[], focusCode: st
     if (r.lap_time_s != null) times.push(r.lap_time_s);
   }
 
-  return { lap, series, rows, domain: timeDomain(times) };
+  return { lap, series, rows, domain: timeDomain(times), hasPredictions };
 }
 
 /**

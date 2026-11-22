@@ -7,6 +7,8 @@ import type {
   PredictionsResponse,
   RaceState,
   RaceSummary,
+  SettingsResponse,
+  SettingsUpdate,
   StrategyResponse,
   WrappedResponse,
 } from "./types";
@@ -56,8 +58,37 @@ function lapGet<T>(path: string) {
   };
 }
 
+/** A settings update the server rejected (HTTP 422); `detail` is shown next to Save. */
+export class SettingsRejected extends Error {
+  readonly detail: string;
+
+  constructor(detail: string) {
+    super(detail);
+    this.name = "SettingsRejected";
+    this.detail = detail;
+  }
+}
+
+async function putSettings(update: SettingsUpdate, signal?: AbortSignal): Promise<SettingsResponse> {
+  const url = `${API_BASE}/settings`;
+  const res = await fetch(url, {
+    method: "PUT",
+    signal,
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(update),
+  });
+  if (res.status === 422) {
+    const body = (await res.json().catch(() => null)) as { detail?: unknown } | null;
+    throw new SettingsRejected(typeof body?.detail === "string" ? body.detail : "Settings rejected");
+  }
+  if (!res.ok) throw new ApiError(res.status, url);
+  return (await res.json()) as SettingsResponse;
+}
+
 export const api = {
   races: (signal?: AbortSignal) => getJson<RaceSummary[]>(`${API_BASE}/races`, signal),
+  settings: (signal?: AbortSignal) => getJson<SettingsResponse>(`${API_BASE}/settings`, signal),
+  putSettings,
   state: lapGet<RaceState>("state"),
   laps: lapGet<LapRow[]>("laps"),
   predictions: lapGet<PredictionsResponse>("predictions"),

@@ -52,6 +52,7 @@ export function trackStatusStyle(status: string | null | undefined): TrackStatus
 const EVENT_TYPES: Record<string, { label: string; color: string }> = {
   degradation_warning: { label: "DEGRADATION", color: "#fbcc1c" },
   undercut_window: { label: "UNDERCUT", color: "#c084fc" },
+  overcut_window: { label: "OVERCUT", color: "#34d399" },
   position_change: { label: "POSITION", color: "#38bdf8" },
   pace_drop: { label: "PACE DROP", color: "#f12f32" },
 };
@@ -65,4 +66,4 @@ export function eventTypeColor(type: string): string {
 }
 
 /** Event types whose card shows the strategy table of the event's first driver. */
-export const STRATEGY_EVENT_TYPES = new Set(["degradation_warning", "undercut_window"]);
+export const STRATEGY_EVENT_TYPES = new Set(["degradation_warning", "undercut_window", "overcut_window"]);

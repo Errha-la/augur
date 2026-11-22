@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { DriverState, LapRow } from "../api/types";
+import type { PredictionHistory } from "../hooks/usePredictionHistory";
 import { chartModel } from "../lib/chartModel";
 import { formatLapTime } from "../lib/format";
 
@@ -8,13 +9,18 @@ interface LapChartProps {
   lap: number;
   drivers: DriverState[];
   laps: LapRow[];
+  /** Predictions made at laps 1..lap-1 (see usePredictionHistory). */
+  predicted?: PredictionHistory;
   focusCode: string | null;
   /** Fixed size for tests; the dashboard fills its card. */
   size?: { width: number; height: number };
 }
 
-export function LapChart({ lap, drivers, laps, focusCode, size }: LapChartProps) {
-  const model = useMemo(() => chartModel(drivers, laps, focusCode, lap), [drivers, laps, focusCode, lap]);
+export function LapChart({ lap, drivers, laps, predicted, focusCode, size }: LapChartProps) {
+  const model = useMemo(
+    () => chartModel(drivers, laps, focusCode, lap, predicted),
+    [drivers, laps, focusCode, lap, predicted],
+  );
 
   const chart = (
     <LineChart data={model.rows} margin={{ top: 8, right: 12, bottom: 4, left: 4 }} {...size}>
@@ -47,6 +53,23 @@ export function LapChart({ lap, drivers, laps, focusCode, size }: LapChartProps)
           isAnimationActive={false}
         />
       ))}
+      {model.hasPredictions &&
+        model.series.map((s) => (
+          <Line
+            key={s.predKey}
+            dataKey={s.predKey}
+            name={`${s.code} predicted`}
+            type="linear"
+            stroke={s.color}
+            strokeWidth={1.5}
+            strokeOpacity={s.opacity}
+            strokeDasharray="4 3"
+            dot={false}
+            activeDot={false}
+            connectNulls={false}
+            isAnimationActive={false}
+          />
+        ))}
     </LineChart>
   );
 
@@ -69,6 +92,7 @@ export function LapChart({ lap, drivers, laps, focusCode, size }: LapChartProps)
             {s.code}
           </span>
         ))}
+        {model.hasPredictions && <span className="text-zinc-500">dashed: predicted</span>}
       </div>
       <div className="min-h-0 flex-1">
         {size ? chart : <ResponsiveContainer width="100%" height="100%">{chart}</ResponsiveContainer>}

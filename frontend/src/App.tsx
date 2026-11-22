@@ -6,11 +6,13 @@ import { FocusPanel } from "./components/FocusPanel";
 import { IntelligencePanel } from "./components/IntelligencePanel";
 import { LapChart } from "./components/LapChart";
 import { Layout } from "./components/Layout";
+import { SettingsSheet } from "./components/SettingsSheet";
 import { BACKEND_DOWN, Banner, NO_RACES, notAnalyzedText, PanelMessage } from "./components/Messages";
 import { StatusBar } from "./components/StatusBar";
 import { TimingList } from "./components/TimingList";
 import { useFocusDriver } from "./hooks/useFocusDriver";
 import { useLapData } from "./hooks/useLapData";
+import { usePredictionHistory } from "./hooks/usePredictionHistory";
 import { usePlayback, useReplayKeys } from "./hooks/useReplayControls";
 import { useWrapped } from "./hooks/useWrapped";
 import { WrappedOverlay } from "./components/wrapped/WrappedOverlay";
@@ -40,10 +42,13 @@ export default function App() {
   }, [racesLoad.status]);
 
   const [lapReload, setLapReload] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const lapData = useLapData(replay.raceId, replay.lap, lapReload);
   const data = lapData.data;
   const rendered = data !== null && data.raceId === replay.raceId && data.lap === replay.lap;
   const [focusCode, setFocusCode] = useFocusDriver(data);
+  // Predicted-lap lines for the chart: only laps before the shown lap are requested.
+  const predicted = usePredictionHistory(data?.raceId ?? null, data?.lap ?? null, lapReload);
 
   useEffect(() => {
     if (lapData.error && replay.playing) dispatch({ type: "stop" });
@@ -88,7 +93,7 @@ export default function App() {
   );
 
   const chart = data && (
-    <LapChart lap={data.lap} drivers={data.state.drivers} laps={data.laps} focusCode={focusCode} />
+    <LapChart lap={data.lap} drivers={data.state.drivers} laps={data.laps} predicted={predicted} focusCode={focusCode} />
   );
 
   const focusColor = data?.state.drivers.find((d) => d.code === focusCode)?.team_color ?? null;
@@ -146,6 +151,10 @@ export default function App() {
                 wrapped.open(data.raceId, data.lap, focusCode);
               }
             }}
+            onOpenSettings={() => {
+              dispatch({ type: "stop" });
+              setSettingsOpen(true);
+            }}
           />
         }
         timing={timing}
@@ -155,6 +164,16 @@ export default function App() {
         intelligence={intelligence}
       />
       <WrappedOverlay state={wrapped.state} onClose={wrapped.close} teamColors={teamColors} />
+      {settingsOpen && (
+        <SettingsSheet
+          onClose={() => setSettingsOpen(false)}
+          onSaved={() => {
+            setSettingsOpen(false);
+            // Re-fetch the current lap (and the chart's predictions) from the newly served model.
+            setLapReload((n) => n + 1);
+          }}
+        />
+      )}
     </>
   );
 }

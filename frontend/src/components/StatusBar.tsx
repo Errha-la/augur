@@ -13,6 +13,7 @@ interface StatusBarProps {
   /** True until the final lap is on screen. */
   wrappedLocked?: boolean;
   onOpenWrapped?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export function TrackStatusPill({ status }: { status: string | null | undefined }) {
@@ -40,6 +41,7 @@ export function StatusBar({
   trackStatus,
   wrappedLocked = true,
   onOpenWrapped,
+  onOpenSettings,
 }: StatusBarProps) {
   const { raceId, lap, totalLaps, playing, speed } = replay;
   return (
@@ -131,6 +133,11 @@ export function StatusBar({
             </span>
           )}
           WRAPPED
+        </button>
+      )}
+      {onOpenSettings && (
+        <button type="button" aria-label="Settings" title="Settings" className={`${button} ml-auto`} onClick={onOpenSettings}>
+          ⚙
         </button>
       )}
     </div>

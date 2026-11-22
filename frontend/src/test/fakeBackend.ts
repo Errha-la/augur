@@ -7,6 +7,7 @@ import type {
   PredictionsResponse,
   RaceState,
   RaceSummary,
+  SettingsResponse,
   StrategyResponse,
 } from "../api/types";
 import { wrappedResponse } from "./builders";
@@ -54,7 +55,9 @@ export interface RequestCtx {
 }
 
 export interface RecordedRequest extends RequestCtx {
-  endpoint: Endpoint | "races";
+  endpoint: Endpoint | "races" | "settings";
+  method?: string;
+  body?: unknown;
   url: string;
   signal: AbortSignal | undefined;
 }
@@ -67,6 +70,42 @@ export interface FakeBackendOptions {
   handlers?: Partial<Record<Endpoint, Handler>>;
   /** Hold every lap response until `release` is called. */
   manual?: boolean;
+  /** Initial /api/settings state (default: DEFAULT_SETTINGS). */
+  settings?: SettingsResponse;
+}
+
+export const DEFAULT_SETTINGS: SettingsResponse = {
+  model: "lightgbm",
+  commentary_lang: "en",
+  data_source: "replay",
+  models: [
+    { name: "baseline", author: "AUGUR", trained: true },
+    { name: "lightgbm", author: "AUGUR", trained: true },
+    { name: "mymodel", author: "me", trained: false },
+  ],
+  commentary_langs: ["en", "zh-TW"],
+  data_sources: [
+    { name: "replay", available: true },
+    { name: "live", available: false },
+  ],
+  commentary: { narrator: "openai_compat", llm_model: "glm", configured: true, missing: null },
+};
+
+/** Mirrors the backend's PUT /api/settings validation for the fields the panel sends. */
+function rejectSettings(current: SettingsResponse, body: Record<string, unknown>): string | null {
+  for (const key of Object.keys(body)) {
+    if (!["model", "commentary_lang", "data_source"].includes(key)) return `unknown field ${key}`;
+  }
+  if ("model" in body) {
+    const m = current.models.find((x) => x.name === body.model);
+    if (!m) return `unknown model ${String(body.model)}`;
+    if (!m.trained) return `model ${m.name} is not trained`;
+  }
+  if ("commentary_lang" in body && !current.commentary_langs.includes(String(body.commentary_lang))) {
+    return `unsupported language ${String(body.commentary_lang)}`;
+  }
+  if (body.data_source === "live") return "live data is not available yet";
+  return null;
 }
 
 const defaultHandlers: Record<Endpoint, Handler> = {
@@ -103,12 +142,25 @@ export function fakeBackend(options: FakeBackendOptions = {}) {
   const handlers = { ...defaultHandlers, ...options.handlers };
   const requests: RecordedRequest[] = [];
   const held: Held[] = [];
+  let settings: SettingsResponse = structuredClone(options.settings ?? DEFAULT_SETTINGS);
 
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = String(input);
     const parsed = new URL(url, "http://localhost");
     const signal = init?.signal ?? undefined;
     if (signal?.aborted) throw abortError();
+
+    if (parsed.pathname === "/api/settings") {
+      const method = init?.method ?? "GET";
+      const body = init?.body ? JSON.parse(String(init.body)) : undefined;
+      requests.push({ endpoint: "settings", url, signal, raceId: "", lap: 0, driver: null, method, body });
+      if (method === "PUT") {
+        const detail = rejectSettings(settings, body as Record<string, unknown>);
+        if (detail) return Response.json({ detail }, { status: 422 });
+        settings = { ...settings, ...(body as object) };
+      }
+      return Response.json(settings);
+    }
 
     if (parsed.pathname === "/api/races") {
       requests.push({ endpoint: "races", url, signal, raceId: "", lap: 0, driver: null });
@@ -147,8 +199,12 @@ export function fakeBackend(options: FakeBackendOptions = {}) {
     fetch: fetchMock,
     requests,
     /** Requests of one endpoint, in order. */
-    of(endpoint: Endpoint | "races") {
+    of(endpoint: Endpoint | "races" | "settings") {
       return requests.filter((r) => r.endpoint === endpoint);
+    },
+    /** Current /api/settings state (after any PUT). */
+    settings() {
+      return settings;
     },
     /** Releases held responses (all, or those matching `filter`). */
     release(filter: (r: RecordedRequest) => boolean = () => true) {
