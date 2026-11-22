@@ -41,7 +41,7 @@ AUGUR replays historical Formula 1 races lap by lap, predicts finishing position
 2. **Why?** Explain them with lap times, tyre performance, and strategy.
 3. **What next?** Predict with models and Monte Carlo strategy simulation.
 
-Portfolio project, meant to be cloned locally so others can plug in their own model and show off its benchmark score in an end-of-race Wrapped. No hosted site. Deadline: 2 days. Choose the simplest working solution.
+Portfolio project, meant to be cloned locally so others can plug in their own model and show off its benchmark score in an end-of-race Wrapped. No hosted site. Stages 1–3 shipped as an MVP; Stage 4 makes the project ready to show on GitHub. Choose the simplest working solution.
 
 ## Stack & layout
 
@@ -98,6 +98,18 @@ npm --prefix frontend run build
   - Until `position-prediction` serves `/positions` and `/positions/history`, the frontend track uses mock responses that follow the API shapes in the `race-dashboard` design. Remove the mocks and test against the real backend before archiving `race-dashboard`.
   - `spxa` reads and writes the main checkout's `docs/`, even from a worktree. Sync each track's Spectra artifacts into its worktree by hand, and archive one change at a time.
   - Stage 1 is finished when both tracks are archived.
+- **Stage 4 — portfolio release.** Start only after `polish` is archived. Run in waves; finish a wave before starting the next.
+  - **Wave 1, four parallel tracks:**
+    - **BE-1:** `position-sim-calibration` — changes only `backend/` (simulator, degradation, strategy internals, bench, scoring) and `bench/`. Does not change `api.py` routes or the signature of `strategy.simulate()`.
+    - **BE-2:** `strategy-charts-api` — changes only `backend/`: a new chart-data module, its routes in `api.py`, and their tests. Calls `strategy.simulate()` and other public functions; does not change simulator, degradation, or strategy internals. Its pit-window and position-distribution tasks start only after the `position-sim-calibration` tasks that add `strategy.simulate_pit_laps()` and the stored position distribution are merged to `main`.
+    - **FE:** `dashboard-canvas` — changes only `frontend/`.
+    - **OPS:** `release-setup` (LICENSE, CI workflow, `Makefile` with setup, demo and test targets) — changes only the repository root files it creates and `.github/`.
+  - **Wave 2:** `strategy-chart-widgets` (`frontend/` only). Until `strategy-charts-api` is archived it uses mock responses that follow the API shapes in that change's design; remove the mocks and test against the real backend before archiving.
+  - **Wave 3:** `commentary-chart-links` (backend and frontend; runs alone).
+  - **Wave 4:** `portfolio-release` (README, screenshots, benchmark numbers, publishing).
+  - Only Wave 4 edits `README.md`. Other changes record README notes in their `tasks.md` for Wave 4 to apply.
+  - Run each track in its own worktree. If a track needs a change outside its allowed paths, stop and update the change first. The Stage 1 rules on syncing Spectra artifacts and archiving one change at a time also apply.
+  - Dashboard boards are stored only in the browser (`localStorage`) with JSON export and import; no backend storage for layouts.
 - Spec files are written in English.
 
 ## Communication
