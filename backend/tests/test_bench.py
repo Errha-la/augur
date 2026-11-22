@@ -11,11 +11,13 @@ from augur import bench, train
 STAND_INS = ("2098-04-synthetic-grand-prix", "2098-05-synthetic-grand-prix")
 RESULT_KEYS = {
     "model", "author", "races", "position_skill_pct", "brier_model", "brier_baseline",
+    "log_loss_model", "log_loss_baseline", "reliability",
     "lap_improvement_pct", "mae_model_s", "mae_baseline_s", "hit_rate", "per_race",
     "seed", "data_source", "augur_version", "generated_at",
 }
 PER_RACE_KEYS = {
     "race_id", "position_skill_pct", "brier_model", "brier_baseline",
+    "log_loss_model", "log_loss_baseline", "reliability",
     "lap_improvement_pct", "mae_model_s", "mae_baseline_s", "hit_rate",
 }
 

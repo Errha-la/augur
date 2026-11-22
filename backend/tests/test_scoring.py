@@ -9,6 +9,7 @@ from augur.scoring import (
     checkpoints,
     hit_rate,
     lap_scores,
+    podium_calibration,
     podium_pairs,
     podium_skill,
     race_inputs,
@@ -129,3 +130,25 @@ def test_race_inputs_from_an_analyzed_race(tmp_path):
     result = scores([inputs])
     assert result["lap_improvement_pct"] == 0.0
     assert result["brier_model"] is not None
+
+
+# specs/model-benchmark "Podium calibration report"
+def test_calibration_arithmetic_four_pairs():
+    pairs = [(0.9, 1.0, 1), (0.1, 0.0, 0), (0.5, 1.0, 1), (0.5, 0.0, 0)]
+    out = podium_calibration(pairs)
+    assert out["log_loss_model"] == 0.3993
+    bins = {(b["bin_low"], b["bin_high"]): b for b in out["reliability"]}
+    assert len(bins) == 5
+    assert bins[(0.4, 0.6)] == {"bin_low": 0.4, "bin_high": 0.6, "count": 2, "mean_forecast": 0.5,
+                                "observed_rate": 0.5}
+    assert bins[(0.2, 0.4)] == {"bin_low": 0.2, "bin_high": 0.4, "count": 0, "mean_forecast": None,
+                                "observed_rate": None}
+    assert bins[(0.8, 1.0)]["count"] == 1 and bins[(0.0, 0.2)]["count"] == 1
+    # Baseline forecasts are exactly 0 or 1 and all correct here: clipped to 0.001 / 0.999.
+    assert out["log_loss_baseline"] == 0.001
+
+
+def test_calibration_without_pairs_and_forecast_of_one():
+    assert podium_calibration([])["log_loss_model"] is None
+    bins = podium_calibration([(1.0, 1.0, 1)])["reliability"]
+    assert bins[-1]["count"] == 1

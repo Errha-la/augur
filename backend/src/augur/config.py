@@ -85,10 +85,23 @@ DEG_CAP_S_PER_LAP = 0.20
 # The lap-time model's next-lap delta (prediction minus recent pace) is multiplied by this
 # per simulated lap, so a one-lap forecast does not become a race-long pace gap
 # (estimate, tuned on the evaluation races by augur.tune_sim).
-MODEL_DELTA_DECAY = 0.5
+MODEL_DELTA_DECAY = 0.7  # tuned 2026-11-22: lowest pooled Brier of the tune_sim grid (lightgbm)
 # Standard deviation of the per-run, per-driver pace offset, s/lap, added to every
 # simulated lap of a run (estimate, tuned on the evaluation races by augur.tune_sim).
-PACE_OFFSET_SD_S = 0.15
+PACE_OFFSET_SD_S = 0.30  # tuned 2026-11-22 (grid edge, see tasks.md)
+# Neutralised periods in the position simulator (estimates: about 0.45 safety cars and
+# 0.35 virtual safety cars per 57-lap race; compared with race-control counts on the
+# evaluation races in position-sim-calibration tasks.md). At most one period per run.
+SC_PROB_PER_LAP = 0.008
+VSC_PROB_PER_LAP = 0.006
+SC_LAPS = 4
+VSC_LAPS = 3
+SC_LAP_FACTOR = 1.35
+VSC_LAP_FACTOR = 1.25
+SC_PIT_LOSS_FACTOR = 0.5
+VSC_PIT_LOSS_FACTOR = 0.6
+SC_GAP_S = 1.0
+SC_PIT_PROB = 0.8
 # Dirty air: the PITWALL project's documented prior, 0.40 s/lap within 1.0 s.
 DIRTY_AIR_GAP_S = 1.0
 DIRTY_AIR_PENALTY_S = 0.4

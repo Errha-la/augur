@@ -6,7 +6,10 @@ For every driver, a simulated lap j > N takes
 where ``base`` is the driver's recent pace at lap N and ``delta`` the lap-time model's
 predicted change for lap N+1, which fades instead of lasting to the flag. Each run
 also draws one pace offset per driver (PACE_OFFSET_SD_S) that lasts the whole run, and
-a simulated stop changes pace by the compound offset (COMPOUND_PACE_OFFSET_S). A simulated pit stop
+a simulated stop changes pace by the compound offset (COMPOUND_PACE_OFFSET_S). A run may
+contain one safety car or virtual safety car period (``sample_periods``): its laps are
+slower, have no dirty air and cheaper stops, a safety car closes the gaps, and a driver
+still due a stop usually takes it at the start of the period. A simulated pit stop
 adds the pit loss on its lap and restarts tyre age on the next compound. A
 driver ending a lap less than DIRTY_AIR_GAP_S behind the car ahead (same lap
 count) loses DIRTY_AIR_PENALTY_S on the next lap. Finishing order per run is by
@@ -169,6 +172,49 @@ def sample_pit_laps(
     return out
 
 
+# Neutralised period kinds in ``sample_periods``.
+NO_PERIOD, SAFETY_CAR, VIRTUAL_SAFETY_CAR = 0, 1, 2
+
+
+def sample_periods(lap: int, total_laps: int, runs: int, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
+    """(runs,) first lap and kind of the run's single neutralised period (0 / NO_PERIOD: none).
+
+    For each lap j in N+1..total_laps-2 a safety car starts with probability SC_PROB_PER_LAP,
+    otherwise a virtual safety car with VSC_PROB_PER_LAP, until one has started.
+    """
+    first = np.full(runs, total_laps + 1, dtype=np.int64)
+    kind = np.zeros(runs, dtype=np.int64)
+    laps = np.arange(lap + 1, total_laps - 1)  # N+1 .. total_laps-2
+    u = rng.random((runs, len(laps)))
+    if len(laps) == 0:
+        return np.zeros(runs, dtype=np.int64), kind
+    p_sc = config.SC_PROB_PER_LAP
+    p_vsc = (1.0 - p_sc) * config.VSC_PROB_PER_LAP
+    started = u < p_sc + p_vsc
+    any_start = started.any(axis=1)
+    idx = np.argmax(started, axis=1)
+    first[any_start] = laps[idx[any_start]]
+    hit_u = u[np.arange(runs), idx]
+    kind[any_start] = np.where(hit_u[any_start] < p_sc, SAFETY_CAR, VIRTUAL_SAFETY_CAR)
+    first[~any_start] = 0
+    return first, kind
+
+
+def _compress(time: np.ndarray, laps_done: np.ndarray, rows: np.ndarray) -> np.ndarray:
+    """Copy of ``time`` where, in ``rows``, every gap to the car ahead on the same lap count is
+    at most SC_GAP_S, keeping the order."""
+    out = time.copy()
+    for r in np.flatnonzero(rows):
+        order = np.argsort(time[r] - laps_done[r] * _LAP_WEIGHT, kind="stable")
+        t, lc = time[r, order], laps_done[r, order]
+        new = t.copy()
+        for k in range(1, len(t)):
+            if lc[k] == lc[k - 1]:
+                new[k] = new[k - 1] + min(t[k] - t[k - 1], config.SC_GAP_S)
+        out[r, order] = new
+    return out
+
+
 def simulate_finish(
     starts: list[DriverStart],
     lap: int,
@@ -196,6 +242,15 @@ def _simulate(
     n = len(starts)
     rng = np.random.default_rng(seed + lap)
     pit = sample_pit_laps(starts, lap, total_laps, runs, rng)
+    sc_first, sc_kind = sample_periods(lap, total_laps, runs, rng)
+    sc_len = np.where(sc_kind == SAFETY_CAR, config.SC_LAPS, np.where(sc_kind == VIRTUAL_SAFETY_CAR, config.VSC_LAPS, 0))
+    sc_last = sc_first + sc_len - 1  # truncated at the flag by the lap loop
+    lap_factor = np.where(sc_kind == SAFETY_CAR, config.SC_LAP_FACTOR, config.VSC_LAP_FACTOR)
+    loss_factor = np.where(sc_kind == SAFETY_CAR, config.SC_PIT_LOSS_FACTOR, config.VSC_PIT_LOSS_FACTOR)
+    # A driver whose sampled stop comes after the period starts takes it on the period's
+    # first lap with probability SC_PIT_PROB (a cheaper stop).
+    move = (sc_kind[:, None] != NO_PERIOD) & (pit > sc_first[:, None]) & (rng.random((runs, n)) < config.SC_PIT_PROB)
+    pit = np.where(move, sc_first[:, None], pit)
     laps_done = np.tile(np.array([s.laps_completed for s in starts], dtype=float), (runs, 1))
     time = np.tile(np.array([s.time_s for s in starts], dtype=float), (runs, 1))
     base = np.array([s.base_s for s in starts])
@@ -224,12 +279,21 @@ def _simulate(
             # deg * (tyre_age(j) - tyre_age_now); the model's next-lap delta fades lap by lap
             base + delta * config.MODEL_DELTA_DECAY ** (j - lap - 1) + deg * (j - lap),
         )
-        lap_time = pace + offset - fuel * (j - lap) + rng.normal(0.0, 1.0, (runs, n)) * noise_sd + penalty
-        lap_time = lap_time + np.where(pit == j, loss_s, 0.0)
-        if history is not None:
-            history[:, j - lap - 1, :] = lap_time
-        time = time + lap_time
+        neutral = (sc_kind != NO_PERIOD) & (sc_first <= j) & (j <= sc_last)  # (runs,)
+        lap_time = pace + offset - fuel * (j - lap) + rng.normal(0.0, 1.0, (runs, n)) * noise_sd
+        # Neutralised laps: slower by the period's factor, no dirty air, cheaper stops.
+        lap_time = np.where(neutral[:, None], lap_time * lap_factor[:, None], lap_time + penalty)
+        stop_loss = np.where(neutral, loss_s * loss_factor, loss_s)
+        lap_time = lap_time + np.where(pit == j, stop_loss[:, None], 0.0)
+        new_time = time + lap_time
         laps_done = laps_done + 1
+        bunch = (sc_kind == SAFETY_CAR) & (sc_first == j)
+        if bunch.any():
+            # End of a safety car's first lap: the field closes up behind it.
+            new_time = _compress(new_time, laps_done, bunch)
+        if history is not None:
+            history[:, j - lap - 1, :] = new_time - time
+        time = new_time
         penalty = _dirty_air(time, laps_done)
 
     return time, laps_done, history
@@ -279,6 +343,24 @@ def summarize(codes: list[str], positions: np.ndarray) -> list[dict]:
     return rows
 
 
+def prepare(
+    feed: RaceFeed,
+    lap: int,
+    model: LapTimeModel | None = None,
+    prior: Mapping[str, float] | None = None,
+) -> tuple[list[DriverStart], float]:
+    """(driver states, pit loss) at lap N from ``feed.laps_until(N)`` only.
+
+    Shared by :func:`positions_at` and ``augur.tune_sim``, which simulates one prepared
+    lap with several constant settings.
+    """
+    laps = feed.laps_until(lap)
+    laps = laps[laps["lap"] <= lap]  # defensive: a feed must never return later laps
+    starts = driver_starts(laps, feed.total_laps, lap, model, prior)
+    observed = pit_loss(laps)
+    return starts, observed if observed is not None else config.PIT_LOSS_FALLBACK_S
+
+
 def positions_at(
     feed: RaceFeed,
     lap: int,
@@ -290,9 +372,7 @@ def positions_at(
     """Finishing-position probabilities per driver at lap N from ``feed.laps_until(N)`` only."""
     total = feed.total_laps
     _validate(lap, total, runs, seed)
-    laps = feed.laps_until(lap)
-    laps = laps[laps["lap"] <= lap]  # defensive: a feed must never return later laps
-    starts = driver_starts(laps, total, lap, model, prior)
+    starts, loss = prepare(feed, lap, model, prior)
     if not starts:
         return []
     codes = [s.code for s in starts]
@@ -300,6 +380,4 @@ def positions_at(
         # Final lap: the actual order, with certain outcomes.
         actual = np.arange(1, len(codes) + 1)[None, :]
         return summarize(codes, actual)
-    observed = pit_loss(laps)
-    loss = observed if observed is not None else config.PIT_LOSS_FALLBACK_S
     return summarize(codes, simulate_finish(starts, lap, total, runs, seed, loss))

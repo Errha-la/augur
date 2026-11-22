@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -99,8 +100,12 @@ def test_base_is_recent_pace_plus_model_delta():
 # --- Uncertainty grows with laps remaining ------------------------------------------
 
 
-def test_uncertainty_grows_with_laps_remaining():
+def test_uncertainty_grows_with_laps_remaining(monkeypatch):
     from augur.positions import DriverStart, _simulate
+
+    # Neutralised periods would close the 100 s gap; this checks the pace terms only.
+    monkeypatch.setattr(config, "SC_PROB_PER_LAP", 0.0)
+    monkeypatch.setattr(config, "VSC_PROB_PER_LAP", 0.0)
 
     def spread(lap: int) -> float:
         pair = [
@@ -146,3 +151,69 @@ def test_distribution_sums(lap):
         assert d["position_distribution"][0] == pytest.approx(d["p_win"], abs=1e-6)
     for i in range(20):
         assert sum(d["position_distribution"][i] for d in out) == pytest.approx(1.0, abs=0.001)
+
+
+# --- Neutralised periods -----------------------------------------------------------------
+
+
+def _start(code, time_s, laps=10, stops=False, compound="HARD", tyre_age=5):
+    from augur.positions import DriverStart
+
+    return DriverStart(code=code, laps_completed=laps, time_s=time_s, base_s=90.0, deg_s_per_lap=0.0,
+                       next_deg_s_per_lap=0.0, tyre_age=tyre_age, compound=compound, stops=stops, noise_s=0.0)
+
+
+@pytest.fixture
+def quiet(monkeypatch):
+    """No pace offset and no fuel effect, so lap times are exact."""
+    monkeypatch.setattr(config, "PACE_OFFSET_SD_S", 0.0)
+    monkeypatch.setattr(config, "FUEL_S_PER_KG", 0.0)
+    return monkeypatch
+
+
+def test_safety_car_compresses_the_field(quiet):
+    from augur.positions import _simulate
+
+    quiet.setattr(config, "SC_PROB_PER_LAP", 1.0)
+    quiet.setattr(config, "SC_PIT_PROB", 0.0)
+    starts = [_start("P1", 0.0), _start("P2", 12.0), _start("P3", 30.0)]
+    _, _, history = _simulate(starts, 10, 30, 50, 0, 22.0, record=True)
+    after = np.array([0.0, 12.0, 30.0]) + history[:, 0, :]  # cumulative time after lap N+1
+    assert ((after[:, 1] - after[:, 0]) <= config.SC_GAP_S + 1e-9).all()
+    assert ((after[:, 1] - after[:, 0]) > 0).all() and ((after[:, 2] - after[:, 1]) > 0).all()
+    assert history[:, 0, 0] == pytest.approx(90.0 * config.SC_LAP_FACTOR)  # leader's lap is slowed
+
+
+def test_no_safety_cars(quiet):
+    from augur.positions import NO_PERIOD, _simulate, sample_periods
+
+    quiet.setattr(config, "SC_PROB_PER_LAP", 0.0)
+    quiet.setattr(config, "VSC_PROB_PER_LAP", 0.0)
+    _, kind = sample_periods(10, 57, 500, np.random.default_rng(0))
+    assert (kind == NO_PERIOD).all()
+    _, _, history = _simulate([_start("AAA", 0.0), _start("BBB", 50.0)], 10, 57, 100, 0, 22.0, record=True)
+    assert history == pytest.approx(np.full_like(history, 90.0))
+
+
+def test_period_rates_and_lengths():
+    from augur.positions import SAFETY_CAR, VIRTUAL_SAFETY_CAR, sample_periods
+
+    first, kind = sample_periods(0, 57, 20000, np.random.default_rng(1))
+    sc, vsc = (kind == SAFETY_CAR).mean(), (kind == VIRTUAL_SAFETY_CAR).mean()
+    # 55 candidate laps: P(SC first) = sum over laps; roughly 0.36 and 0.26 of runs.
+    assert 0.30 < sc < 0.42 and 0.20 < vsc < 0.32
+    assert ((first[kind > 0] >= 1) & (first[kind > 0] <= 55)).all()
+
+
+def test_stop_taken_under_a_safety_car(quiet):
+    from augur.positions import _simulate
+
+    quiet.setattr(config, "SC_PROB_PER_LAP", 1.0)
+    quiet.setattr(config, "SC_PIT_PROB", 1.0)
+    quiet.setattr(config, "COMPOUND_PACE_OFFSET_S", {"SOFT": 0.0, "MEDIUM": 0.0, "HARD": 0.0})
+    s = _start("MED", 0.0, laps=15, stops=True, compound="MEDIUM", tyre_age=10)
+    _, _, history = _simulate([s], 15, 57, 200, 0, 22.0, record=True)
+    # Lap 16 is the first safety-car lap: slowed lap plus the halved pit loss, every run.
+    expected = 90.0 * config.SC_LAP_FACTOR + config.SC_PIT_LOSS_FACTOR * 22.0
+    assert history[:, 0, 0] == pytest.approx(np.full(200, expected))
+    assert (history[:, 1:, 0] < 22.0 + 90.0 * config.SC_LAP_FACTOR).all()  # no second stop

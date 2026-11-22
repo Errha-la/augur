@@ -169,6 +169,8 @@ def test_projected_deg_ignores_short_or_negative_fits():
 
 def test_slightly_faster_car_stays_behind(monkeypatch):
     monkeypatch.setattr(config, "PACE_OFFSET_SD_S", 0.0)  # isolate dirty air from the per-run offset
+    monkeypatch.setattr(config, "SC_PROB_PER_LAP", 0.0)  # and from neutralised laps (no dirty air)
+    monkeypatch.setattr(config, "VSC_PROB_PER_LAP", 0.0)
     ahead = start("AHD", 0.0, 90.0)
     chaser = start("CHS", 0.5, 89.8)
     pos = simulate_finish([ahead, chaser], 10, 20, 100, 0, loss_s=22.0)
@@ -177,6 +179,8 @@ def test_slightly_faster_car_stays_behind(monkeypatch):
 
 def test_much_faster_car_passes(monkeypatch):
     monkeypatch.setattr(config, "PACE_OFFSET_SD_S", 0.0)
+    monkeypatch.setattr(config, "SC_PROB_PER_LAP", 0.0)
+    monkeypatch.setattr(config, "VSC_PROB_PER_LAP", 0.0)
     ahead = start("AHD", 0.0, 90.0)
     chaser = start("CHS", 0.5, 89.0)
     pos = simulate_finish([ahead, chaser], 10, 20, 100, 0, loss_s=22.0)
