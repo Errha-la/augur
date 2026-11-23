@@ -84,12 +84,13 @@ describe("Lap-time chart — Neighbours follow the current lap", () => {
     const m30 = chartModel(at(30), laps.filter((r) => r.lap <= 30), "HAM", 30);
     expect(m30.series.map((s) => s.code)).toEqual(["PIA", "HAM", "ALO"]);
     expect(m30.rows.map((r) => r.lap)).toEqual(Array.from({ length: 30 }, (_, i) => i + 1));
-    expect(m30.rows.every((r) => r.ALO != null)).toBe(true);
+    // Lap 1 is a non-racing lap (standing start) and stays off the line.
+    expect(m30.rows.slice(1).every((r) => r.ALO != null)).toBe(true);
 
     const m31 = chartModel(at(31), laps, "HAM", 31);
     expect(m31.series.map((s) => s.code)).toEqual(["PIA", "HAM", "GAS"]);
     expect(m31.rows).toHaveLength(31);
-    expect(m31.rows.every((r) => r.GAS != null)).toBe(true);
+    expect(m31.rows.slice(1).every((r) => r.GAS != null)).toBe(true);
   });
 
   it("titles the legend with the current lap", () => {
@@ -114,9 +115,9 @@ describe("Lap-time chart — Chart stops at the current lap", () => {
   });
 
   it("leaves null lap times as gaps", () => {
-    const laps = [lapRow("D01", 1, 91), lapRow("D01", 2, null), lapRow("D01", 3, 90)];
-    const model = chartModel(grid(2), laps, "D01", 3);
-    expect(model.rows.map((r) => r.D01)).toEqual([91, null, 90]);
+    const laps = [lapRow("D01", 2, 91), lapRow("D01", 3, null), lapRow("D01", 4, 90)];
+    const model = chartModel(grid(2), laps, "D01", 4);
+    expect(model.rows.map((r) => r.D01)).toEqual([null, 91, null, 90]);
   });
 
   it("plots chart lap k with the prediction made at lap k-1, none for lap 1, none above the current lap", () => {
@@ -165,5 +166,51 @@ describe("Lap-time chart — Chart stops at the current lap", () => {
     const curves = [...container.querySelectorAll("path.recharts-line-curve")];
     expect(curves).toHaveLength(3);
     expect(curves.map((c) => c.getAttribute("stroke-width")).sort()).toEqual(["1.5", "1.5", "3"]);
+  });
+});
+
+describe("Lap-time chart — pit stop markers and SC / VSC shading", () => {
+  const drivers = grid(5);
+  const size = { width: 600, height: 300 };
+
+  function markedLaps(): LapRow[] {
+    return lapsFor(["D02", "D03", "D04"], 20).map((r) => {
+      if (r.lap === 2 || r.lap === 3) return { ...r, track_status: "6" };
+      if (r.driver === "D03" && r.lap === 10) return { ...r, pit_in: true };
+      if (r.driver === "D03" && r.lap === 11) return { ...r, pit_out: true, lap_time_s: 108 };
+      if (r.driver === "D04" && r.lap === 10) return { ...r, pit_in: true };
+      return r;
+    });
+  }
+
+  it("draws a P per pit stop in the driver's colour and a labelled band per VSC lap", () => {
+    const { container } = render(<LapChart lap={20} drivers={drivers} laps={markedLaps()} focusCode="D03" size={size} />);
+    const markers = [...container.querySelectorAll('[data-testid="pit-marker"]')];
+    expect(markers.map((m) => [m.getAttribute("data-code"), m.getAttribute("data-lap"), m.textContent])).toEqual([
+      ["D03", "10", "P"],
+      ["D04", "10", "P"],
+    ]);
+    const colorOf = Object.fromEntries(drivers.map((d) => [d.code, d.team_color]));
+    expect(markers.map((m) => m.getAttribute("fill"))).toEqual([colorOf.D03, colorOf.D04]);
+    // Two stops on the same lap: the second label sits 10 px to the right.
+    expect(Number(markers[1].getAttribute("x")) - Number(markers[0].getAttribute("x"))).toBe(10);
+
+    const bands = [...container.querySelectorAll('[data-testid="neutralised-lap"]')];
+    expect(bands.map((b) => [b.getAttribute("data-lap"), b.getAttribute("data-label"), b.textContent])).toEqual([
+      ["2", "VSC", "VSC"],
+      ["3", "VSC", ""], // one label per run of VSC laps
+    ]);
+    expect(screen.getByTestId("legend-pit")).toHaveTextContent("P pit stop");
+    expect(screen.getByTestId("legend-neutralised")).toHaveTextContent("SC / VSC");
+  });
+
+  it("draws no marker, band, or legend key on a green race without stops", () => {
+    const { container } = render(
+      <LapChart lap={20} drivers={drivers} laps={lapsFor(["D02", "D03", "D04"], 20)} focusCode="D03" size={size} />,
+    );
+    expect(container.querySelector('[data-testid="pit-marker"]')).toBeNull();
+    expect(container.querySelector('[data-testid="neutralised-lap"]')).toBeNull();
+    expect(screen.queryByTestId("legend-pit")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("legend-neutralised")).not.toBeInTheDocument();
   });
 });

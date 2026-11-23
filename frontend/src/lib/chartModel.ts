@@ -13,6 +13,23 @@ export interface ChartSeries {
   predKey: string;
 }
 
+/** A plotted driver's pit-in lap, drawn as "P" in the driver's line colour. */
+export interface PitMarker {
+  lap: number;
+  code: string;
+  color: string;
+}
+
+export type NeutralisedLabel = "RED" | "SC" | "VSC";
+
+/** A lap with a red flag, safety car, or virtual safety car in any driver's row. */
+export interface NeutralisedLap {
+  lap: number;
+  label: NeutralisedLabel;
+  /** First lap of a run of consecutive laps with the same label: the only one that shows it. */
+  showLabel: boolean;
+}
+
 export interface ChartModel {
   lap: number;
   series: ChartSeries[];
@@ -21,11 +38,27 @@ export interface ChartModel {
   domain: [number, number] | null;
   /** At least one predicted value is plotted. */
   hasPredictions: boolean;
+  pitMarkers: PitMarker[];
+  neutralised: NeutralisedLap[];
+}
+
+/** track_status codes (race-data-replay): 5 red flag, 4 safety car, 6 virtual safety car, by priority. */
+const NEUTRALISED: [string, NeutralisedLabel][] = [
+  ["5", "RED"],
+  ["4", "SC"],
+  ["6", "VSC"],
+];
+const NEUTRALISED_CODES = new Set(NEUTRALISED.map(([code]) => code));
+
+/** Lap 1, pit-in and pit-out laps, and SC / VSC / red-flag laps are left off the solid lines. */
+function isRacingLap(r: LapRow): boolean {
+  return r.lap > 1 && !r.pit_in && !r.pit_out && !(r.track_status != null && NEUTRALISED_CODES.has(r.track_status));
 }
 
 /**
  * Focus driver plus the cars directly ahead and behind at `lap`, with their
- * actual lap times for laps 1..lap only. Null lap times stay null (gaps).
+ * actual lap times for laps 1..lap only. Null lap times and non-racing laps
+ * stay null (gaps); pit stops and neutralised laps are returned as markers.
  * Chart lap k (k >= 2) also gets the lap time predicted at lap k-1.
  */
 export function chartModel(
@@ -36,7 +69,7 @@ export function chartModel(
   predicted: PredictionHistory = new Map(),
 ): ChartModel {
   const focus = drivers.find((d) => d.code === focusCode);
-  if (!focus) return { lap, series: [], rows: [], domain: null, hasPredictions: false };
+  if (!focus) return { lap, series: [], rows: [], domain: null, hasPredictions: false, pitMarkers: [], neutralised: [] };
 
   const at = (position: number) => drivers.find((d) => d.position === position);
   const picked: [DriverState, ChartSeries["role"]][] = [];
@@ -70,20 +103,42 @@ export function chartModel(
     }
     rows.push(row);
   }
+  const colorOf = new Map(series.map((s) => [s.code, s.color]));
+  const order = new Map(series.map((s, i) => [s.code, i]));
   const times: number[] = [];
+  const pitMarkers: PitMarker[] = [];
+  const statusesByLap = new Map<number, Set<string>>();
   for (const r of laps) {
-    if (r.lap < 1 || r.lap > lap || !codes.has(r.driver)) continue;
+    if (r.lap < 1 || r.lap > lap) continue;
+    if (r.track_status != null) {
+      const seen = statusesByLap.get(r.lap) ?? new Set<string>();
+      seen.add(r.track_status);
+      statusesByLap.set(r.lap, seen);
+    }
+    if (!codes.has(r.driver)) continue;
+    if (r.pit_in) pitMarkers.push({ lap: r.lap, code: r.driver, color: colorOf.get(r.driver)! });
+    if (!isRacingLap(r)) continue;
     rows[r.lap - 1][r.driver] = r.lap_time_s;
     if (r.lap_time_s != null) times.push(r.lap_time_s);
   }
+  pitMarkers.sort((a, b) => a.lap - b.lap || order.get(a.code)! - order.get(b.code)!);
 
-  return { lap, series, rows, domain: timeDomain(times), hasPredictions };
+  const neutralised: NeutralisedLap[] = [];
+  for (const [n, seen] of [...statusesByLap].sort(([a], [b]) => a - b)) {
+    const hit = NEUTRALISED.find(([code]) => seen.has(code));
+    if (!hit) continue;
+    const prev = neutralised.at(-1);
+    const continues = prev !== undefined && prev.lap === n - 1 && prev.label === hit[1];
+    neutralised.push({ lap: n, label: hit[1], showLabel: !continues });
+  }
+
+  return { lap, series, rows, domain: timeDomain(times), hasPredictions, pitMarkers, neutralised };
 }
 
 /**
- * Y range around racing laps: from just under the fastest lap to 3 s above the
- * median, so lap 1, pit and safety-car laps run off the top instead of
- * flattening the lines that matter.
+ * Y range around the plotted (racing) laps: from just under the fastest lap to
+ * 3 s above the median. Non-racing laps never reach this list, so no line
+ * leaves the chart.
  */
 function timeDomain(times: number[]): [number, number] | null {
   if (times.length === 0) return null;
