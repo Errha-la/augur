@@ -44,7 +44,7 @@ A one-off script in the job tmp directory (not committed) loads each cached Abu 
 
 ### Screenshots: one hero plus one per feature, PNG in `docs/images/`
 
-User choice 2026-11-23. Taken with `playwright-core` from `/home/bojen/Lab-Website/node_modules/playwright-core` (no Playwright in AUGUR) against `make dev-api` / the Vite dev server on 2024 Abu Dhabi, viewport 1440x900 at device scale factor 1; Wrapped cards come from the app's own "Download card" (1080x1920). Every image under 500 KB (estimate; check with `ls -l` and recompress with lower PNG color depth if exceeded). `docs/screenshot.png` is removed; the dashboard-canvas drafts in `~/drafts/augur-screenshots/` are not reused because they predate the chart widgets.
+User choice 2026-11-23. Taken with `playwright-core` from another local project's `node_modules/playwright-core` (no Playwright in AUGUR) against `make dev-api` / the Vite dev server on 2024 Abu Dhabi, viewport 1440x900 at device scale factor 1; Wrapped cards come from the app's own "Download card" (1080x1920). Every image under 500 KB (estimate; check with `ls -l` and recompress with lower PNG color depth if exceeded). `docs/screenshot.png` is removed; the dashboard-canvas drafts in `~/drafts/augur-screenshots/` are not reused because they predate the chart widgets.
 
 ### Whiteboard section explains every chart's computation
 
@@ -60,7 +60,7 @@ User choice 2026-11-23. `README.md` is the English source; `README.zh-TW.md` mir
 
 ## Implementation Contract
 
-README section order (both files): language link; title and one-paragraph pitch; CI badge and license line; hero image; Features (one subsection each with its screenshot: replay dashboard, the whiteboard and its chart catalogue, event analysis with clickable numbers and popovers, finishing-position forecasts, Race Wrapped, optional LLM commentary); Quick start (`make setup`, `make demo`, `make dev-api` + `make dev-web`, open http://localhost:5173, `make test`); Benchmark (headline, per-race table for both benchmark races and both models, evaluation-race summary with its range, method, caveats); Plug in your model (link to `docs/swap-model.md`); API endpoints table; Data source; Manual setup reference (commands without `make`, including the `--without-pip` fallback); LLM commentary configuration; Known issues; Tests; License.
+README section order (both files, as shipped; revised 2026-11-23 after verify): language link; title and one-paragraph pitch; CI badge and license line; hero image; Quick start (`make setup`, `make demo`, `make dev-api` + `make dev-web`, open http://localhost:5173, `make test`); Features (one subsection each with its screenshot: lap-by-lap replay, the whiteboard and its chart catalogue, race events with clickable numbers and popovers, finishing-position forecasts, Race Wrapped, optional LLM commentary including its configuration: "Generate commentary" and "Switch the LLM"); Benchmark (headline, per-race table for both benchmark races and both models, evaluation-race summary with its range, method, caveats); Plug in your model (link to `docs/swap-model.md`); API endpoints table; Data source; Manual setup reference (commands without `make`, including the `--without-pip` fallback); Known issues; Tests; License. Quick start comes before Features so a visitor can run the demo first, and the LLM configuration stays next to the commentary it configures.
 
 Whiteboard section content:
 
