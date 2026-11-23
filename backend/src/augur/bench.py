@@ -1,7 +1,11 @@
 """Score a lap-time model on the fixed benchmark races.
 
 Usage:
-    python -m augur.bench --model <name> [--data-dir DIR] [--out-dir DIR] [--runs N]
+    python -m augur.bench --model <name> [--eval] [--data-dir DIR] [--out-dir DIR] [--runs N]
+
+``--eval`` scores the evaluation races (2024 rounds 12 to 23, used to tune the position
+simulator's constants) with the same code and writes ``bench/<name>-eval.json``; the
+benchmark file is left untouched.
 
 Analyzes each benchmark race with the model when it has no events, no
 position predictions, or events stored before outcomes existed; then writes
@@ -27,6 +31,9 @@ from augur.replay import ReplayStore
 from augur.scoring import race_inputs, scores
 
 BENCH_RACES: tuple[str, ...] = ("2024-01-bahrain-grand-prix", "2024-24-abu-dhabi-grand-prix")
+# Evaluation races: neither training (2024 rounds 2-11) nor benchmark races; used by
+# ``--eval`` and ``augur.tune_sim`` so tuning never touches the benchmark races.
+EVAL_ROUNDS: tuple[tuple[int, int], ...] = tuple((2024, r) for r in range(12, 24))
 DATA_SOURCE = "openf1"
 
 
@@ -36,6 +43,19 @@ class BenchError(Exception):
 
 def default_out_dir() -> Path:
     return catalog.REPO_ROOT / "bench"
+
+
+def resolve_rounds(data_dir: Path, rounds: Sequence[tuple[int, int]]) -> list[str]:
+    """Race ids of (year, round) pairs; a race not ingested is refused with its
+    ``<year>-<round>`` label (as in ``augur.train``)."""
+    store = ReplayStore(data_dir)
+    out = []
+    for year, rnd in rounds:
+        race_id = store.race_id_for(year, rnd)
+        if race_id is None:
+            raise BenchError(f"missing race {year}-{rnd:02d}, run augur.ingest first")
+        out.append(race_id)
+    return out
 
 
 def check(data_dir: Path, model_name: str, races: Sequence[str]) -> dict:
@@ -85,6 +105,7 @@ def ensure_analyzed(data_dir: Path, race_id: str, model_name: str, runs: int) ->
 
 SCORE_KEYS = (
     "position_skill_pct", "brier_model", "brier_baseline",
+    "log_loss_model", "log_loss_baseline", "reliability",
     "lap_improvement_pct", "mae_model_s", "mae_baseline_s", "hit_rate",
 )
 
@@ -133,9 +154,9 @@ def summary_line(result: dict) -> str:
     return f"{result['model']}: {podium}, {laps}, event hit rate {pct} ({hr['hits']}/{hr['resolved']})"
 
 
-def write_result(result: dict, out_dir: Path) -> Path:
+def write_result(result: dict, out_dir: Path, suffix: str = "") -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"{result['model']}.json"
+    path = out_dir / f"{result['model']}{suffix}.json"
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     return path
 
@@ -143,6 +164,9 @@ def write_result(result: dict, out_dir: Path) -> Path:
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="python -m augur.bench", description="Score a model on the benchmark races.")
     p.add_argument("--model", required=True)
+    p.add_argument(
+        "--eval", action="store_true", help="score the evaluation races (2024 rounds 12-23) into <name>-eval.json"
+    )
     p.add_argument("--data-dir", type=Path, default=None, help="data root (default: repo data/)")
     p.add_argument("--out-dir", type=Path, default=None, help="result directory (default: repo bench/)")
     p.add_argument(
@@ -155,7 +179,12 @@ def _parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: Sequence[str] | None = None, *, races: Sequence[str] = BENCH_RACES) -> int:
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    races: Sequence[str] = BENCH_RACES,
+    eval_rounds: Sequence[tuple[int, int]] = EVAL_ROUNDS,
+) -> int:
     args = _parser().parse_args(argv)
     data_dir: Path = args.data_dir if args.data_dir is not None else catalog.default_data_dir()
     out_dir: Path = args.out_dir if args.out_dir is not None else default_out_dir()
@@ -163,11 +192,18 @@ def main(argv: Sequence[str] | None = None, *, races: Sequence[str] = BENCH_RACE
         print(f"runs must be {config.POSITION_RUNS_MIN}..{config.POSITION_RUNS_MAX}", flush=True)
         return 1
     try:
+        if args.eval:
+            # Unknown model first, as in check(), so a typo is not reported as a missing race.
+            try:
+                registry.get_model_class(args.model)
+            except registry.UnknownModelError:
+                raise BenchError(f"unknown model {args.model}") from None
+            races = resolve_rounds(data_dir, eval_rounds)
         result = run_bench(args.model, data_dir, races=races, runs=args.runs)
     except BenchError as exc:
         print(str(exc), flush=True)
         return 1
-    write_result(result, out_dir)
+    write_result(result, out_dir, "-eval" if args.eval else "")
     print(summary_line(result), flush=True)
     return 0
 

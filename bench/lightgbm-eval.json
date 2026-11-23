@@ -1,0 +1,814 @@
+{
+  "model": "lightgbm",
+  "author": "AUGUR",
+  "races": [
+    "2024-12-british-grand-prix",
+    "2024-13-hungarian-grand-prix",
+    "2024-14-belgian-grand-prix",
+    "2024-15-dutch-grand-prix",
+    "2024-16-italian-grand-prix",
+    "2024-17-azerbaijan-grand-prix",
+    "2024-18-singapore-grand-prix",
+    "2024-19-united-states-grand-prix",
+    "2024-20-mexico-city-grand-prix",
+    "2024-21-s-o-paulo-grand-prix",
+    "2024-22-las-vegas-grand-prix",
+    "2024-23-qatar-grand-prix"
+  ],
+  "position_skill_pct": 4.2,
+  "brier_model": 0.0745,
+  "brier_baseline": 0.0778,
+  "log_loss_model": 0.276,
+  "log_loss_baseline": 0.5382,
+  "reliability": [
+    {
+      "bin_low": 0.0,
+      "bin_high": 0.2,
+      "count": 577,
+      "mean_forecast": 0.0119,
+      "observed_rate": 0.0381
+    },
+    {
+      "bin_low": 0.2,
+      "bin_high": 0.4,
+      "count": 27,
+      "mean_forecast": 0.3029,
+      "observed_rate": 0.4074
+    },
+    {
+      "bin_low": 0.4,
+      "bin_high": 0.6,
+      "count": 24,
+      "mean_forecast": 0.4791,
+      "observed_rate": 0.4583
+    },
+    {
+      "bin_low": 0.6,
+      "bin_high": 0.8,
+      "count": 19,
+      "mean_forecast": 0.6908,
+      "observed_rate": 0.4737
+    },
+    {
+      "bin_low": 0.8,
+      "bin_high": 1.0,
+      "count": 73,
+      "mean_forecast": 0.9357,
+      "observed_rate": 0.7534
+    }
+  ],
+  "lap_improvement_pct": 13.6,
+  "mae_model_s": 0.419,
+  "mae_baseline_s": 0.4852,
+  "hit_rate": {
+    "undercut": {
+      "hits": 277,
+      "resolved": 578
+    },
+    "degradation": {
+      "hits": 89,
+      "resolved": 299
+    },
+    "hits": 366,
+    "resolved": 877,
+    "overall_pct": 41.7
+  },
+  "per_race": [
+    {
+      "race_id": "2024-12-british-grand-prix",
+      "position_skill_pct": 40.2,
+      "brier_model": 0.0598,
+      "brier_baseline": 0.1,
+      "log_loss_model": 0.188,
+      "log_loss_baseline": 0.6917,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 48,
+          "mean_forecast": 0.0114,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 2,
+          "mean_forecast": 0.327,
+          "observed_rate": 1.0
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 3,
+          "mean_forecast": 0.4293,
+          "observed_rate": 0.6667
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 0,
+          "mean_forecast": null,
+          "observed_rate": null
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 7,
+          "mean_forecast": 0.9301,
+          "observed_rate": 0.7143
+        }
+      ],
+      "lap_improvement_pct": 19.9,
+      "mae_model_s": 0.8031,
+      "mae_baseline_s": 1.0028,
+      "hit_rate": {
+        "undercut": {
+          "hits": 16,
+          "resolved": 37
+        },
+        "degradation": {
+          "hits": 9,
+          "resolved": 29
+        },
+        "hits": 25,
+        "resolved": 66,
+        "overall_pct": 37.9
+      }
+    },
+    {
+      "race_id": "2024-13-hungarian-grand-prix",
+      "position_skill_pct": -430.1,
+      "brier_model": 0.1767,
+      "brier_baseline": 0.0333,
+      "log_loss_model": 0.8478,
+      "log_loss_baseline": 0.2312,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 50,
+          "mean_forecast": 0.0117,
+          "observed_rate": 0.12
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 0,
+          "mean_forecast": null,
+          "observed_rate": null
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 0,
+          "mean_forecast": null,
+          "observed_rate": null
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 5,
+          "mean_forecast": 0.7074,
+          "observed_rate": 0.2
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 5,
+          "mean_forecast": 0.9758,
+          "observed_rate": 0.4
+        }
+      ],
+      "lap_improvement_pct": 20.1,
+      "mae_model_s": 0.4164,
+      "mae_baseline_s": 0.5211,
+      "hit_rate": {
+        "undercut": {
+          "hits": 22,
+          "resolved": 48
+        },
+        "degradation": {
+          "hits": 4,
+          "resolved": 42
+        },
+        "hits": 26,
+        "resolved": 90,
+        "overall_pct": 28.9
+      }
+    },
+    {
+      "race_id": "2024-14-belgian-grand-prix",
+      "position_skill_pct": 65.2,
+      "brier_model": 0.0463,
+      "brier_baseline": 0.1333,
+      "log_loss_model": 0.1448,
+      "log_loss_baseline": 0.9219,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 45,
+          "mean_forecast": 0.0117,
+          "observed_rate": 0.0222
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 4,
+          "mean_forecast": 0.2838,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 4,
+          "mean_forecast": 0.4323,
+          "observed_rate": 0.5
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 4,
+          "mean_forecast": 0.7123,
+          "observed_rate": 0.75
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 3,
+          "mean_forecast": 0.9207,
+          "observed_rate": 1.0
+        }
+      ],
+      "lap_improvement_pct": 25.0,
+      "mae_model_s": 0.3354,
+      "mae_baseline_s": 0.4471,
+      "hit_rate": {
+        "undercut": {
+          "hits": 13,
+          "resolved": 22
+        },
+        "degradation": {
+          "hits": 17,
+          "resolved": 25
+        },
+        "hits": 30,
+        "resolved": 47,
+        "overall_pct": 63.8
+      }
+    },
+    {
+      "race_id": "2024-15-dutch-grand-prix",
+      "position_skill_pct": -12.2,
+      "brier_model": 0.0374,
+      "brier_baseline": 0.0333,
+      "log_loss_model": 0.1197,
+      "log_loss_baseline": 0.2312,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 47,
+          "mean_forecast": 0.0195,
+          "observed_rate": 0.0213
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 5,
+          "mean_forecast": 0.3328,
+          "observed_rate": 0.4
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 2,
+          "mean_forecast": 0.4575,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 0,
+          "mean_forecast": null,
+          "observed_rate": null
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 6,
+          "mean_forecast": 0.9172,
+          "observed_rate": 1.0
+        }
+      ],
+      "lap_improvement_pct": 9.6,
+      "mae_model_s": 0.3524,
+      "mae_baseline_s": 0.3901,
+      "hit_rate": {
+        "undercut": {
+          "hits": 32,
+          "resolved": 65
+        },
+        "degradation": {
+          "hits": 5,
+          "resolved": 35
+        },
+        "hits": 37,
+        "resolved": 100,
+        "overall_pct": 37.0
+      }
+    },
+    {
+      "race_id": "2024-16-italian-grand-prix",
+      "position_skill_pct": -19.0,
+      "brier_model": 0.0397,
+      "brier_baseline": 0.0333,
+      "log_loss_model": 0.1375,
+      "log_loss_baseline": 0.2312,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 48,
+          "mean_forecast": 0.0139,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 1,
+          "mean_forecast": 0.37,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 4,
+          "mean_forecast": 0.5152,
+          "observed_rate": 0.75
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 2,
+          "mean_forecast": 0.649,
+          "observed_rate": 1.0
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 5,
+          "mean_forecast": 0.9208,
+          "observed_rate": 0.8
+        }
+      ],
+      "lap_improvement_pct": 7.7,
+      "mae_model_s": 0.3821,
+      "mae_baseline_s": 0.4138,
+      "hit_rate": {
+        "undercut": {
+          "hits": 29,
+          "resolved": 47
+        },
+        "degradation": {
+          "hits": 8,
+          "resolved": 22
+        },
+        "hits": 37,
+        "resolved": 69,
+        "overall_pct": 53.6
+      }
+    },
+    {
+      "race_id": "2024-17-azerbaijan-grand-prix",
+      "position_skill_pct": 9.5,
+      "brier_model": 0.0905,
+      "brier_baseline": 0.1,
+      "log_loss_model": 0.4123,
+      "log_loss_baseline": 0.6917,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 49,
+          "mean_forecast": 0.0081,
+          "observed_rate": 0.0612
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 2,
+          "mean_forecast": 0.2495,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 0,
+          "mean_forecast": null,
+          "observed_rate": null
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 1,
+          "mean_forecast": 0.601,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 8,
+          "mean_forecast": 0.9377,
+          "observed_rate": 0.75
+        }
+      ],
+      "lap_improvement_pct": 3.2,
+      "mae_model_s": 0.4252,
+      "mae_baseline_s": 0.4393,
+      "hit_rate": {
+        "undercut": {
+          "hits": 23,
+          "resolved": 44
+        },
+        "degradation": {
+          "hits": 9,
+          "resolved": 23
+        },
+        "hits": 32,
+        "resolved": 67,
+        "overall_pct": 47.8
+      }
+    },
+    {
+      "race_id": "2024-18-singapore-grand-prix",
+      "position_skill_pct": -110.3,
+      "brier_model": 0.0701,
+      "brier_baseline": 0.0333,
+      "log_loss_model": 0.2602,
+      "log_loss_baseline": 0.2312,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 49,
+          "mean_forecast": 0.0094,
+          "observed_rate": 0.0408
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 2,
+          "mean_forecast": 0.251,
+          "observed_rate": 0.5
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 1,
+          "mean_forecast": 0.471,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 0,
+          "mean_forecast": null,
+          "observed_rate": null
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 8,
+          "mean_forecast": 0.946,
+          "observed_rate": 0.75
+        }
+      ],
+      "lap_improvement_pct": 14.0,
+      "mae_model_s": 0.4213,
+      "mae_baseline_s": 0.4898,
+      "hit_rate": {
+        "undercut": {
+          "hits": 22,
+          "resolved": 46
+        },
+        "degradation": {
+          "hits": 4,
+          "resolved": 28
+        },
+        "hits": 26,
+        "resolved": 74,
+        "overall_pct": 35.1
+      }
+    },
+    {
+      "race_id": "2024-19-united-states-grand-prix",
+      "position_skill_pct": 40.8,
+      "brier_model": 0.0592,
+      "brier_baseline": 0.1,
+      "log_loss_model": 0.1778,
+      "log_loss_baseline": 0.6917,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 48,
+          "mean_forecast": 0.0028,
+          "observed_rate": 0.0208
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 1,
+          "mean_forecast": 0.353,
+          "observed_rate": 1.0
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 3,
+          "mean_forecast": 0.4813,
+          "observed_rate": 0.3333
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 2,
+          "mean_forecast": 0.6635,
+          "observed_rate": 0.5
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 6,
+          "mean_forecast": 0.9567,
+          "observed_rate": 0.8333
+        }
+      ],
+      "lap_improvement_pct": 8.7,
+      "mae_model_s": 0.3795,
+      "mae_baseline_s": 0.4156,
+      "hit_rate": {
+        "undercut": {
+          "hits": 26,
+          "resolved": 51
+        },
+        "degradation": {
+          "hits": 6,
+          "resolved": 25
+        },
+        "hits": 32,
+        "resolved": 76,
+        "overall_pct": 42.1
+      }
+    },
+    {
+      "race_id": "2024-20-mexico-city-grand-prix",
+      "position_skill_pct": -31.9,
+      "brier_model": 0.044,
+      "brier_baseline": 0.0333,
+      "log_loss_model": 0.1414,
+      "log_loss_baseline": 0.2312,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 48,
+          "mean_forecast": 0.0166,
+          "observed_rate": 0.0417
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 3,
+          "mean_forecast": 0.246,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 3,
+          "mean_forecast": 0.574,
+          "observed_rate": 0.3333
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 0,
+          "mean_forecast": null,
+          "observed_rate": null
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 6,
+          "mean_forecast": 0.9568,
+          "observed_rate": 1.0
+        }
+      ],
+      "lap_improvement_pct": 9.3,
+      "mae_model_s": 0.379,
+      "mae_baseline_s": 0.4178,
+      "hit_rate": {
+        "undercut": {
+          "hits": 30,
+          "resolved": 61
+        },
+        "degradation": {
+          "hits": 5,
+          "resolved": 27
+        },
+        "hits": 35,
+        "resolved": 88,
+        "overall_pct": 39.8
+      }
+    },
+    {
+      "race_id": "2024-21-s-o-paulo-grand-prix",
+      "position_skill_pct": -25.4,
+      "brier_model": 0.1254,
+      "brier_baseline": 0.1,
+      "log_loss_model": 0.3938,
+      "log_loss_baseline": 0.6917,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 49,
+          "mean_forecast": 0.0239,
+          "observed_rate": 0.0816
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 2,
+          "mean_forecast": 0.366,
+          "observed_rate": 0.5
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 1,
+          "mean_forecast": 0.57,
+          "observed_rate": 1.0
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 3,
+          "mean_forecast": 0.6697,
+          "observed_rate": 0.3333
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 5,
+          "mean_forecast": 0.9036,
+          "observed_rate": 0.4
+        }
+      ],
+      "lap_improvement_pct": null,
+      "mae_model_s": null,
+      "mae_baseline_s": null,
+      "hit_rate": {
+        "undercut": {
+          "hits": 15,
+          "resolved": 61
+        },
+        "degradation": {
+          "hits": 0,
+          "resolved": 0
+        },
+        "hits": 15,
+        "resolved": 61,
+        "overall_pct": 24.6
+      }
+    },
+    {
+      "race_id": "2024-22-las-vegas-grand-prix",
+      "position_skill_pct": 33.2,
+      "brier_model": 0.0668,
+      "brier_baseline": 0.1,
+      "log_loss_model": 0.2653,
+      "log_loss_baseline": 0.6917,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 49,
+          "mean_forecast": 0.0096,
+          "observed_rate": 0.0408
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 2,
+          "mean_forecast": 0.367,
+          "observed_rate": 0.5
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 1,
+          "mean_forecast": 0.478,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 1,
+          "mean_forecast": 0.729,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 7,
+          "mean_forecast": 0.9416,
+          "observed_rate": 0.8571
+        }
+      ],
+      "lap_improvement_pct": 21.2,
+      "mae_model_s": 0.4863,
+      "mae_baseline_s": 0.6169,
+      "hit_rate": {
+        "undercut": {
+          "hits": 39,
+          "resolved": 57
+        },
+        "degradation": {
+          "hits": 21,
+          "resolved": 35
+        },
+        "hits": 60,
+        "resolved": 92,
+        "overall_pct": 65.2
+      }
+    },
+    {
+      "race_id": "2024-23-qatar-grand-prix",
+      "position_skill_pct": 41.4,
+      "brier_model": 0.0782,
+      "brier_baseline": 0.1333,
+      "log_loss_model": 0.2235,
+      "log_loss_baseline": 0.9219,
+      "reliability": [
+        {
+          "bin_low": 0.0,
+          "bin_high": 0.2,
+          "count": 47,
+          "mean_forecast": 0.0047,
+          "observed_rate": 0.0
+        },
+        {
+          "bin_low": 0.2,
+          "bin_high": 0.4,
+          "count": 3,
+          "mean_forecast": 0.266,
+          "observed_rate": 1.0
+        },
+        {
+          "bin_low": 0.4,
+          "bin_high": 0.6,
+          "count": 2,
+          "mean_forecast": 0.41,
+          "observed_rate": 0.5
+        },
+        {
+          "bin_low": 0.6,
+          "bin_high": 0.8,
+          "count": 1,
+          "mean_forecast": 0.776,
+          "observed_rate": 1.0
+        },
+        {
+          "bin_low": 0.8,
+          "bin_high": 1.0,
+          "count": 7,
+          "mean_forecast": 0.9121,
+          "observed_rate": 0.5714
+        }
+      ],
+      "lap_improvement_pct": -17.0,
+      "mae_model_s": 0.3388,
+      "mae_baseline_s": 0.2895,
+      "hit_rate": {
+        "undercut": {
+          "hits": 10,
+          "resolved": 39
+        },
+        "degradation": {
+          "hits": 1,
+          "resolved": 8
+        },
+        "hits": 11,
+        "resolved": 47,
+        "overall_pct": 23.4
+      }
+    }
+  ],
+  "seed": 42,
+  "data_source": "openf1",
+  "augur_version": "0.1.0",
+  "generated_at": "2026-11-22T15:33:44+00:00"
+}

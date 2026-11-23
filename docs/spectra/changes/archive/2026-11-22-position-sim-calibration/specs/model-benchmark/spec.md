@@ -1,0 +1,51 @@
+## MODIFIED Requirements
+
+### Requirement: Score a model on the benchmark races
+
+`python -m augur.bench --model <name>` SHALL score the model on `2024-01-bahrain-grand-prix` and `2024-24-abu-dhabi-grand-prix`, analyzing a race first when it has no events or position predictions for that model, or when its `undercut_window` or `degradation_warning` events have no outcome (stored before outcomes existed), and SHALL write `bench/<name>.json` with `model`, `author`, `races`, `position_skill_pct`, `brier_model`, `brier_baseline`, `log_loss_model`, `log_loss_baseline`, `reliability`, `lap_improvement_pct`, `mae_model_s`, `mae_baseline_s`, `hit_rate`, `per_race`, `seed`, `data_source` ("openf1"), `augur_version`, and `generated_at`; each `per_race` entry SHALL also carry `log_loss_model`, `log_loss_baseline`, and `reliability`. Pooled values SHALL pool checkpoint pairs, clean laps, and events across both races. `lap_improvement_pct` SHALL equal `100 × (mae_baseline_s − mae_model_s) / mae_baseline_s` rounded to 1 decimal. The hit rate SHALL count hits over hits plus misses, excluding voids. The command SHALL print `<name>: podium skill <s>% vs current order, lap times <beat|trail> baseline by <x>%, event hit rate <y>% (<hits>/<resolved>)`, with `podium skill n/a` when the skill is null, and `lap times match baseline (0.0%)` in place of `beat`/`trail` when `lap_improvement_pct` is 0.0.
+
+#### Scenario: Summary line
+
+##### Example: pooled scores
+
+- **GIVEN** pooled `brier_model` 0.060 and `brier_baseline` 0.100, `mae_model_s` 0.820 and `mae_baseline_s` 1.000, and 9 hits, 5 misses, 2 voids
+- **WHEN** the bench runs for `lightgbm`
+- **THEN** the output is `lightgbm: podium skill 40.0% vs current order, lap times beat baseline by 18.0%, event hit rate 64% (9/14)`
+
+#### Scenario: Same model twice
+
+- **WHEN** the bench runs twice for the same model and data
+- **THEN** both files are equal except `generated_at`
+
+## ADDED Requirements
+
+### Requirement: Podium calibration report
+
+Over the same checkpoint pairs as the podium skill, the system SHALL compute `log_loss_model` and `log_loss_baseline` as the mean of −(o × ln p + (1 − o) × ln(1 − p)) with each forecast p clipped to [0.001, 0.999], rounded to 4 decimals, and `reliability` as five bins [0, 0.2), [0.2, 0.4), [0.4, 0.6), [0.6, 0.8), [0.8, 1.0] of the model forecast, each with `bin_low`, `bin_high`, `count`, `mean_forecast`, and `observed_rate` (both null when `count` is 0), rounded to 4 decimals.
+
+#### Scenario: Calibration arithmetic
+
+##### Example: four pairs
+
+- **GIVEN** model forecasts 0.9, 0.1, 0.5, 0.5 with outcomes 1, 0, 1, 0
+- **WHEN** the calibration report is computed
+- **THEN** `log_loss_model` is 0.3993, the bin [0.4, 0.6) has `count` 2, `mean_forecast` 0.5, `observed_rate` 0.5, and the bin [0.2, 0.4) has `count` 0 with null rates
+
+### Requirement: Evaluation races
+
+`python -m augur.bench --model <name> --eval` SHALL score the model on 2024 rounds 12 to 23 with the same scoring, analysis, and refusal rules as the benchmark, and SHALL write `bench/<name>-eval.json` with the same fields, `races` listing the evaluation races. It SHALL not change `bench/<name>.json`. `python -m augur.tune_sim --model <name>` SHALL simulate only the checkpoint laps of the evaluation races for every combination of `PACE_OFFSET_SD_S` in {0.05, 0.10, 0.15, 0.20, 0.30} and `MODEL_DELTA_DECAY` in {0.3, 0.5, 0.7}, and SHALL print one line per combination, `offset_sd=<x> decay=<y> brier=<b> log_loss=<l>`, with pooled podium Brier and log loss.
+
+#### Scenario: Evaluation race missing
+
+- **WHEN** `python -m augur.bench --model lightgbm --eval` runs and 2024 round 15 is not ingested
+- **THEN** it prints `missing race 2024-15, run augur.ingest first` (the `<year>-<round>` label used by `augur.train` for races not ingested), exits with code 1, and writes no file
+
+#### Scenario: Benchmark file untouched
+
+- **WHEN** `python -m augur.bench --model lightgbm --eval` completes
+- **THEN** `bench/lightgbm-eval.json` exists and `bench/lightgbm.json` is unchanged
+
+#### Scenario: Tuning grid output
+
+- **WHEN** `python -m augur.tune_sim --model lightgbm` completes
+- **THEN** it prints 15 lines, one per grid combination, in the format above

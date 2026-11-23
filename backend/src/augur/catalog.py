@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS position_predictions (
     position_p90      REAL,
     runs              INT,
     seed              INT,
+    position_distribution TEXT,
     PRIMARY KEY (race_id, model, lap, code)
 );
 CREATE TABLE IF NOT EXISTS analyses (
@@ -124,6 +125,8 @@ def connect(data_dir: Path) -> sqlite3.Connection:
 # Columns added after a table was first created; added in place to older catalogs.
 _ADDED_COLUMNS: dict[str, tuple[tuple[str, str], ...]] = {
     "events": (("outcome", "TEXT"), ("outcome_lap", "INT"), ("outcome_text", "TEXT")),
+    # JSON list: share of runs finishing P1..Pn (position-sim-calibration); null on old rows.
+    "position_predictions": (("position_distribution", "TEXT"),),
 }
 
 

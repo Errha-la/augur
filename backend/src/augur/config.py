@@ -33,10 +33,17 @@ PIT_LOSS_FALLBACK_S = 22.0
 # Illustrative values seen in public hobby projects, unverified.
 DEG_FALLBACK_S_PER_LAP: dict[str, float] = {"SOFT": 0.085, "MEDIUM": 0.050, "HARD": 0.028}
 NOISE_MIN_S = 0.2
+# Pace of a compound relative to MEDIUM, s/lap (estimates; checked against fuel-corrected
+# stint intercepts on the evaluation races, see position-sim-calibration tasks.md).
+COMPOUND_PACE_OFFSET_S: dict[str, float] = {"SOFT": -0.6, "MEDIUM": 0.0, "HARD": 0.4}
 STRATEGY_RUNS_DEFAULT = 1000
 STRATEGY_RUNS_MIN = 100
 STRATEGY_RUNS_MAX = 5000
 STRATEGY_SEED_DEFAULT = 42
+# Per-run uncertainty shared by every candidate plan (common random numbers): the
+# degradation slope of the current and of the next compound, and the pit loss (estimates).
+STRATEGY_DEG_SD_S_PER_LAP = 0.02
+STRATEGY_PIT_LOSS_SD_S = 1.5
 
 # Event detectors.
 PACE_DROP_S = 1.0
@@ -73,6 +80,32 @@ PIT_JITTER_LAPS = 3
 # Measured on Bahrain lap 15: a 5-lap fit of -0.164 s/lap made a backmarker the
 # favourite (p_win 0.81) after 42 projected laps.
 POSITION_DEG_MIN_FIT_LAPS = 8
+# Guarded compound slope for the simulators (position-sim-calibration): the median of
+# stint fits with at least POSITION_DEG_MIN_FIT_LAPS clean laps, shrunk toward the circuit
+# prior (else DEG_FALLBACK_S_PER_LAP) with this many pseudo-stints, clamped to
+# [0, DEG_CAP_S_PER_LAP]. Estimates; the cap sits above the SOFT default with margin.
+DEG_SHRINK_STINTS = 3
+DEG_CAP_S_PER_LAP = 0.20
+# The lap-time model's next-lap delta (prediction minus recent pace) is multiplied by this
+# per simulated lap, so a one-lap forecast does not become a race-long pace gap
+# (estimate, tuned on the evaluation races by augur.tune_sim).
+MODEL_DELTA_DECAY = 0.7  # tuned 2026-11-22: lowest pooled Brier of the tune_sim grid (lightgbm)
+# Standard deviation of the per-run, per-driver pace offset, s/lap, added to every
+# simulated lap of a run (estimate, tuned on the evaluation races by augur.tune_sim).
+PACE_OFFSET_SD_S = 0.30  # tuned 2026-11-22 (grid edge, see tasks.md)
+# Neutralised periods in the position simulator (estimates: about 0.45 safety cars and
+# 0.35 virtual safety cars per 57-lap race; compared with race-control counts on the
+# evaluation races in position-sim-calibration tasks.md). At most one period per run.
+SC_PROB_PER_LAP = 0.008
+VSC_PROB_PER_LAP = 0.006
+SC_LAPS = 4
+VSC_LAPS = 3
+SC_LAP_FACTOR = 1.35
+VSC_LAP_FACTOR = 1.25
+SC_PIT_LOSS_FACTOR = 0.5
+VSC_PIT_LOSS_FACTOR = 0.6
+SC_GAP_S = 1.0
+SC_PIT_PROB = 0.8
 # Dirty air: the PITWALL project's documented prior, 0.40 s/lap within 1.0 s.
 DIRTY_AIR_GAP_S = 1.0
 DIRTY_AIR_PENALTY_S = 0.4

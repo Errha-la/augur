@@ -1,4 +1,4 @@
-import type { Dispatch } from "react";
+import type { Dispatch, ReactNode } from "react";
 import type { RaceSummary } from "../api/types";
 import { trackStatusStyle } from "../lib/theme";
 import type { ReplayAction, ReplayState, Speed } from "../state/replay";
@@ -14,6 +14,8 @@ interface StatusBarProps {
   wrappedLocked?: boolean;
   onOpenWrapped?: () => void;
   onOpenSettings?: () => void;
+  /** Board controls (board menu, + Widget, guide), shown before Settings. */
+  boardControls?: ReactNode;
 }
 
 export function TrackStatusPill({ status }: { status: string | null | undefined }) {
@@ -42,6 +44,7 @@ export function StatusBar({
   wrappedLocked = true,
   onOpenWrapped,
   onOpenSettings,
+  boardControls,
 }: StatusBarProps) {
   const { raceId, lap, totalLaps, playing, speed } = replay;
   return (
@@ -135,11 +138,14 @@ export function StatusBar({
           WRAPPED
         </button>
       )}
-      {onOpenSettings && (
-        <button type="button" aria-label="Settings" title="Settings" className={`${button} ml-auto`} onClick={onOpenSettings}>
-          ⚙
-        </button>
-      )}
+      <div className="ml-auto flex items-center gap-2">
+        {boardControls}
+        {onOpenSettings && (
+          <button type="button" aria-label="Settings" title="Settings" className={button} onClick={onOpenSettings}>
+            ⚙
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ functions take laps already cut at the replay lap, so they only see the past.
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from statistics import median
 
@@ -119,3 +120,38 @@ def compound_median_slopes(laps: pd.DataFrame, total_laps: int) -> dict[str, flo
     for s in stint_slopes(laps, total_laps):
         by_compound.setdefault(s["compound"], []).append(s["slope"])
     return {c: float(median(v)) for c, v in sorted(by_compound.items()) if v and not math.isnan(median(v))}
+
+
+def guarded_compound_slopes(
+    laps: pd.DataFrame, total_laps: int, prior: Mapping[str, float] | None = None
+) -> dict[str, float]:
+    """Per dry compound: the slope the simulators project when a driver's own fit is untrusted.
+
+    ``(k * median + K * p) / (k + K)`` over the k single-compound stint fits with at least
+    POSITION_DEG_MIN_FIT_LAPS clean laps, K = DEG_SHRINK_STINTS, p = the circuit prior for
+    the compound (else DEG_FALLBACK_S_PER_LAP); p alone when k = 0; clamped to
+    [0, DEG_CAP_S_PER_LAP]. Unlike :func:`compound_median_slopes`, short fresh stints
+    cannot set the slope for the rest of the race.
+    """
+    prior = prior or {}
+    by_compound: dict[str, list[float]] = {}
+    for s in stint_slopes(laps, total_laps):
+        if s["n"] >= config.POSITION_DEG_MIN_FIT_LAPS and not math.isnan(s["slope"]):
+            by_compound.setdefault(s["compound"], []).append(s["slope"])
+    out: dict[str, float] = {}
+    for compound in config.DRY_COMPOUNDS:
+        p = prior.get(compound)
+        if p is None or math.isnan(p):
+            p = config.DEG_FALLBACK_S_PER_LAP[compound]
+        fits = by_compound.get(compound, [])
+        k, big_k = len(fits), config.DEG_SHRINK_STINTS
+        value = (k * float(median(fits)) + big_k * float(p)) / (k + big_k) if fits else float(p)
+        out[compound] = min(config.DEG_CAP_S_PER_LAP, max(0.0, value))
+    return out
+
+
+def guarded_slope(compound: str | None, guarded: Mapping[str, float]) -> float:
+    """Guarded slope of a compound; non-dry or unknown compounds use the MEDIUM value."""
+    if compound in guarded:
+        return guarded[compound]
+    return guarded.get("MEDIUM", config.DEG_FALLBACK_S_PER_LAP["MEDIUM"])

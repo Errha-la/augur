@@ -66,6 +66,49 @@ def podium_skill(pairs: list[Pair]) -> dict:
     }
 
 
+# Reliability bins of the model's p_podium: [0, 0.2), ..., [0.8, 1.0].
+RELIABILITY_EDGES: tuple[float, ...] = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)
+LOG_LOSS_CLIP = 0.001
+
+
+def log_loss(forecasts: Iterable[float], outcomes: Iterable[int]) -> float | None:
+    """Mean -(o ln p + (1 - o) ln(1 - p)), p clipped to [0.001, 0.999], rounded to 4 decimals."""
+    terms = []
+    for p, o in zip(forecasts, outcomes, strict=True):
+        p = min(1.0 - LOG_LOSS_CLIP, max(LOG_LOSS_CLIP, float(p)))
+        terms.append(-(o * math.log(p) + (1 - o) * math.log(1.0 - p)))
+    return round(sum(terms) / len(terms), 4) if terms else None
+
+
+def reliability(pairs: list[Pair]) -> list[dict]:
+    """Five bins of the model forecast with count, mean forecast and observed podium rate."""
+    bins = []
+    last = len(RELIABILITY_EDGES) - 2
+    for i, (lo, hi) in enumerate(zip(RELIABILITY_EDGES[:-1], RELIABILITY_EDGES[1:], strict=True)):
+        inside = [(m, o) for m, _, o in pairs if lo <= m < hi or (i == last and m == hi)]
+        n = len(inside)
+        bins.append(
+            {
+                "bin_low": lo,
+                "bin_high": hi,
+                "count": n,
+                "mean_forecast": round(sum(m for m, _ in inside) / n, 4) if n else None,
+                "observed_rate": round(sum(o for _, o in inside) / n, 4) if n else None,
+            }
+        )
+    return bins
+
+
+def podium_calibration(pairs: list[Pair]) -> dict:
+    """``log_loss_model``, ``log_loss_baseline`` and ``reliability`` over the podium pairs."""
+    outcomes = [o for _, _, o in pairs]
+    return {
+        "log_loss_model": log_loss([m for m, _, _ in pairs], outcomes),
+        "log_loss_baseline": log_loss([b for _, b, _ in pairs], outcomes),
+        "reliability": reliability(pairs),
+    }
+
+
 # -- lap times and event calls ------------------------------------------------------
 
 
@@ -128,8 +171,10 @@ def scores(races: Iterable[RaceInputs]) -> dict:
     races give the pooled benchmark.
     """
     races = list(races)
+    pairs = [p for r in races for p in r.pairs]
     return {
-        **podium_skill([p for r in races for p in r.pairs]),
+        **podium_skill(pairs),
+        **podium_calibration(pairs),
         **lap_scores([e for r in races for e in r.err_model], [e for r in races for e in r.err_baseline]),
         "hit_rate": hit_rate(e for r in races for e in r.events),
     }
