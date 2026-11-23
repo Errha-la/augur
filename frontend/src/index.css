@@ -28,3 +28,25 @@ body,
 body {
   @apply bg-zinc-950 font-mono text-zinc-100 antialiased;
 }
+
+/* Widget bodies are size containers, so text scales with the widget, not the
+   viewport ("Text that scales with the widget"). Linear between a 3-column
+   (~330 px) and a 12-column (~1400 px) widget, clamped to the spec's range. */
+.widget-body {
+  container-type: inline-size;
+}
+
+.cq-commentary {
+  font-size: clamp(13px, 11.5px + 0.47cqi, 18px);
+  line-height: 1.45;
+}
+
+.cq-title {
+  font-size: clamp(15px, 12.8px + 0.65cqi, 22px);
+  line-height: 1.25;
+}
+
+.cq-body {
+  font-size: clamp(12px, 10.8px + 0.37cqi, 16px);
+  line-height: 1.45;
+}
