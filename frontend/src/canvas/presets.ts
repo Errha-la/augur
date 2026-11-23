@@ -28,24 +28,31 @@ const PRESETS: Record<PresetId, Board> = {
   pit: board("pit", "PIT WALL", [
     ["driver", 0, 0, 5, 9, { driver: null }],
     ["events", 5, 0, 7, 6, { types: ["degradation_warning", "undercut_window", "overcut_window"] }],
-    ["lapchart", 5, 6, 7, 5, { driver: null }],
+    ["pitwindow", 5, 6, 7, 5, { driver: null }],
     ["timing", 0, 9, 5, 6],
   ]),
   battle: board("battle", "BATTLE", [
     ["timing", 0, 0, 5, 10],
     ["events", 5, 0, 7, 6, { types: ["position_change", "undercut_window", "overcut_window"] }],
-    ["driver", 5, 6, 7, 7, { driver: null }],
+    ["trace", 5, 6, 7, 7],
     ["timeline", 0, 13, 12, 2],
   ]),
   pace: board("pace", "PACE", [
     ["lapchart", 0, 0, 8, 6, { driver: null }],
     ["events", 8, 0, 4, 6, { types: ["pace_drop", "degradation_warning"] }],
     ["timing", 0, 6, 7, 8],
-    ["driver", 7, 6, 5, 8, { driver: null }],
+    ["pace", 7, 6, 5, 8],
+  ]),
+  strategy: board("strategy", "STRATEGY", [
+    ["pitwindow", 0, 0, 7, 6, { driver: null }],
+    ["pitclock", 7, 0, 5, 6, { driver: null }],
+    ["stints", 0, 6, 7, 7],
+    ["degradation", 7, 6, 5, 7],
+    ["trace", 0, 13, 12, 6],
   ]),
 };
 
-export const PRESET_IDS: PresetId[] = ["pit", "battle", "pace"];
+export const PRESET_IDS: PresetId[] = ["pit", "battle", "pace", "strategy"];
 /** The board shown on a first visit and after deleting the active board. */
 export const DEFAULT_BOARD_ID: PresetId = "battle";
 
@@ -55,5 +62,5 @@ export function preset(id: PresetId): Board {
 }
 
 export function isPresetId(value: unknown): value is PresetId {
-  return value === "pit" || value === "battle" || value === "pace";
+  return typeof value === "string" && (PRESET_IDS as string[]).includes(value);
 }

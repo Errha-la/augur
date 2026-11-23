@@ -95,6 +95,22 @@ describe("Per-widget driver", () => {
     expect(calls[0].url).toContain("/strategy?lap=20&driver=NOR");
     expect(backend.of("positions/history").filter((r) => r.lap === 20)).toHaveLength(1);
   });
+
+  it("Two pit windows: pinned to LEC and PIA, paused at lap 20, one request each and each shows its driver", async () => {
+    const backend = await show(
+      boardOf([
+        { id: "pitwindow-1", type: "pitwindow", x: 0, y: 0, w: 6, h: 6, settings: { driver: "LEC" } },
+        { id: "pitwindow-2", type: "pitwindow", x: 6, y: 0, w: 6, h: 6, settings: { driver: "PIA" } },
+      ]),
+    );
+    await goToLap(20);
+    await waitFor(() => expect(within(widget("pitwindow-2")).getByTestId("best-pit-lap")).toHaveTextContent("Best: lap 22"));
+    const at20 = backend.of("pit-window").filter((r) => r.lap === 20);
+    expect(at20.map((r) => r.driver).sort()).toEqual(["LEC", "PIA"]);
+    expect(at20[0].url).toMatch(/\/pit-window\?lap=20&driver=(LEC|PIA)$/);
+    expect(within(widget("pitwindow-1")).getByText("LEC")).toBeInTheDocument();
+    expect(within(widget("pitwindow-2")).getByText("PIA")).toBeInTheDocument();
+  });
 });
 
 describe("Event type filter", () => {

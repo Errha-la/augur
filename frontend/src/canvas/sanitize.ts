@@ -1,6 +1,6 @@
 import { MAX_WIDGETS, type WidgetInstance, type WidgetSettings } from "./board";
 import { clampRect, separate } from "./grid";
-import { EVENT_TYPES, isWidgetType, REGISTRY, type WidgetType } from "./registry";
+import { EVENT_TYPES, isWidgetType, MAX_PACE_DRIVERS, REGISTRY, type WidgetType } from "./registry";
 
 // Turns untrusted widget lists (localStorage, imported files) into valid
 // widgets: unknown types dropped, geometry clamped to the grid and type
@@ -31,6 +31,15 @@ function settingsFor(type: WidgetType, raw: unknown): WidgetSettings {
   const spec = REGISTRY[type].settings;
   if (spec.driver && "driver" in src) {
     out.driver = typeof src.driver === "string" && DRIVER_CODE.test(src.driver) ? src.driver : null;
+  }
+  if (spec.drivers && Array.isArray(src.drivers)) {
+    // Valid codes only, first occurrence kept, at most four, in the file's order.
+    const codes: string[] = [];
+    for (const c of src.drivers) {
+      if (typeof c === "string" && DRIVER_CODE.test(c) && !codes.includes(c)) codes.push(c);
+      if (codes.length === MAX_PACE_DRIVERS) break;
+    }
+    out.drivers = codes;
   }
   if (spec.types && Array.isArray(src.types)) {
     const known = EVENT_TYPES.filter((t) => (src.types as unknown[]).includes(t));

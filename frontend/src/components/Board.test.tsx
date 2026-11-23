@@ -131,7 +131,7 @@ describe("Board", () => {
     render(<Harness initial={preset("pace")} onBoard={() => (changed = true)} />);
     expect(screen.getByTestId("board")).toHaveAttribute("data-narrow", "true");
     const order = screen.getAllByTestId("widget").map((w) => w.dataset.widgetType);
-    expect(order).toEqual(["lapchart", "events", "timing", "driver"]);
+    expect(order).toEqual(["lapchart", "events", "timing", "pace"]);
     expect(screen.queryByTestId("resize-handle")).not.toBeInTheDocument();
     const title = screen.getAllByTestId("widget-title")[0];
     fireEvent.pointerDown(title, { button: 0, clientX: 10, clientY: 10 });
@@ -169,7 +169,25 @@ describe("Board", () => {
 
 });
 
+const CHART_TITLES = [
+  "Race trace",
+  "Pit clock",
+  "Pit window",
+  "Tyre stints",
+  "Degradation",
+  "Pace compare",
+  "Position fan",
+  "Position odds",
+];
+
 describe("Widget instances on the board", () => {
+  it("Chart types listed: + Widget lists the eight chart types after the five existing types", async () => {
+    await renderApp();
+    fireEvent.click(screen.getByRole("button", { name: "Add widget" }));
+    const titles = screen.getAllByRole("menuitem").map((m) => m.textContent);
+    expect(titles.slice(5)).toEqual(CHART_TITLES);
+  });
+
   function addFromMenu(name: string) {
     fireEvent.click(screen.getByRole("button", { name: "Add widget" }));
     fireEvent.click(screen.getByRole("menuitem", { name }));
@@ -184,6 +202,7 @@ describe("Widget instances on the board", () => {
       "Driver",
       "Lap times",
       "Timeline",
+      ...CHART_TITLES,
     ]);
     fireEvent.click(screen.getByRole("menuitem", { name: "Driver" }));
     const drivers = screen.getAllByTestId("widget").filter((w) => w.dataset.widgetType === "driver");

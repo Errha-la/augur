@@ -1,15 +1,21 @@
 import type {
+  DegradationResponse,
   EventsResponse,
   LapData,
   LapRow,
+  PitWindowResponse,
+  PositionDistributionResponse,
   PositionsHistoryResponse,
   PositionsResponse,
   PredictionsResponse,
   RaceState,
   RaceSummary,
+  RejoinResponse,
   SettingsResponse,
   SettingsUpdate,
+  StintsResponse,
   StrategyResponse,
+  TraceResponse,
   WrappedResponse,
 } from "./types";
 import { sharedGet } from "./requestCache";
@@ -126,4 +132,49 @@ export async function fetchLapData(raceId: string, lap: number, signal?: AbortSi
     api.positions(raceId, lap, signal),
   ]);
   return { raceId, lap, state, laps, predictions, events, positions };
+}
+
+// --- Strategy chart data -------------------------------------------------------
+// Every chart request goes through the shared cache, so widgets asking for the
+// same URL at the same lap send one request.
+
+function sharedLapGet<T>(path: string, raceId: string, lap: number, signal?: AbortSignal, driver?: string): Promise<T> {
+  assertLap(lap);
+  if (driver !== undefined && !driver) throw new RangeError("driver must be a non-empty code");
+  const url = raceUrl(raceId, path, driver === undefined ? { lap } : { lap, driver });
+  return sharedGet(url, (s) => getJson<T>(url, s), signal);
+}
+
+export function fetchTrace(raceId: string, lap: number, signal?: AbortSignal): Promise<TraceResponse> {
+  return sharedLapGet("trace", raceId, lap, signal);
+}
+
+export function fetchRejoin(raceId: string, lap: number, driver: string, signal?: AbortSignal): Promise<RejoinResponse> {
+  return sharedLapGet("rejoin", raceId, lap, signal, driver);
+}
+
+/** Uses the backend defaults (1000 runs, seed 42), like the strategy table. */
+export function fetchPitWindow(
+  raceId: string,
+  lap: number,
+  driver: string,
+  signal?: AbortSignal,
+): Promise<PitWindowResponse> {
+  return sharedLapGet("pit-window", raceId, lap, signal, driver);
+}
+
+export function fetchStints(raceId: string, lap: number, signal?: AbortSignal): Promise<StintsResponse> {
+  return sharedLapGet("stints", raceId, lap, signal);
+}
+
+export function fetchDegradation(raceId: string, lap: number, signal?: AbortSignal): Promise<DegradationResponse> {
+  return sharedLapGet("degradation", raceId, lap, signal);
+}
+
+export function fetchPositionDistribution(
+  raceId: string,
+  lap: number,
+  signal?: AbortSignal,
+): Promise<PositionDistributionResponse> {
+  return sharedLapGet("positions/distribution", raceId, lap, signal);
 }

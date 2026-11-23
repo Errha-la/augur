@@ -43,8 +43,10 @@ function fileWith(widgets: unknown[], name = "Shared") {
 describe("Board export and import", () => {
   it("Round trip: exporting then importing adds an identical custom board and makes it active", async () => {
     await open();
-    // Make the board differ from the preset: pin the driver widget.
-    fireEvent.change(screen.getByRole("combobox", { name: "Driver for Driver widget" }), { target: { value: "PIA" } });
+    // Make the board differ from the preset: hide position changes in the events widget.
+    const chip = () => within(screen.getByRole("group", { name: "Event types shown" })).getByRole("button", { name: "POSITION" });
+    fireEvent.click(chip());
+    expect(chip()).toHaveAttribute("aria-pressed", "false");
     const before = cells();
 
     let blob: Blob | null = null;
@@ -66,8 +68,8 @@ describe("Board export and import", () => {
     expect(await screen.findByTestId("notice")).toHaveTextContent("Imported BATTLE: 4 widgets, 0 skipped");
     expect(screen.getByTestId("board-menu-label")).toHaveTextContent("BATTLE");
     expect(cells()).toEqual(before);
-    expect(screen.getByRole("combobox", { name: "Driver for Driver widget" })).toHaveValue("PIA");
-    expect(boardNames()).toEqual(["PIT WALL", "BATTLEedited", "PACE", "BATTLE"]);
+    expect(chip()).toHaveAttribute("aria-pressed", "false");
+    expect(boardNames()).toEqual(["PIT WALL", "BATTLEedited", "PACE", "STRATEGY", "BATTLE"]);
   });
 
   it("Unknown widget type: timing, lapchart and heatmap3d import as 2 widgets, 1 skipped", async () => {
@@ -91,7 +93,7 @@ describe("Board export and import", () => {
     await open();
     importText('{"format": "other"}');
     expect(await screen.findByTestId("notice")).toHaveTextContent(NOT_A_BOARD_FILE);
-    expect(boardNames()).toEqual(["PIT WALL", "BATTLE", "PACE"]);
+    expect(boardNames()).toEqual(["PIT WALL", "BATTLE", "PACE", "STRATEGY"]);
   });
 
   it("an import report does not hide 'Boards will not be saved in this browser.'", async () => {
@@ -112,7 +114,7 @@ describe("Board export and import", () => {
     importText(big);
     expect(await screen.findByTestId("notice")).toHaveTextContent(NOT_A_BOARD_FILE);
     expect(text).not.toHaveBeenCalled();
-    expect(boardNames()).toEqual(["PIT WALL", "BATTLE", "PACE"]);
+    expect(boardNames()).toEqual(["PIT WALL", "BATTLE", "PACE", "STRATEGY"]);
   });
 
   it("an imported board is saved like any other board", async () => {
@@ -140,6 +142,21 @@ describe("parseBoardFile", () => {
     expect(e1.settings).not.toHaveProperty("driver");
     expect(e2).toMatchObject({ id: "events-1", y: 4 });
     expect(d.settings.driver).toBeNull();
+  });
+
+  it("Imported pace drivers: valid distinct codes in order, at most four; other types drop the setting", () => {
+    const r = parseBoardFile(
+      fileWith([
+        { type: "pace", x: 0, y: 0, w: 7, h: 6, settings: { drivers: ["NOR", "nor", "LEC", "NOR", "PIA", "VER", "HAM"] } },
+        { type: "pace", x: 0, y: 6, w: 7, h: 6, settings: { drivers: "NOR" } },
+        { type: "pitwindow", x: 0, y: 12, w: 7, h: 6, settings: { drivers: ["NOR"], driver: "LEC" } },
+      ]),
+    );
+    if (!r.ok) throw new Error("rejected");
+    const [pace, notAList, pit] = r.board.widgets;
+    expect(pace.settings.drivers).toEqual(["NOR", "LEC", "PIA", "VER"]);
+    expect(notAList.settings).not.toHaveProperty("drivers");
+    expect(pit.settings).toEqual({ driver: "LEC" });
   });
 
   it("import keeps a gap in the file instead of compacting it upward", () => {

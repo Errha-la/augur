@@ -11,8 +11,15 @@ function add(board: Board, type: Parameters<typeof addWidget>[1]): Board {
 }
 
 describe("board model", () => {
-  it("registers the five widget types with defaults no smaller than their minimums", () => {
-    expect(WIDGET_TYPES).toEqual(["timing", "events", "driver", "lapchart", "timeline"]);
+  it("registers the thirteen widget types with defaults no smaller than their minimums", () => {
+    expect(WIDGET_TYPES).toEqual([
+      "timing", "events", "driver", "lapchart", "timeline",
+      "trace", "pitclock", "pitwindow", "stints", "degradation", "pace", "fan", "heatmap",
+    ]);
+    // Driver settings per the design's Implementation Contract table.
+    const withDriver = WIDGET_TYPES.filter((t) => REGISTRY[t].settings.driver);
+    expect(withDriver).toEqual(["driver", "lapchart", "pitclock", "pitwindow", "fan"]);
+    expect(WIDGET_TYPES.filter((t) => REGISTRY[t].settings.drivers)).toEqual(["pace"]);
     for (const t of WIDGET_TYPES) {
       const { defaultSize, minSize } = REGISTRY[t];
       expect(defaultSize.w).toBeGreaterThanOrEqual(minSize.w);

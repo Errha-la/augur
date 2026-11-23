@@ -122,8 +122,112 @@ export interface PositionsHistoryResponse {
   analyzed: boolean;
   laps: {
     lap: number;
-    drivers: Pick<DriverPositions, "code" | "p_win" | "p_podium" | "expected_position">[];
+    drivers: Pick<
+      DriverPositions,
+      "code" | "p_win" | "p_podium" | "expected_position" | "position_p10" | "position_p90"
+    >[];
   }[];
+}
+
+// --- Strategy chart data (strategy-charts-api Implementation Contract) ---------
+
+export interface TraceResponse {
+  race_id: string;
+  lap: number;
+  /** Null when no driver has a timed lap yet. */
+  reference_lap_s: number | null;
+  /** Running order at the lap; points ascending by lap. */
+  drivers: { code: string; team_color: string | null; points: { lap: number; delta_s: number }[] }[];
+}
+
+export interface RejoinCar {
+  code: string;
+  position: number;
+  gap_to_leader_s: number;
+  laps_behind_leader: number;
+}
+
+export interface RejoinSlot {
+  position: number;
+  gap_to_leader_s: number;
+  ahead: string | null;
+  ahead_gap_s: number | null;
+  behind: string | null;
+  behind_gap_s: number | null;
+}
+
+export interface RejoinResponse {
+  race_id: string;
+  lap: number;
+  driver: string;
+  pit_loss_s: number;
+  lap_length_s: number | null;
+  cars: RejoinCar[];
+  /** Null when the driver has no gap at the lap. */
+  rejoin: RejoinSlot | null;
+}
+
+export interface PitPlan {
+  /** Null for the "no further stop" plan (last when offered). */
+  pit_lap: number | null;
+  mean_s: number;
+  p10_s: number;
+  p90_s: number;
+  delta_s: number;
+}
+
+export interface PitWindowResponse {
+  race_id: string;
+  lap: number;
+  driver: string;
+  runs: number;
+  seed: number;
+  pit_loss_s: number;
+  best_pit_lap: number | null;
+  plans: PitPlan[];
+}
+
+export interface Stint {
+  stint: number;
+  compound: Compound | null;
+  start_lap: number;
+  end_lap: number;
+  start_tyre_age: number | null;
+}
+
+export interface StintsResponse {
+  race_id: string;
+  lap: number;
+  drivers: { code: string; stints: Stint[] }[];
+}
+
+export interface DegradationPoint {
+  code: string;
+  lap: number;
+  tyre_age: number;
+  fuel_corrected_s: number;
+}
+
+export interface DegradationCompound {
+  compound: "SOFT" | "MEDIUM" | "HARD";
+  fit: { slope_s_per_lap: number; intercept_s: number; n: number } | null;
+  points: DegradationPoint[];
+}
+
+export interface DegradationResponse {
+  race_id: string;
+  lap: number;
+  /** SOFT, MEDIUM, HARD order; only compounds with a point. */
+  compounds: DegradationCompound[];
+}
+
+export interface PositionDistributionResponse {
+  race_id: string;
+  lap: number;
+  model: string;
+  analyzed: boolean;
+  /** Same order as /positions; null for rows stored before the distribution existed. */
+  drivers: { code: string; position_distribution: number[] | null }[];
 }
 
 export interface Strategy {

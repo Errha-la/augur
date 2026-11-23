@@ -83,6 +83,39 @@ describe("Board persistence", () => {
     view.unmount();
   });
 
+  it("Stored edit survives the new definitions: an old PIT WALL edit stays until reset gives the Pit window", async () => {
+    fakeBackend();
+    // PIT WALL as stored before strategy-chart-widgets (lap chart), with the timing widget removed.
+    const oldPit = {
+      id: "pit",
+      name: "PIT WALL",
+      presetId: "pit",
+      widgets: [
+        { id: "driver-1", type: "driver", x: 0, y: 0, w: 5, h: 9, settings: { driver: null } },
+        { id: "events-1", type: "events", x: 5, y: 0, w: 7, h: 6, settings: { types: ["degradation_warning", "undercut_window", "overcut_window"] } },
+        { id: "lapchart-1", type: "lapchart", x: 5, y: 6, w: 7, h: 5, settings: { driver: null } },
+      ],
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, activeBoardId: "pit", presetEdits: { pit: oldPit }, customBoards: [] }));
+    const view = await open();
+    expect(label()).toHaveTextContent(/PIT WALL\s*edited/);
+    const types = () => screen.getAllByTestId("widget").map((w) => w.dataset.widgetType);
+    expect(types()).toEqual(["driver", "events", "lapchart"]);
+    fireEvent.click(menu().getByRole("menuitem", { name: "Reset to preset" }));
+    expect(types()).toEqual(["driver", "events", "pitwindow", "timing"]);
+    expect(label()).not.toHaveTextContent("edited");
+    view.unmount();
+  });
+
+  it("the board menu offers STRATEGY after the three existing presets", async () => {
+    fakeBackend();
+    await open();
+    const names = menu()
+      .getAllByRole("menuitemradio")
+      .map((m) => m.textContent ?? "");
+    expect(names.slice(0, 4).map((n) => n.replace(/edited|●/g, "").trim())).toEqual(["PIT WALL", "BATTLE", "PACE", "STRATEGY"]);
+  });
+
   it("Corrupted storage: presets load with the notice and the stored value is unchanged", async () => {
     fakeBackend();
     localStorage.setItem(STORAGE_KEY, "{not json");

@@ -4,7 +4,7 @@ import type { LapData, LapRow } from "../api/types";
 import { driver, lapRow, positions, prediction, raceEvent } from "../test/builders";
 import { ABU_DHABI, fakeBackend, fixtures } from "../test/fakeBackend";
 import { advance, goToLap, renderApp, waitForShown } from "../test/renderApp";
-import { FocusPanel, GREEN_RACE_NOTE } from "./FocusPanel";
+import { FocusPanel, GREEN_RACE_NOTE, SAFETY_CAR_NOTE } from "./FocusPanel";
 
 function lapData(lap: number, extra: Partial<LapData> = {}): LapData {
   return {
@@ -60,7 +60,18 @@ describe("Focus driver panel", () => {
     expect(probs).toHaveTextContent("WIN 4%");
     expect(probs).toHaveTextContent("PODIUM 31%");
     expect(probs).toHaveTextContent("POINTS 99%");
-    expect(screen.getByText(GREEN_RACE_NOTE)).toBeInTheDocument();
+    expect(screen.getByTestId("probability-note")).toHaveTextContent(SAFETY_CAR_NOTE);
+  });
+
+  it("Safety-car notes: the safety-car note under the probabilities, the green-race note under the strategy table, once each", () => {
+    renderPanel(lapData(15));
+    expect(SAFETY_CAR_NOTE).toBe("Includes random safety-car and VSC periods");
+    expect(GREEN_RACE_NOTE).toBe("Assumes a green race to the end");
+    expect(screen.getAllByText(SAFETY_CAR_NOTE)).toHaveLength(1);
+    expect(screen.getAllByText(GREEN_RACE_NOTE)).toHaveLength(1);
+    expect(screen.getByTestId("probability-note").previousElementSibling).toHaveAttribute("data-testid", "focus-probabilities");
+    // The green-race note follows the strategy table's slot.
+    expect(screen.getByTestId("strategy-note").previousElementSibling?.textContent).toMatch(/Simulating|STRATEGY|Strategy/);
   });
 
   it("shows code, team, degradation with cliff, and only the driver's events", () => {

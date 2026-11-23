@@ -30,6 +30,9 @@ import { BoardMenu } from "./components/BoardMenu";
 import { useBoardFiles } from "./components/BoardFiles";
 import { Guide, useGuide } from "./components/Guide";
 import { menuButton } from "./components/Menu";
+import { ChartWidget, type ChartType } from "./components/charts";
+import { paceDrivers, PaceDriversPicker } from "./components/charts/Pace";
+import type { ChartContext } from "./components/charts/useChartData";
 
 type RacesLoad = { status: "loading" } | { status: "error" } | { status: "ok"; races: RaceSummary[] };
 
@@ -210,6 +213,17 @@ export default function App({ initialBoards: startBoards }: AppProps = {}) {
     };
   };
 
+  const chartCtx: ChartContext | null = data && {
+    raceId: data.raceId,
+    lap: data.lap,
+    totalLaps: replay.totalLaps,
+    playing: replay.playing,
+    focusCode,
+    drivers: raceDrivers,
+  };
+  const chart = (type: ChartType, code: string | null) =>
+    chartCtx && <ChartWidget key={chartCtx.raceId} type={type} ctx={chartCtx} code={code} />;
+
   const renderWidget = (widget: WidgetInstance): WidgetView => {
     switch (widget.type) {
       case "timing":
@@ -230,6 +244,29 @@ export default function App({ initialBoards: startBoards }: AppProps = {}) {
         return driverView(widget, lapChart);
       case "timeline":
         return { body: timeline };
+      case "pitclock":
+      case "pitwindow":
+      case "fan":
+        return driverView(widget, (code) => chart(widget.type as ChartType, code));
+      case "trace":
+      case "stints":
+      case "degradation":
+      case "heatmap":
+        return { body: chart(widget.type, focusCode) };
+      case "pace": {
+        const setting = widget.settings.drivers;
+        return {
+          subtitle: chartCtx ? paceDrivers(setting, raceDrivers, focusCode).codes.join(" ") || undefined : undefined,
+          controls: (
+            <PaceDriversPicker
+              value={setting}
+              drivers={raceDrivers}
+              onChange={(drivers) => setBoard((b) => updateSettings(b, widget.id, { drivers }))}
+            />
+          ),
+          body: chartCtx && <ChartWidget key={chartCtx.raceId} type="pace" ctx={chartCtx} code={focusCode} codes={setting} />,
+        };
+      }
     }
   };
 

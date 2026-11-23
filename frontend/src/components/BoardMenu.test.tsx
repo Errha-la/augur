@@ -33,12 +33,12 @@ function widgetCells() {
   return screen.getAllByTestId("widget").map((w) => [w.dataset.widgetType, w.dataset.cell]);
 }
 
-function presetCells(id: "pit" | "battle" | "pace") {
+function presetCells(id: "pit" | "battle" | "pace" | "strategy") {
   return preset(id).widgets.map((w) => [w.type, `${w.x},${w.y},${w.w},${w.h}`]);
 }
 
 describe("Board menu", () => {
-  it("opens BATTLE first and lists the three presets", async () => {
+  it("opens BATTLE first and lists the four presets", async () => {
     await showApp();
     expect(screen.getByTestId("board-menu-label")).toHaveTextContent("BATTLE");
     expect(widgetCells()).toEqual(presetCells("battle"));
@@ -46,7 +46,7 @@ describe("Board menu", () => {
       .getAllByRole("menuitemradio")
       .map((b) => b.textContent);
     // "●" marks the active board.
-    expect(names).toEqual(["PIT WALL", "●BATTLE", "PACE"]);
+    expect(names).toEqual(["PIT WALL", "●BATTLE", "PACE", "STRATEGY"]);
   });
 
   it("Reset an edited preset: removing a widget marks PIT WALL edited until it is reset", async () => {

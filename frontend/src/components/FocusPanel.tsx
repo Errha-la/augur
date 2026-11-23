@@ -9,6 +9,9 @@ import { compoundColor, compoundLetter, eventTypeLabel } from "../lib/theme";
 import { OrDash } from "./Dash";
 import { StrategyTable } from "./StrategyTable";
 
+/** Under the probabilities: the position simulator draws safety-car and VSC periods. */
+export const SAFETY_CAR_NOTE = "Includes random safety-car and VSC periods";
+/** Under the strategy table: the strategy simulator still assumes a green race. */
 export const GREEN_RACE_NOTE = "Assumes a green race to the end";
 
 const WIN_COLOR = "#c084fc";
@@ -164,7 +167,9 @@ export function FocusPanel({ data, focusCode, playing, chartSize }: FocusPanelPr
             POINTS <OrDash text={formatPct(pos?.p_points)} />
           </span>
         </div>
-        <p className="mt-0.5 text-[11px] text-zinc-500">{GREEN_RACE_NOTE}</p>
+        <p data-testid="probability-note" className="mt-0.5 text-[11px] text-zinc-500">
+          {SAFETY_CAR_NOTE}
+        </p>
         <div data-testid="probability-history" className="mt-1 h-28">
           {history.loading && historyRows.length === 0 ? (
             <p className="text-xs text-zinc-500">Simulating...</p>
@@ -184,6 +189,9 @@ export function FocusPanel({ data, focusCode, playing, chartSize }: FocusPanelPr
         error={strategyError}
         idleText={`Strategy updates at lap ${nextRefresh} or when paused`}
       />
+      <p data-testid="strategy-note" className="-mt-2 text-[11px] text-zinc-500">
+        {GREEN_RACE_NOTE}
+      </p>
 
       <div>
         <div className="mb-1 text-[10px] tracking-wider text-zinc-500">EVENTS · {driver.code}</div>

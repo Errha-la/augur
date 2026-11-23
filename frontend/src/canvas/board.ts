@@ -9,6 +9,8 @@ export const BOARD_FULL = "A board holds at most 24 widgets";
 export interface WidgetSettings {
   /** Driver widgets: null or absent follows the focus driver; a code pins it. */
   driver?: string | null;
+  /** Pace widget: one to four pinned codes; absent or empty follows the focus driver and its neighbours. */
+  drivers?: string[];
   /** Events widget: the event types shown; absent shows every type. */
   types?: string[];
 }
@@ -23,7 +25,7 @@ export interface WidgetInstance {
   settings: WidgetSettings;
 }
 
-export type PresetId = "pit" | "battle" | "pace";
+export type PresetId = "pit" | "battle" | "pace" | "strategy";
 
 export interface Board {
   id: string;

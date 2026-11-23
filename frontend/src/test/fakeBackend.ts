@@ -46,7 +46,13 @@ export type Endpoint =
   | "positions"
   | "positions/history"
   | "strategy"
-  | "wrapped";
+  | "wrapped"
+  | "trace"
+  | "rejoin"
+  | "pit-window"
+  | "stints"
+  | "degradation"
+  | "positions/distribution";
 
 export interface RequestCtx {
   raceId: string;
@@ -126,6 +132,67 @@ const defaultHandlers: Record<Endpoint, Handler> = {
   }),
   strategy: ({ raceId, lap, driver }) => ({ ...fixtures.strategy, race_id: raceId, lap, driver }),
   wrapped: ({ raceId, driver }) => wrappedResponse({ race_id: raceId }, { code: driver ?? "NOR" }),
+  // Chart endpoints (strategy-charts-api shapes), built from the fixture order.
+  trace: ({ raceId, lap }) => ({
+    race_id: raceId,
+    lap,
+    reference_lap_s: 90.5,
+    drivers: fixtures.state.drivers.map((d, i) => ({
+      code: d.code,
+      team_color: d.team_color,
+      points: Array.from({ length: lap }, (_, k) => ({ lap: k + 1, delta_s: -i * 0.4 * (k + 1) })),
+    })),
+  }),
+  rejoin: ({ raceId, lap, driver }) => ({
+    race_id: raceId,
+    lap,
+    driver,
+    pit_loss_s: 21.5,
+    lap_length_s: 88,
+    cars: fixtures.state.drivers.map((d, i) => ({ code: d.code, position: i + 1, gap_to_leader_s: i * 2, laps_behind_leader: 0 })),
+    rejoin: { position: 12, gap_to_leader_s: 30, ahead: "AAA", ahead_gap_s: 1, behind: "BBB", behind_gap_s: 1 },
+  }),
+  "pit-window": ({ raceId, lap, driver }) => ({
+    race_id: raceId,
+    lap,
+    driver,
+    runs: 1000,
+    seed: 42,
+    pit_loss_s: 21.5,
+    best_pit_lap: lap + 2,
+    plans: [1, 2, 3].map((k) => ({ pit_lap: lap + k, mean_s: 3000 + Math.abs(k - 2), p10_s: 2990, p90_s: 3010, delta_s: Math.abs(k - 2) })),
+  }),
+  stints: ({ raceId, lap }) => ({
+    race_id: raceId,
+    lap,
+    drivers: fixtures.state.drivers.map((d) => ({
+      code: d.code,
+      stints: [{ stint: 1, compound: "MEDIUM", start_lap: 1, end_lap: lap, start_tyre_age: 1 }],
+    })),
+  }),
+  degradation: ({ raceId, lap }) => ({
+    race_id: raceId,
+    lap,
+    compounds: [
+      {
+        compound: "MEDIUM",
+        fit: null,
+        points: fixtures.state.drivers.slice(0, 3).flatMap((d) =>
+          Array.from({ length: Math.max(lap - 1, 0) }, (_, k) => ({ code: d.code, lap: k + 2, tyre_age: k + 2, fuel_corrected_s: 89 + k / 10 })),
+        ),
+      },
+    ],
+  }),
+  "positions/distribution": ({ raceId, lap }) => ({
+    race_id: raceId,
+    lap,
+    model: "lightgbm",
+    analyzed: true,
+    drivers: fixtures.positions.drivers.map((d, i, all) => ({
+      code: d.code,
+      position_distribution: all.map((_, k) => (k === i ? 1 : 0)),
+    })),
+  }),
 };
 
 interface Held {

@@ -9,6 +9,14 @@ export const WIDGET_BODY: Record<WidgetType, { testId: string; label: string; cl
   driver: { testId: "focus", label: "Focus driver", className: "overflow-auto" },
   lapchart: { testId: "chart", label: "Lap times", className: "overflow-hidden" },
   timeline: { testId: "timeline", label: "Event timeline", className: "overflow-auto px-3 py-2" },
+  trace: { testId: "chart-trace", label: "Race trace", className: "overflow-hidden" },
+  pitclock: { testId: "chart-pitclock", label: "Pit clock", className: "overflow-auto" },
+  pitwindow: { testId: "chart-pitwindow", label: "Pit window", className: "overflow-hidden" },
+  stints: { testId: "chart-stints", label: "Tyre stints", className: "overflow-auto" },
+  degradation: { testId: "chart-degradation", label: "Degradation", className: "overflow-hidden" },
+  pace: { testId: "chart-pace", label: "Pace compare", className: "overflow-hidden" },
+  fan: { testId: "chart-fan", label: "Position fan", className: "overflow-hidden" },
+  heatmap: { testId: "chart-heatmap", label: "Position odds", className: "overflow-auto" },
 };
 
 interface WidgetFrameProps {

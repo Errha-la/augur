@@ -9,10 +9,10 @@ function run(...actions: BoardsAction[]): BoardsState {
 }
 
 describe("boards store", () => {
-  it("starts on BATTLE with the three presets", () => {
+  it("starts on BATTLE with the four presets", () => {
     const s = initialBoards();
     expect(activeBoard(s).name).toBe("BATTLE");
-    expect(allBoards(s).map((b) => b.name)).toEqual(["PIT WALL", "BATTLE", "PACE"]);
+    expect(allBoards(s).map((b) => b.name)).toEqual(["PIT WALL", "BATTLE", "PACE", "STRATEGY"]);
   });
 
   it("editing a preset keeps the edited copy and marks it; reset restores the built-in", () => {
@@ -29,7 +29,7 @@ describe("boards store", () => {
     expect(isEdited(s, "pace")).toBe(false);
   });
 
-  it.each(PRESET_IDS)("toggling an event-type chip off and on again clears the %s edited mark", (id) => {
+  it.each(PRESET_IDS.filter((id) => preset(id).widgets.some((w) => w.type === "events")))("toggling an event-type chip off and on again clears the %s edited mark", (id) => {
     const events = preset(id).widgets.find((w) => w.type === "events")!;
     const flip = (b: Board) => {
       const w = b.widgets.find((x) => x.id === events.id)!;
