@@ -16,7 +16,7 @@ import pandas as pd
 from augur import config
 from augur.features import clean_mask, fuel_corrected
 from augur.state import race_state, to_json_value
-from augur.strategy import pit_loss
+from augur.strategy import pit_loss, simulate_pit_laps
 
 # Fewest points the degradation chart fits a line through.
 DEG_FIT_MIN_POINTS = 4
@@ -204,3 +204,40 @@ def degradation_points(laps: pd.DataFrame, total_laps: int, race_id: str, lap: i
         fit = _fit([float(p["tyre_age"]) for p in points], [float(t) for t in fc[sel]])
         compounds.append({"compound": compound, "fit": fit, "points": points})
     return {"race_id": race_id, "lap": lap, "compounds": compounds}
+
+
+def pit_window(
+    laps: pd.DataFrame,
+    total_laps: int,
+    race_id: str,
+    lap: int,
+    driver: str,
+    runs: int = config.STRATEGY_RUNS_DEFAULT,
+    seed: int = config.STRATEGY_SEED_DEFAULT,
+) -> dict:
+    """Simulated remaining race time for a stop on every lap N+1..total_laps-2.
+
+    Uses the strategy simulator's pit-lap plans, so a pit lap matches the strategy
+    table for the same runs and seed. The no-stop plan (``pit_lap`` null) comes last,
+    only once ``driver`` has used two dry compounds.
+    """
+    laps = laps[laps["lap"] <= lap]
+    own = laps[laps["driver"] == driver]
+    used = {c for c in own["compound"].dropna() if c in config.DRY_COMPOUNDS}
+    pit_laps: list[int | None] = list(range(lap + 1, total_laps - 1))
+    if len(used) >= 2:
+        pit_laps.append(None)
+    sim = simulate_pit_laps(laps, total_laps, driver, lap, pit_laps, runs=runs, seed=seed)
+    plans = sim["plans"]
+    best = min(plans, key=lambda p: p["mean_s"]) if plans else None
+    low = best["mean_s"] if best else 0.0
+    return {
+        "race_id": race_id,
+        "lap": lap,
+        "driver": driver,
+        "runs": runs,
+        "seed": seed,
+        "pit_loss_s": sim["pit_loss_s"],
+        "best_pit_lap": best["pit_lap"] if best else None,
+        "plans": [{**p, "delta_s": _r(p["mean_s"] - low)} for p in plans],
+    }

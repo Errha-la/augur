@@ -35,7 +35,7 @@ WRAPPED_CACHE_SIZE = 8
 POSITION_FIELDS = (
     "code", "p_win", "p_podium", "p_points", "expected_position", "position_p10", "position_p90",
 )
-POSITION_HISTORY_FIELDS = ("code", "p_win", "p_podium", "expected_position")
+POSITION_HISTORY_FIELDS = ("code", "p_win", "p_podium", "expected_position", "position_p10", "position_p90")
 
 LapParam = Annotated[int, Query(ge=1, description="Replay cutoff lap (1..total_laps)")]
 RunsParam = Annotated[
@@ -227,6 +227,21 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
             "laps": [{"lap": n, "drivers": drivers} for n, drivers in sorted(by_lap.items())],
         }
 
+    @app.get("/api/races/{race_id}/positions/distribution")
+    def positions_distribution(race_id: str, lap: LapParam) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        name = model_name()
+        analyzed = s.has_positions(race_id, name)
+        rows = s.positions_until(race_id, name, lap, only_lap=True, include_distribution=True) if analyzed else []
+        return {
+            "race_id": feed.race_id,
+            "lap": lap,
+            "model": name,
+            "analyzed": analyzed,
+            "drivers": [{"code": r["code"], "position_distribution": r["position_distribution"]} for r in rows],
+        }
+
     @app.get("/api/races/{race_id}/wrapped")
     def wrapped(race_id: str, lap: LapParam, driver: str) -> dict:
         s = store()
@@ -304,6 +319,20 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
     def degradation(race_id: str, lap: LapParam) -> dict:
         feed = open_feed(store(), race_id, lap)
         return charts.degradation_points(feed.laps_until(lap), feed.total_laps, feed.race_id, lap)
+
+    @app.get("/api/races/{race_id}/pit-window")
+    def pit_window(
+        race_id: str,
+        lap: LapParam,
+        driver: str,
+        runs: RunsParam = config.STRATEGY_RUNS_DEFAULT,
+        seed: SeedParam = config.STRATEGY_SEED_DEFAULT,
+    ) -> dict:
+        s = store()
+        feed = open_feed(s, race_id, lap)
+        if driver not in {d["code"] for d in s.list_drivers(race_id)}:
+            raise HTTPException(status_code=404, detail="driver not found")
+        return charts.pit_window(feed.laps_until(lap), feed.total_laps, feed.race_id, lap, driver, runs=runs, seed=seed)
 
     return app
 

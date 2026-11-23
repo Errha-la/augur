@@ -48,7 +48,9 @@ def test_history_stops_at_the_current_lap(analyzed):
     assert body["analyzed"] is True
     assert [entry["lap"] for entry in body["laps"]] == [1, 2, 3, 4]
     assert set(body["laps"][0]) == {"lap", "drivers"}
-    assert set(body["laps"][0]["drivers"][0]) == {"code", "p_win", "p_podium", "expected_position"}
+    assert set(body["laps"][0]["drivers"][0]) == {
+        "code", "p_win", "p_podium", "expected_position", "position_p10", "position_p90"
+    }
     assert [d["code"] for d in body["laps"][0]["drivers"]] == ["AAA", "BBB", "CCC"]
 
 

@@ -3,7 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 from synthetic import write_synthetic_race
 
-from augur import catalog
+from augur import analyze, catalog
 from augur.api import create_app
 
 RACE = "2098-01-synthetic-grand-prix"
@@ -111,3 +111,89 @@ def test_stints_and_degradation_shapes(client):
     assert all(p["lap"] <= 20 for c in deg["compounds"] for p in c["points"])
     assert client.get("/api/races/nope/stints?lap=5").status_code == 404
     assert client.get(f"/api/races/{RACE}/degradation?lap=0").status_code == 422
+
+
+# --- pit window -------------------------------------------------------------------
+
+
+def test_pit_window_agrees_with_the_strategy_table(client):
+    q = "lap=15&driver=DDD&runs=500&seed=3"
+    pw = client.get(f"/api/races/{RACE}/pit-window?{q}").json()
+    st = client.get(f"/api/races/{RACE}/strategy?{q}").json()
+    assert set(pw) == {"race_id", "lap", "driver", "runs", "seed", "pit_loss_s", "best_pit_lap", "plans"}
+    assert pw["pit_loss_s"] == st["pit_loss_s"]
+    plan = next(p for p in pw["plans"] if p["pit_lap"] == 18)
+    table = next(s for s in st["strategies"] if s["pit_lap"] == 18)
+    assert {k: plan[k] for k in ("mean_s", "p10_s", "p90_s")} == {k: table[k] for k in ("mean_s", "p10_s", "p90_s")}
+    # Every lap 16..28; DDD has one dry compound by lap 15, so no no-stop plan.
+    assert [p["pit_lap"] for p in pw["plans"]] == list(range(16, 29))
+    # By lap 20 every car has used two compounds: the no-stop plan comes last.
+    late = client.get(f"/api/races/{RACE}/pit-window?lap=20&driver=DDD&runs=500").json()
+    assert [p["pit_lap"] for p in late["plans"]] == [*range(21, 29), None]
+    assert set(pw["plans"][0]) == {"pit_lap", "mean_s", "p10_s", "p90_s", "delta_s"}
+    best = min(pw["plans"], key=lambda p: p["mean_s"])
+    assert best["delta_s"] == 0.0 and all(p["delta_s"] >= 0 for p in pw["plans"])
+    assert pw["best_pit_lap"] == best["pit_lap"]
+
+
+def test_pit_window_no_window_left(client, data_dir):
+    # Make DDD a one-compound driver, then ask at total_laps - 1.
+    path = catalog.laps_path(data_dir, RACE)
+    laps = pd.read_parquet(path)
+    laps.loc[laps["driver"] == "DDD", "compound"] = "MEDIUM"
+    laps.to_parquet(path, index=False)
+    body = client.get(f"/api/races/{RACE}/pit-window?lap=29&driver=DDD").json()
+    assert body["plans"] == [] and body["best_pit_lap"] is None
+
+
+def test_pit_window_same_seed_and_errors(client):
+    url = f"/api/races/{RACE}/pit-window?lap=10&driver=AAA&runs=200&seed=5"
+    assert client.get(url).content == client.get(url).content
+    assert client.get(f"/api/races/{RACE}/pit-window?lap=10&driver=AAA&runs=50").status_code == 422
+    assert client.get(f"/api/races/{RACE}/pit-window?lap=10&driver=AAA&runs=6000").status_code == 422
+    assert client.get(f"/api/races/{RACE}/pit-window?lap=10&driver=XXX").status_code == 404
+    assert client.get("/api/races/nope/pit-window?lap=10&driver=AAA").status_code == 404
+
+
+def test_pit_window_no_future_laps(client, data_dir):
+    assert_no_future_laps(client, data_dir, f"/api/races/{RACE}/pit-window?lap=12&driver=BBB&runs=200", 12)
+
+
+# --- position distribution ---------------------------------------------------------
+
+
+def test_distribution_not_analyzed(client, monkeypatch):
+    monkeypatch.setenv("AUGUR_MODEL", "baseline")
+    r = client.get(f"/api/races/{RACE}/positions/distribution?lap=5")
+    assert r.status_code == 200
+    body = r.json()
+    assert set(body) == {"race_id", "lap", "model", "analyzed", "drivers"}
+    assert body["analyzed"] is False and body["drivers"] == []
+
+
+def test_distribution_same_order_as_positions(client, data_dir, monkeypatch):
+    monkeypatch.setenv("AUGUR_MODEL", "baseline")
+    codes = ["FFF", "AAA", "DDD", "BBB", "EEE", "CCC"]  # stored out of order
+    positions = {}
+    for lap in range(1, 31):
+        rows = []
+        for i, code in enumerate(codes):
+            dist = [0.0] * 6
+            dist[(i + 2) % 6] = 1.0
+            rows.append({
+                "code": code, "p_win": dist[0], "p_podium": sum(dist[:3]), "p_points": 1.0,
+                "expected_position": float((i + 2) % 6 + 1), "position_p10": 1.0, "position_p90": 6.0,
+                # One row without a distribution stands for rows stored before the column.
+                "position_distribution": None if code == "CCC" else dist,
+            })
+        positions[lap] = rows
+    analyze.replace_positions(data_dir, RACE, "baseline", positions, runs=500, seed=7)
+    pos = client.get(f"/api/races/{RACE}/positions?lap=20").json()
+    dist = client.get(f"/api/races/{RACE}/positions/distribution?lap=20").json()
+    assert dist["analyzed"] is True and dist["model"] == "baseline" and dist["lap"] == 20
+    assert [d["code"] for d in dist["drivers"]] == [d["code"] for d in pos["drivers"]]
+    by_code = {d["code"]: d["position_distribution"] for d in dist["drivers"]}
+    assert by_code["CCC"] is None and sum(by_code["AAA"]) == 1.0
+    assert set(dist["drivers"][0]) == {"code", "position_distribution"}
+    assert client.get(f"/api/races/{RACE}/positions/distribution?lap=0").status_code == 422
+    assert client.get("/api/races/nope/positions/distribution?lap=5").status_code == 404
