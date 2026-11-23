@@ -15,7 +15,9 @@ from dataclasses import dataclass
 from typing import Any
 
 # A number not glued to a preceding digit or dot, with an optional % sign.
-_NUMBER_RE = re.compile(r"(?<![\d.])(\d+(?:\.\d+)?)\s*([%％])?")
+# Group 1 is the number as shown, group 2 the % sign. The match may also take
+# whitespace after the number, so spans should be taken from the groups.
+NUMBER_RE = re.compile(r"(?<![\d.])(\d+(?:\.\d+)?)\s*([%％])?")
 # Three uppercase letters not inside a longer Latin word (works next to CJK text).
 _CODE_RE = re.compile(r"(?<![A-Za-z])[A-Z]{3}(?![A-Za-z])")
 
@@ -47,10 +49,10 @@ def _source_numbers(event: Mapping[str, Any]) -> list[float]:
         if isinstance(value, (int, float)):
             numbers.append(abs(float(value)))
         elif isinstance(value, str):
-            numbers.extend(float(m.group(1)) for m in _NUMBER_RE.finditer(value))
+            numbers.extend(float(m.group(1)) for m in NUMBER_RE.finditer(value))
     for text in (event.get("analysis") or {}).values():
         if isinstance(text, str):
-            for m in _NUMBER_RE.finditer(text):
+            for m in NUMBER_RE.finditer(text):
                 n = float(m.group(1))
                 # "62%" in the template grounds both 62% and 0.62 in the text.
                 numbers.append(n / 100 if m.group(2) else n)
@@ -71,20 +73,25 @@ def _matches(shown: str, value: float) -> bool:
     return abs(value - float(shown)) <= 0.5 * 10**-decimals + 1e-9
 
 
+def matches_shown(shown: str, value: float, percent: bool = False) -> bool:
+    """``shown`` (a number as written in text) stands for ``value`` at the shown precision.
+
+    With ``percent`` (the text wrote "62%"), only a fraction 0..1 can match, as
+    value * 100; so lap 20 never grounds "2000%".
+    """
+    if percent:
+        return 0.0 <= value <= 1.0 and _matches(shown, value * 100)
+    return _matches(shown, value)
+
+
 def check_grounding(text: str, event: Mapping[str, Any]) -> Grounding:
     """Accepted only when every number and driver code in ``text`` comes from ``event``."""
     if not text or not text.strip():
         return Grounding(False, "empty text")
     numbers = _source_numbers(event)
-    for m in _NUMBER_RE.finditer(text):
+    for m in NUMBER_RE.finditer(text):
         shown, percent = m.group(1), m.group(2)
-        if percent:
-            # 62% must match a fraction 0.62 (value * 100 at the shown precision); only
-            # values in 0..1 are fractions, so lap 20 never grounds "2000%".
-            ok = any(0.0 <= v <= 1.0 and _matches(shown, v * 100) for v in numbers)
-        else:
-            ok = any(_matches(shown, v) for v in numbers)
-        if not ok:
+        if not any(matches_shown(shown, v, bool(percent)) for v in numbers):
             label = f"{shown}%" if percent else shown
             return Grounding(False, f"number {label} not in evidence")
     codes = _source_codes(event)

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearRequestCache } from "../api/requestCache";
 import type { RaceEvent } from "../api/types";
 import { raceEvent } from "../test/builders";
 import { ABU_DHABI, fakeBackend } from "../test/fakeBackend";
@@ -163,5 +164,82 @@ describe("Collapsed event history", () => {
     const [lap9, lap8] = screen.getAllByTestId("history-row");
     expect(lap8).toHaveAttribute("data-highlight", "true");
     expect(lap9).not.toHaveAttribute("data-highlight");
+  });
+});
+
+describe("Clickable numbers with a chart popover", () => {
+  beforeEach(() => clearRequestCache());
+  afterEach(() => clearRequestCache());
+
+  const noLinks = { what: [], why: [], next: [], commentary: [] };
+  // The lap 20 undercut of NOR on PIA, as /events serves it with links.
+  const undercut: RaceEvent = {
+    ...raceEvent("u20", 20, "undercut_window", ["NOR", "PIA"]),
+    analysis: { what: "NOR is 1.8 s behind PIA on lap 20.", why: "PIA's tyres are old.", next: "A stop could pay off." },
+    evidence: { chaser: "NOR", ahead: "PIA", gap_s: 1.84, ahead_tyre_life: 14 },
+    commentary: "PIA's tyres are 14 laps old.",
+    links: {
+      ...noLinks,
+      what: [{ start: 7, end: 10, field: "gap_s", chart: "trace", drivers: ["NOR", "PIA"] }],
+      commentary: [{ start: 16, end: 18, field: "ahead_tyre_life", chart: "stints", drivers: ["PIA"] }],
+    },
+  };
+  // The panel at replay lap 25: a newer event on top, the undercut in the history.
+  const atLap25 = [{ ...raceEvent("p25", 25, "pace_drop", ["VER"]), links: noLinks }, undercut];
+
+  function openHistoryRow() {
+    const row = screen.getAllByTestId("history-row").find((r) => r.dataset.eventId === "u20")!;
+    fireEvent.click(within(row).getByRole("button"));
+    return row;
+  }
+
+  // Scenario: Open a gap popover
+  it("clicking 1.8 opens 'Race trace · NOR PIA · lap 20' with one trace?lap=20 request and only NOR and PIA", async () => {
+    const { container } = render(panel(atLap25));
+    const row = openHistoryRow();
+    fireEvent.click(within(row).getByRole("button", { name: "1.8: show on chart" }));
+    const dialog = screen.getByRole("dialog", { name: "Race trace · NOR PIA · lap 20" });
+    await vi.waitFor(() => expect(within(dialog).getByTestId("chart-caption")).toHaveTextContent("Reference pace"));
+    expect(backend.of("trace").map((r) => r.lap)).toEqual([20]);
+    expect(container.querySelectorAll("path.recharts-line-curve")).toHaveLength(2);
+  });
+
+  // Scenario: Close the popover
+  it("Escape closes the popover; clicking the same number twice opens and then closes it", async () => {
+    render(panel(atLap25));
+    const row = openHistoryRow();
+    const number = within(row).getByRole("button", { name: "1.8: show on chart" });
+    fireEvent.click(number);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    fireEvent.mouseDown(number);
+    fireEvent.click(number);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(number).toHaveAttribute("aria-expanded", "true");
+    fireEvent.mouseDown(number);
+    fireEvent.click(number);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("links the primary event's commentary; another number replaces the open popover", async () => {
+    render(panel([undercut], null, null, "glm"));
+    const quote = within(primary()).getByTestId("commentary-text");
+    expect(quote).toHaveTextContent("PIA's tyres are 14 laps old.");
+    fireEvent.click(within(quote).getByRole("button", { name: "14: show on chart" }));
+    expect(screen.getByRole("dialog", { name: "Tyre stints · PIA · lap 20" })).toBeInTheDocument();
+    const gap = within(primary()).getByRole("button", { name: "1.8: show on chart" });
+    fireEvent.mouseDown(gap);
+    fireEvent.click(gap);
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+    expect(screen.getByRole("dialog", { name: "Race trace · NOR PIA · lap 20" })).toBeInTheDocument();
+  });
+
+  // Scenario: Plain text without links
+  it("renders text with empty links as plain text", () => {
+    render(panel([{ ...undercut, links: noLinks }]));
+    expect(within(primary()).queryAllByTestId("number-link")).toHaveLength(0);
+    expect(primary()).toHaveTextContent("NOR is 1.8 s behind PIA on lap 20.");
   });
 });

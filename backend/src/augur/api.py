@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from augur import catalog, charts, config
 from augur import settings as runtime_settings
 from augur import wrapped as wrapped_content
+from augur.events.links import event_links
 from augur.feed import RaceFeed, ReplayFeed
 from augur.models import registry
 from augur.models.base import LapTimeModel
@@ -185,6 +186,8 @@ def create_app(data_dir: Path | str | None = None) -> FastAPI:
         texts = s.commentary_texts([e["id"] for e in events], key) if key is not None else {}
         for e in events:
             e["commentary"] = texts.get(e["id"])
+            # Which numbers in the texts come from which evidence field; from this event only.
+            e["links"] = event_links(e)
         return {
             "race_id": feed.race_id,
             "lap": lap,

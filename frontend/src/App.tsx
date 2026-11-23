@@ -173,6 +173,8 @@ export default function App({ initialBoards: startBoards }: AppProps = {}) {
         commentaryModel={data.events.commentary_model}
         focusCode={focusCode}
         focusColor={focusColor}
+        totalLaps={replay.totalLaps}
+        teamColors={teamColors}
       />
     );
   };

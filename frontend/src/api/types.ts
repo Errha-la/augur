@@ -83,6 +83,29 @@ export interface RaceEvent {
   outcome_text?: string | null;
   /** LLM commentary cached by `augur.narrate`; present in /events, null when none is cached. */
   commentary?: string | null;
+  /** Numbers in the texts that come from an evidence field (computed by /events). */
+  links?: EventLinks;
+}
+
+/** Chart a number link opens in its popover. */
+export type LinkChart = "degradation" | "laptimes" | "trace" | "stints" | "pitwindow" | "positions";
+
+/** One linked number: `start`/`end` index Unicode code points of the text, `end` exclusive. */
+export interface NumberLink {
+  start: number;
+  end: number;
+  /** Evidence field, dotted for nested fields (`strategy.pit_lap`). */
+  field: string;
+  chart: LinkChart;
+  drivers: string[];
+}
+
+/** Links per text, in text order; `commentary` is empty when the event has none. */
+export interface EventLinks {
+  what: NumberLink[];
+  why: NumberLink[];
+  next: NumberLink[];
+  commentary: NumberLink[];
 }
 
 export interface EventsResponse {

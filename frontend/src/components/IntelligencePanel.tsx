@@ -1,11 +1,42 @@
 import { useState } from "react";
 import { api } from "../api/client";
-import type { RaceEvent, StrategyResponse } from "../api/types";
+import type { EventLinks, NumberLink, RaceEvent, StrategyResponse } from "../api/types";
 import { useKeyedFetch } from "../hooks/useKeyedFetch";
 import { eventTypeColor, eventTypeLabel, STRATEGY_EVENT_TYPES } from "../lib/theme";
+import { ChartPopover } from "./links/ChartPopover";
+import { LinkedText } from "./links/LinkedText";
 import { StrategyTable } from "./StrategyTable";
 
 export const NO_EVENTS = "No significant events yet";
+
+type LinkedKey = keyof EventLinks;
+
+/** The number whose chart popover is open (one at a time). */
+interface OpenLink {
+  eventId: string;
+  text: LinkedKey;
+  index: number;
+  link: NumberLink;
+  anchor: HTMLElement;
+}
+
+/** Opens and closes number popovers; passed down to every linked text. */
+interface LinkControl {
+  open: OpenLink | null;
+  toggle: (next: OpenLink) => void;
+}
+
+function Linked({ event, text, value, control }: { event: RaceEvent; text: LinkedKey; value: string; control: LinkControl }) {
+  const open = control.open;
+  return (
+    <LinkedText
+      text={value}
+      links={event.links?.[text]}
+      openIndex={open && open.eventId === event.id && open.text === text ? open.index : null}
+      onLinkClick={(link, index, _label, anchor) => control.toggle({ eventId: event.id, text, index, link, anchor })}
+    />
+  );
+}
 
 interface IntelligencePanelProps {
   raceId: string;
@@ -17,15 +48,21 @@ interface IntelligencePanelProps {
   focusColor: string | null;
   /** Shown when `events` is empty (default NO_EVENTS). */
   emptyText?: string;
+  /** Race length, for the stints and pit-window popovers. */
+  totalLaps?: number;
+  /** Team colour per driver code, for the popover charts. */
+  teamColors?: Record<string, string | null | undefined>;
 }
 
-function Commentary({ text, model }: { text: string; model: string | null }) {
+function Commentary({ event, model, control }: { event: RaceEvent; model: string | null; control: LinkControl }) {
   return (
     <figure data-testid="commentary" className="border-l-2 border-zinc-600 pl-3">
       <figcaption className="text-[10px] font-bold tracking-wider text-zinc-500">
         {model ? `AUGUR commentary · ${model}` : "AUGUR commentary"}
       </figcaption>
-      <blockquote data-testid="commentary-text" className="cq-commentary w-full italic text-zinc-200">{text}</blockquote>
+      <blockquote data-testid="commentary-text" className="cq-commentary w-full italic text-zinc-200">
+        <Linked event={event} text="commentary" value={event.commentary ?? ""} control={control} />
+      </blockquote>
     </figure>
   );
 }
@@ -58,13 +95,13 @@ function Evidence({ evidence }: { evidence: Record<string, unknown> }) {
   );
 }
 
-function Analysis({ event }: { event: RaceEvent }) {
+function Analysis({ event, control }: { event: RaceEvent; control: LinkControl }) {
   return (
     <div data-testid="analysis" className="cq-body flex flex-col gap-1.5">
       {(["what", "why", "next"] as const).map((k) => (
         <p key={k}>
           <span className="mr-2 text-[10px] font-bold tracking-wider text-zinc-500">{k.toUpperCase()}</span>
-          {event.analysis[k]}
+          <Linked event={event} text={k} value={event.analysis[k]} control={control} />
         </p>
       ))}
       <Evidence evidence={event.evidence} />
@@ -84,12 +121,13 @@ function highlightStyle(on: boolean, color: string | null): React.CSSProperties 
   return on && color ? { boxShadow: `inset 3px 0 0 ${color}`, backgroundColor: `${color}14` } : undefined;
 }
 
-function PrimaryCard({ raceId, event, commentaryModel, highlighted, focusColor }: {
+function PrimaryCard({ raceId, event, commentaryModel, highlighted, focusColor, control }: {
   raceId: string;
   event: RaceEvent;
   commentaryModel: string | null;
   highlighted: boolean;
   focusColor: string | null;
+  control: LinkControl;
 }) {
   const driver = event.drivers[0];
   const wantsStrategy = STRATEGY_EVENT_TYPES.has(event.type) && driver !== undefined;
@@ -127,8 +165,8 @@ function PrimaryCard({ raceId, event, commentaryModel, highlighted, focusColor }
         </div>
       </div>
       <h2 data-testid="event-title" className="cq-title font-bold">{event.title}</h2>
-      {event.commentary && <Commentary text={event.commentary} model={commentaryModel} />}
-      <Analysis event={event} />
+      {event.commentary && <Commentary event={event} model={commentaryModel} control={control} />}
+      <Analysis event={event} control={control} />
       {wantsStrategy && (
         <StrategyTable
           response={shown}
@@ -147,8 +185,34 @@ export function IntelligencePanel({
   focusCode,
   focusColor,
   emptyText = NO_EVENTS,
+  totalLaps = 0,
+  teamColors = {},
 }: IntelligencePanelProps) {
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
+  const [openLink, setOpenLink] = useState<OpenLink | null>(null);
+  const control: LinkControl = {
+    open: openLink,
+    // A second click on the same number closes it; another number replaces it.
+    toggle: (next) =>
+      setOpenLink((cur) =>
+        cur && cur.eventId === next.eventId && cur.text === next.text && cur.index === next.index ? null : next,
+      ),
+  };
+  // The popover's event, while it is still listed (a filter or race change drops it).
+  const openEvent = openLink ? events.find((e) => e.id === openLink.eventId) : undefined;
+  const popover = openLink && openEvent && (
+    <ChartPopover
+      key={`${openLink.eventId}|${openLink.text}|${openLink.index}`}
+      raceId={raceId}
+      lap={openEvent.lap}
+      link={openLink.link}
+      evidence={openEvent.evidence}
+      totalLaps={totalLaps}
+      teamColors={teamColors}
+      anchor={openLink.anchor}
+      onClose={() => setOpenLink(null)}
+    />
+  );
   if (events.length === 0) {
     return (
       <p role="status" className="p-4 text-sm text-zinc-400">
@@ -174,6 +238,7 @@ export function IntelligencePanel({
         commentaryModel={commentaryModel}
         highlighted={involves(primary)}
         focusColor={focusColor}
+        control={control}
       />
       {history.length > 0 && (
         <section aria-label="Event history">
@@ -205,7 +270,7 @@ export function IntelligencePanel({
                   </button>
                   {open && (
                     <div data-testid="history-analysis" className="px-2 pt-1 pb-2 pl-15">
-                      <Analysis event={e} />
+                      <Analysis event={e} control={control} />
                     </div>
                   )}
                 </li>
@@ -214,6 +279,7 @@ export function IntelligencePanel({
           </ul>
         </section>
       )}
+      {popover}
     </div>
   );
 }
