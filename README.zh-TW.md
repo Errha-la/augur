@@ -63,7 +63,7 @@ Dashboard 是一塊 12 欄格線的白板，上面擺放 widget。可以選預�
 
 ![PIT WALL board 第 24 圈，焦點車手 ALB：完賽機率、stint 條、策略表、事件卡和 pit window](docs/images/board-pitwall.png)
 
-![PACE board 第 40 圈，焦點車手 LEC：虛線為預測圈速的 lap times、一則輪胎懸崖事件、timing 和 pace compare](docs/images/board-pace.png)
+![PACE board 第 40 圈，焦點車手 LEC：虛線為預測圈速、進站標 P、開賽 VSC 圈加底色的 lap times、一則輪胎懸崖事件、timing 和 pace compare](docs/images/board-pace.png)
 
 #### 每張圖顯示什麼、怎麼算
 
@@ -77,7 +77,7 @@ Dashboard 是一塊 12 欄格線的白板，上面擺放 widget。可以選預�
 | Timing | 名次、差距、輪胎與胎齡、上一圈與預測下一圈、輪胎衰退、奪冠與登台機率 | `/state`、`/predictions`、`/positions` | 名次依完成圈數，再依每位車手最後一圈結束時的 session time 排序（進站前後可能和官方計時不同）；下一圈和衰退同 Lap times；機率來自下方的名次模擬。 |
 | Events | 含 what / why / next 分析與選用 LLM 賽評的事件卡 | `/events` | 規則式偵測器逐圈執行：輪胎衰退警告（一段 stint 至少 8 個 clean lap、擬合斜率至少 0.10 s/lap）、undercut 與 overcut 窗口、名次變化、掉速。文字是固定 template；事件結果要等重播到它的判定圈才會出現。 |
 | Driver | 焦點車手：stints、輪胎衰退、預測下一圈、預期名次與 P10-P90 範圍、奪冠 / 登台 / 得分（前 10）機率與歷史曲線，以及進站策略表 | `/state`、`/predictions`、`/positions/history`、`/strategy` | 機率來自名次模擬。策略表比較四個候選計畫：在第 N+1、N+3、N+5 或 N+8 圈進站（用過兩種乾胎後再加「不再進站」），各跑 1,000 次 seeded 模擬；「win」是該計畫在所有模擬中最快的比例。假設比賽一路綠旗到終點。 |
-| Lap times | 焦點車手與前後車的圈速，虛線為 model 的預測圈速 | `/laps`、`/predictions` | 預測 = 近期配速（最近 3 個 clean lap 的中位數）+ lap-time model 預測的變化量（預設 `lightgbm`；可替換，見[換上你的 model](#換上你的-model)）。 |
+| Lap times | 焦點車手與前後車的圈速，虛線為 model 的預測圈速；第 1 圈、進站圈、出站圈，以及安全車 / 虛擬安全車 / 紅旗圈在線上留空；`P` 以車手顏色標示每次進站，安全車 / 虛擬安全車 / 紅旗圈加上底色 | `/laps`、`/predictions` | 預測 = 近期配速（最近 3 個 clean lap 的中位數）+ lap-time model 預測的變化量（預設 `lightgbm`；可替換，見[換上你的 model](#換上你的-model)）。Y 軸只依畫出來的圈計算範圍。 |
 | Timeline | 整場比賽的事件標記 | `/events` | 點擊標記會跳到該圈並暫停。 |
 | Race trace | 每位車手每圈相對參考配速領先（+）或落後（−）的時間 | `/trace` | Race time = session time − 起跑時間，起跑時間取所有車手（第 1 圈 session time − 第 1 圈圈速）的中位數。參考配速 = 所有車手在最後一個有計時的圈時，race time ÷ 圈數的中位數。水平線代表維持參考配速；往上代表更快。 |
 | Pit clock | 每台車和領先者的差距，以及車手現在進站會回到哪裡 | `/rejoin` | 回場差距 = 自己和領先者的差距 + pit loss。Pit loss = 本場目前所有進站（進站圈 + 出站圈 − 2 × 該車手近期配速）的中位數；還沒有人進站時為 22 s。假設其他車不進站；是快照，不是預測。 |
