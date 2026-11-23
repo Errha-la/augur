@@ -15,6 +15,8 @@ interface IntelligencePanelProps {
   commentaryModel: string | null;
   focusCode: string | null;
   focusColor: string | null;
+  /** Shown when `events` is empty (default NO_EVENTS). */
+  emptyText?: string;
 }
 
 function Commentary({ text, model }: { text: string; model: string | null }) {
@@ -23,7 +25,7 @@ function Commentary({ text, model }: { text: string; model: string | null }) {
       <figcaption className="text-[10px] font-bold tracking-wider text-zinc-500">
         {model ? `AUGUR commentary · ${model}` : "AUGUR commentary"}
       </figcaption>
-      <blockquote className="text-sm italic text-zinc-200">{text}</blockquote>
+      <blockquote data-testid="commentary-text" className="cq-commentary w-full italic text-zinc-200">{text}</blockquote>
     </figure>
   );
 }
@@ -58,7 +60,7 @@ function Evidence({ evidence }: { evidence: Record<string, unknown> }) {
 
 function Analysis({ event }: { event: RaceEvent }) {
   return (
-    <div className="flex flex-col gap-1.5 text-sm">
+    <div data-testid="analysis" className="cq-body flex flex-col gap-1.5">
       {(["what", "why", "next"] as const).map((k) => (
         <p key={k}>
           <span className="mr-2 text-[10px] font-bold tracking-wider text-zinc-500">{k.toUpperCase()}</span>
@@ -109,7 +111,7 @@ function PrimaryCard({ raceId, event, commentaryModel, highlighted, focusColor }
       className="flex flex-col gap-2 rounded-md border border-zinc-800 p-3"
       style={highlightStyle(highlighted, focusColor)}
     >
-      <div className="flex items-center gap-3 text-xs">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         <TypeTag type={event.type} />
         <span className="text-zinc-400 tabular-nums">LAP {event.lap}</span>
         <span className="font-bold">{event.drivers.join(" · ")}</span>
@@ -124,7 +126,7 @@ function PrimaryCard({ raceId, event, commentaryModel, highlighted, focusColor }
           <span className="w-6 text-right text-zinc-500 tabular-nums">{Math.round(severity)}</span>
         </div>
       </div>
-      <h2 className="text-lg font-bold">{event.title}</h2>
+      <h2 data-testid="event-title" className="cq-title font-bold">{event.title}</h2>
       {event.commentary && <Commentary text={event.commentary} model={commentaryModel} />}
       <Analysis event={event} />
       {wantsStrategy && (
@@ -138,12 +140,19 @@ function PrimaryCard({ raceId, event, commentaryModel, highlighted, focusColor }
   );
 }
 
-export function IntelligencePanel({ raceId, events, commentaryModel, focusCode, focusColor }: IntelligencePanelProps) {
+export function IntelligencePanel({
+  raceId,
+  events,
+  commentaryModel,
+  focusCode,
+  focusColor,
+  emptyText = NO_EVENTS,
+}: IntelligencePanelProps) {
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   if (events.length === 0) {
     return (
       <p role="status" className="p-4 text-sm text-zinc-400">
-        {NO_EVENTS}
+        {emptyText}
       </p>
     );
   }

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ABU_DHABI, BAHRAIN } from "../test/fakeBackend";
 import { advance, goToLap, lapCount, layout, renderApp, waitForShown } from "../test/renderApp";
@@ -17,7 +17,7 @@ describe("Race selection", () => {
     await renderApp();
     expect(layout()).toHaveAttribute("data-race", ABU_DHABI);
     expect(lapCount()).toBe("LAP 1/58");
-    const options = screen.getAllByRole("option").map((o) => o.textContent);
+    const options = within(screen.getByRole("combobox", { name: "Race" })).getAllByRole("option").map((o) => o.textContent);
     expect(options).toEqual(["Abu Dhabi Grand Prix 2024", "Bahrain Grand Prix 2024"]);
   });
 
