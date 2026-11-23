@@ -10,7 +10,7 @@ AUGUR replays a Formula 1 race lap by lap and explains it the way an analyst on 
 
 ## Quick start
 
-Needs Python 3.12 or newer, Node.js 20 or newer, `make`, and network access for the first download. No account, subscription, or API key is needed.
+Needs Python 3.12 or newer, Node.js 22.22.2 or newer on 22.x or 24.15 or newer (the frontend test packages require it; CI uses Node 22), `make`, and network access for the first download. No account, subscription, or API key is needed.
 
 ```bash
 make setup      # creates backend/.venv, installs the backend with dev extras, runs npm ci in frontend/
@@ -77,7 +77,7 @@ Every widget asks the API for the replay lap N and gets numbers computed only fr
 | Timing | running order, gap, tyre and its age, last and predicted next lap, degradation, win and podium probability | `/state`, `/predictions`, `/positions` | Position from laps completed, then session time at each driver's last lap (can differ from official timing around pit stops); next lap and degradation as in Lap times; probabilities from the position simulation below. |
 | Events | event cards with what / why / next analysis and optional LLM commentary | `/events` | Rule-based detectors run lap by lap: tyre degradation warning (a stint fit of at least 0.10 s/lap over at least 8 clean laps), undercut and overcut windows, position change, pace drop. Text is deterministic templates; an event's outcome appears only once the replay reaches its outcome lap. |
 | Driver | focus driver: stints, degradation, predicted next lap, expected position with its P10-P90 range, win / podium / points (top 10) odds with their history, and a pit strategy table | `/state`, `/predictions`, `/positions/history`, `/strategy` | Probabilities from the position simulation. The strategy table compares four candidate plans, a stop on lap N+1, N+3, N+5, or N+8 (plus "no further stop" once two dry compounds are used), over 1,000 seeded runs; "win" is the share of runs in which that plan is the fastest. Assumes a green race to the end. |
-| Lap times | lap times of the driver and the cars just ahead and behind, with the model's predicted laps as dashed lines; lap 1, pit-in and pit-out laps, and SC / VSC / red-flag laps are gaps in the lines; `P` marks each pit stop in the driver's colour and SC / VSC / red-flag laps are shaded | `/laps`, `/predictions` | Prediction = recent pace (median of the last 3 clean laps) + the lap-time model's predicted delta (`lightgbm` by default; swappable, see [Plug in your model](#plug-in-your-model)). The y-axis covers the plotted laps only. |
+| Lap times | lap times of the driver and the cars just ahead and behind, with the model's predicted laps as dashed lines; lap 1, pit-in and pit-out laps, and SC / VSC / red-flag laps are gaps in the lines; `P` marks each pit stop in the driver's colour and SC / VSC / red-flag laps are shaded | `/laps`, `/predictions` | Prediction = recent pace (median of the last 3 clean laps) + the lap-time model's predicted delta (`lightgbm` by default; swappable, see [Plug in your model](#plug-in-your-model)). The y-axis range comes from the plotted laps only (fastest lap to 3 s above the median), so a very slow racing lap or a predicted lap can still run off the top. |
 | Timeline | every event as a marker along the race | `/events` | Clicking a marker jumps to that lap and pauses. |
 | Race trace | each driver's time gained (+) or lost (−) against a reference pace, per lap | `/trace` | Race time = session time − race start, where race start is the median over drivers of (lap-1 session time − lap-1 lap time). Reference pace = median over drivers of race time ÷ laps at their last timed lap. A flat line holds the reference pace; a rising line is faster. |
 | Pit clock | every car's gap to the leader and where the driver would rejoin if it pitted now | `/rejoin` | Rejoin gap = own gap to the leader + pit loss. Pit loss = median over the race's stops so far of (in-lap + out-lap − 2 × that driver's recent pace), or 22 s before any stop. Other cars are assumed not to pit; a snapshot, not a forecast. |
@@ -113,7 +113,7 @@ A rule-based event engine steps through the race lap by lap and writes each even
 |---|---|
 | Tyre degradation warning | a stint's fuel-corrected lap times rise by at least 0.10 s/lap over at least 8 clean laps, or the last two clean laps are more than 0.8 s off the stint's trend (a "cliff") |
 | Undercut window | a driver is within 2.5 s of the car directly ahead, whose tyres are at least 12 laps old, and neither has pitted in the last 3 laps |
-| Overcut window | the car directly ahead pits while the driver, within 3.0 s, stays out on tyres losing at most 0.05 s/lap |
+| Overcut window | the car directly ahead pits while the driver, less than 3.0 s behind it, stays out on tyres losing less than 0.05 s/lap |
 | Position change | a driver gains or loses at least 2 places in one lap, or a new leader |
 | Pace drop | a clean lap is more than 1.0 s slower than the model predicted |
 
@@ -199,7 +199,7 @@ Run it again to retry rejected or failed events; cached events are skipped. Star
 
 - **Any OpenAI-compatible server** (a local Ollama, vLLM, or LM Studio server, or a hosted provider): set `AUGUR_NARRATOR=openai_compat`, `AUGUR_LLM_BASE_URL` to its `/v1` base URL, `AUGUR_LLM_MODEL` to a model it serves, and `AUGUR_LLM_API_KEY` if it needs one. AUGUR posts to `<base URL>/chat/completions` with the Python standard library (no extra package), waits up to 120 s per event, retries HTTP 429 and 5xx twice, strips `<think>` blocks, and stops after 3 connection errors in a row (for example when the server is off your network).
 - **Gemini:** `AUGUR_NARRATOR=gemini` and `GEMINI_API_KEY`; pin `GEMINI_MODEL` for reproducible text. A free-tier key ran out of quota before finishing one full race in our runs.
-- **Off:** `AUGUR_NARRATOR=none`, or leave the variables unset: `augur.narrate` prints `<VARIABLE> not set; nothing generated` and exits 0.
+- **Off:** with `AUGUR_NARRATOR=none`, `augur.narrate` prints `narrator none; nothing generated`; with the variables unset it falls back to `gemini` and prints `GEMINI_API_KEY not set; nothing generated`. Both exit 0.
 - **Language:** `AUGUR_COMMENTARY_LANG=zh-TW`, or the language in the dashboard's Settings, for Traditional Chinese.
 - **After switching**, run `augur.narrate` again and restart the API. Commentary is cached per event, model, narrator, LLM model, language, and prompt version (`augur.narration.cache`), so texts from the old settings stay in the cache and come back if you switch back.
 

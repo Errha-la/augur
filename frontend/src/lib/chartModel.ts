@@ -137,8 +137,9 @@ export function chartModel(
 
 /**
  * Y range around the plotted (racing) laps: from just under the fastest lap to
- * 3 s above the median. Non-racing laps never reach this list, so no line
- * leaves the chart.
+ * 3 s above the median. Non-racing laps never reach this list, so their
+ * spikes cannot stretch the axis; a very slow racing or predicted lap can
+ * still run off the top.
  */
 function timeDomain(times: number[]): [number, number] | null {
   if (times.length === 0) return null;

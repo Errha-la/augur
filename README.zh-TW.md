@@ -10,7 +10,7 @@ AUGUR 逐圈重播一場 Formula 1 比賽，並像 pit wall 上的分析師一�
 
 ## 快速開始
 
-需要 Python 3.12 以上、Node.js 20 以上、`make`，第一次下載資料時需要網路。不需要任何帳號、訂閱或 API key。
+需要 Python 3.12 以上、Node.js 22.x 的 22.22.2 以上或 24.15 以上（frontend 的測試套件需要；CI 使用 Node 22）、`make`，第一次下載資料時需要網路。不需要任何帳號、訂閱或 API key。
 
 ```bash
 make setup      # creates backend/.venv, installs the backend with dev extras, runs npm ci in frontend/
@@ -77,7 +77,7 @@ Dashboard 是一塊 12 欄格線的白板，上面擺放 widget。可以選預�
 | Timing | 名次、差距、輪胎與胎齡、上一圈與預測下一圈、輪胎衰退、奪冠與登台機率 | `/state`、`/predictions`、`/positions` | 名次依完成圈數，再依每位車手最後一圈結束時的 session time 排序（進站前後可能和官方計時不同）；下一圈和衰退同 Lap times；機率來自下方的名次模擬。 |
 | Events | 含 what / why / next 分析與選用 LLM 賽評的事件卡 | `/events` | 規則式偵測器逐圈執行：輪胎衰退警告（一段 stint 至少 8 個 clean lap、擬合斜率至少 0.10 s/lap）、undercut 與 overcut 窗口、名次變化、掉速。文字是固定 template；事件結果要等重播到它的判定圈才會出現。 |
 | Driver | 焦點車手：stints、輪胎衰退、預測下一圈、預期名次與 P10-P90 範圍、奪冠 / 登台 / 得分（前 10）機率與歷史曲線，以及進站策略表 | `/state`、`/predictions`、`/positions/history`、`/strategy` | 機率來自名次模擬。策略表比較四個候選計畫：在第 N+1、N+3、N+5 或 N+8 圈進站（用過兩種乾胎後再加「不再進站」），各跑 1,000 次 seeded 模擬；「win」是該計畫在所有模擬中最快的比例。假設比賽一路綠旗到終點。 |
-| Lap times | 焦點車手與前後車的圈速，虛線為 model 的預測圈速；第 1 圈、進站圈、出站圈，以及安全車 / 虛擬安全車 / 紅旗圈在線上留空；`P` 以車手顏色標示每次進站，安全車 / 虛擬安全車 / 紅旗圈加上底色 | `/laps`、`/predictions` | 預測 = 近期配速（最近 3 個 clean lap 的中位數）+ lap-time model 預測的變化量（預設 `lightgbm`；可替換，見[換上你的 model](#換上你的-model)）。Y 軸只依畫出來的圈計算範圍。 |
+| Lap times | 焦點車手與前後車的圈速，虛線為 model 的預測圈速；第 1 圈、進站圈、出站圈，以及安全車 / 虛擬安全車 / 紅旗圈在線上留空；`P` 以車手顏色標示每次進站，安全車 / 虛擬安全車 / 紅旗圈加上底色 | `/laps`、`/predictions` | 預測 = 近期配速（最近 3 個 clean lap 的中位數）+ lap-time model 預測的變化量（預設 `lightgbm`；可替換，見[換上你的 model](#換上你的-model)）。Y 軸只依畫出來的圈計算範圍（最快圈到中位數加 3 s），所以特別慢的正常圈或預測圈仍可能超出上緣。 |
 | Timeline | 整場比賽的事件標記 | `/events` | 點擊標記會跳到該圈並暫停。 |
 | Race trace | 每位車手每圈相對參考配速領先（+）或落後（−）的時間 | `/trace` | Race time = session time − 起跑時間，起跑時間取所有車手（第 1 圈 session time − 第 1 圈圈速）的中位數。參考配速 = 所有車手在最後一個有計時的圈時，race time ÷ 圈數的中位數。水平線代表維持參考配速；往上代表更快。 |
 | Pit clock | 每台車和領先者的差距，以及車手現在進站會回到哪裡 | `/rejoin` | 回場差距 = 自己和領先者的差距 + pit loss。Pit loss = 本場目前所有進站（進站圈 + 出站圈 − 2 × 該車手近期配速）的中位數；還沒有人進站時為 22 s。假設其他車不進站；是快照，不是預測。 |
@@ -113,7 +113,7 @@ Pit window 和策略表背後的**策略模擬器**（`augur.strategy`）只模�
 |---|---|
 | 輪胎衰退警告 | 一段 stint 的 fuel-corrected 圈速在至少 8 個 clean lap 中每圈至少變慢 0.10 s，或最後兩個 clean lap 比 stint 趨勢慢超過 0.8 s（「懸崖」） |
 | Undercut 窗口 | 車手落後正前方車輛 2.5 s 以內，前車輪胎至少 12 圈，且兩車最近 3 圈都沒進站 |
-| Overcut 窗口 | 正前方車輛進站，而落後 3.0 s 以內的車手留在場上，輪胎每圈衰退最多 0.05 s |
+| Overcut 窗口 | 正前方車輛進站，而落後不到 3.0 s 的車手留在場上，輪胎每圈衰退少於 0.05 s |
 | 名次變化 | 車手一圈內上升或下降至少 2 名，或出現新的領先者 |
 | 掉速 | 一個 clean lap 比 model 預測慢超過 1.0 s |
 
@@ -199,7 +199,7 @@ AUGUR_NARRATOR=openai_compat AUGUR_LLM_BASE_URL=http://<host>:<port>/v1 AUGUR_LL
 
 - **任何 OpenAI-compatible server**（本機的 Ollama、vLLM、LM Studio，或雲端服務）：設 `AUGUR_NARRATOR=openai_compat`，`AUGUR_LLM_BASE_URL` 設成它的 `/v1` base URL，`AUGUR_LLM_MODEL` 設成它提供的 model，需要時再設 `AUGUR_LLM_API_KEY`。AUGUR 用 Python 標準函式庫（不需額外套件）POST 到 `<base URL>/chat/completions`，每個事件最多等 120 s，HTTP 429 和 5xx 會重試兩次，會移除 `<think>` 區塊，連續 3 次連線錯誤就停止（例如 server 不在你的網路內）。
 - **Gemini：** `AUGUR_NARRATOR=gemini` 加上 `GEMINI_API_KEY`；固定 `GEMINI_MODEL` 才能重現相同文字。我們實測免費額度的 key 跑不完一整場比賽。
-- **關閉：** `AUGUR_NARRATOR=none`，或不設變數：`augur.narrate` 會印出 `<VARIABLE> not set; nothing generated` 並以 0 結束。
+- **關閉：** 設 `AUGUR_NARRATOR=none` 時，`augur.narrate` 印出 `narrator none; nothing generated`；完全不設變數時會改用預設的 `gemini`，印出 `GEMINI_API_KEY not set; nothing generated`。兩者都以 0 結束。
 - **語言：** 設 `AUGUR_COMMENTARY_LANG=zh-TW`，或在 dashboard 的 Settings 選語言，即可產生繁體中文賽評。
 - **切換之後**，重跑 `augur.narrate` 並重啟 API。賽評依事件、model、narrator、LLM model、語言和 prompt 版本分開快取（`augur.narration.cache`），所以舊設定的文字會留在快取裡，切回去就會再出現。
 
