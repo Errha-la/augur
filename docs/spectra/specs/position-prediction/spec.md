@@ -99,7 +99,7 @@ For each driver the system SHALL report `p_win`, `p_podium`, `p_points` (shares 
 ---
 ### Requirement: Serve position predictions
 
-`python -m augur.analyze` SHALL store predictions for every lap in `position_predictions` for the analyzed model, replacing earlier rows for that race and model. `GET /api/races/{race_id}/positions?lap=N` SHALL return `{race_id, lap, model, analyzed, runs, seed, drivers}` for the `AUGUR_MODEL` model, and `GET /api/races/{race_id}/positions/history?lap=N` SHALL return `{race_id, model, analyzed, laps}` with per-lap `p_win`, `p_podium`, and `expected_position` for laps 1 to N only, in ascending lap order. Both responses SHALL always include `analyzed`; when the race has no predictions for the model, `analyzed` SHALL be `false` with empty `drivers` or `laps`. Field names and nesting SHALL match the API contract in design.md, which the `race-dashboard` mocks follow. Unknown races SHALL return 404 and invalid laps 422.
+`python -m augur.analyze` SHALL store predictions for every lap in `position_predictions` for the analyzed model, replacing earlier rows for that race and model. `GET /api/races/{race_id}/positions?lap=N` SHALL return `{race_id, lap, model, analyzed, runs, seed, drivers}` for the `AUGUR_MODEL` model, and `GET /api/races/{race_id}/positions/history?lap=N` SHALL return `{race_id, model, analyzed, laps}` with per-lap `p_win`, `p_podium`, `expected_position`, `position_p10`, and `position_p90` for laps 1 to N only, in ascending lap order. Both responses SHALL always include `analyzed`; when the race has no predictions for the model, `analyzed` SHALL be `false` with empty `drivers` or `laps`. Field names and nesting SHALL match the API contract in design.md, which the `race-dashboard` mocks follow. Unknown races SHALL return 404 and invalid laps 422.
 
 #### Scenario: History stops at the current lap
 
@@ -114,7 +114,7 @@ For each driver the system SHALL report `p_win`, `p_podium`, `p_points` (shares 
 #### Scenario: Response shape matches the contract
 
 - **WHEN** the client calls both endpoints for an analyzed race
-- **THEN** `analyzed` is `true` and the field names and nesting are exactly those in the design.md API contract, with no extra or missing fields
+- **THEN** `analyzed` is `true` and the field names and nesting are exactly those in the design.md API contract, with each history driver entry holding `code`, `p_win`, `p_podium`, `expected_position`, `position_p10`, and `position_p90`, and no extra or missing fields
 
 ---
 ### Requirement: Neutralised periods
