@@ -16,7 +16,7 @@ import pandas as pd
 from augur import config
 from augur.features import clean_mask, fuel_corrected
 from augur.state import race_state, to_json_value
-from augur.strategy import pit_loss, simulate_pit_laps
+from augur.strategy import candidate_strategies, pit_loss, simulate_pit_laps
 
 # Fewest points the degradation chart fits a line through.
 DEG_FIT_MIN_POINTS = 4
@@ -222,10 +222,9 @@ def pit_window(
     only once ``driver`` has used two dry compounds.
     """
     laps = laps[laps["lap"] <= lap]
-    own = laps[laps["driver"] == driver]
-    used = {c for c in own["compound"].dropna() if c in config.DRY_COMPOUNDS}
     pit_laps: list[int | None] = list(range(lap + 1, total_laps - 1))
-    if len(used) >= 2:
+    # Offer "no further stop" exactly when the strategy table does.
+    if any(p is None for _, p in candidate_strategies(laps, total_laps, driver, lap)):
         pit_laps.append(None)
     sim = simulate_pit_laps(laps, total_laps, driver, lap, pit_laps, runs=runs, seed=seed)
     plans = sim["plans"]

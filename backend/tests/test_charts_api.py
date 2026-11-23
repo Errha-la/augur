@@ -130,6 +130,12 @@ def test_pit_window_agrees_with_the_strategy_table(client):
     # By lap 20 every car has used two compounds: the no-stop plan comes last.
     late = client.get(f"/api/races/{RACE}/pit-window?lap=20&driver=DDD&runs=500").json()
     assert [p["pit_lap"] for p in late["plans"]] == [*range(21, 29), None]
+    # The no-stop plan is offered exactly when the strategy table offers it.
+    for n in (15, 20):
+        url = f"lap={n}&driver=DDD&runs=200"
+        has_none = any(p["pit_lap"] is None for p in client.get(f"/api/races/{RACE}/pit-window?{url}").json()["plans"])
+        table = client.get(f"/api/races/{RACE}/strategy?{url}").json()["strategies"]
+        assert has_none == any(s["pit_lap"] is None for s in table)
     assert set(pw["plans"][0]) == {"pit_lap", "mean_s", "p10_s", "p90_s", "delta_s"}
     best = min(pw["plans"], key=lambda p: p["mean_s"])
     assert best["delta_s"] == 0.0 and all(p["delta_s"] >= 0 for p in pw["plans"])
