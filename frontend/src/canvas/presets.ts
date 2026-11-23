@@ -1,14 +1,25 @@
 import type { Board, PresetId, WidgetInstance, WidgetSettings, WidgetType } from "./board";
+import { EVENT_TYPES } from "./registry";
 
 // Built-in boards from the design's presets table ("Presets and custom boards").
 
 type Spec = [WidgetType, x: number, y: number, w: number, h: number, settings?: WidgetSettings];
 
+/**
+ * Event types in EVENT_TYPES order, the order the type chips and the sanitizer
+ * produce, so a preset whose chips are toggled back compares equal to the
+ * built-in and loses its "edited" mark.
+ */
+function normalized(settings: WidgetSettings): WidgetSettings {
+  const { types } = settings;
+  return types ? { ...settings, types: EVENT_TYPES.filter((t) => types.includes(t)) } : settings;
+}
+
 function board(id: PresetId, name: string, specs: Spec[]): Board {
   const counts: Partial<Record<WidgetType, number>> = {};
   const widgets: WidgetInstance[] = specs.map(([type, x, y, w, h, settings = {}]) => {
     const n = (counts[type] = (counts[type] ?? 0) + 1);
-    return { id: `${type}-${n}`, type, x, y, w, h, settings };
+    return { id: `${type}-${n}`, type, x, y, w, h, settings: normalized(settings) };
   });
   return { id, name, presetId: id, widgets };
 }

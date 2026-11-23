@@ -8,13 +8,20 @@ export function shownTypes(types: string[] | undefined): readonly string[] {
   return types ?? EVENT_TYPES;
 }
 
+/**
+ * The setting after toggling `type`: EVENT_TYPES order, and undefined
+ * (every type) when all are on.
+ */
+export function toggleType(types: string[] | undefined, type: string): string[] | undefined {
+  const on = new Set(shownTypes(types));
+  const next = EVENT_TYPES.filter((t) => (t === type ? !on.has(t) : on.has(t)));
+  return next.length === EVENT_TYPES.length ? undefined : next;
+}
+
 /** Title-bar toggle chips for an events widget's type filter. */
 export function EventTypeChips({ types, onChange }: { types: string[] | undefined; onChange: (types: string[] | undefined) => void }) {
   const on = new Set(shownTypes(types));
-  const toggle = (type: string) => {
-    const next = EVENT_TYPES.filter((t) => (t === type ? !on.has(t) : on.has(t)));
-    onChange(next.length === EVENT_TYPES.length ? undefined : next);
-  };
+  const toggle = (type: string) => onChange(toggleType(types, type));
   return (
     <div role="group" aria-label="Event types shown" className="flex flex-wrap gap-1">
       {EVENT_TYPES.map((type) => {

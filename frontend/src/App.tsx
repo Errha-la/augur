@@ -61,7 +61,14 @@ export default function App({ initialBoards: startBoards }: AppProps = {}) {
 
   const [lapReload, setLapReload] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const { state: boards, dispatch: dispatchBoards, notice, setNotice } = useBoards(startBoards);
+  const {
+    state: boards,
+    dispatch: dispatchBoards,
+    storageNotice,
+    dismissStorageNotice,
+    notice,
+    setNotice,
+  } = useBoards(startBoards);
   const board = activeBoard(boards);
   const guide = useGuide();
   const boardFiles = useBoardFiles({
@@ -275,6 +282,7 @@ export default function App({ initialBoards: startBoards }: AppProps = {}) {
           />
         </header>
         {banner}
+        {storageNotice && <Notice testId="storage-notice" text={storageNotice} onDismiss={dismissStorageNotice} />}
         {notice && <Notice text={notice} onDismiss={() => setNotice(null)} />}
         {boardFiles.fileInput}
         <main className="min-h-0 flex-1">

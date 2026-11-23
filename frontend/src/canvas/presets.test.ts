@@ -37,7 +37,9 @@ describe("presets", () => {
       ["timing", 0, 6, 7, 8],
       ["driver", 7, 6, 5, 8],
     ]);
-    expect(preset("battle").widgets[1].settings.types).toEqual(["position_change", "undercut_window", "overcut_window"]);
+    // The design table's types, kept in EVENT_TYPES order (the chips' order).
+    expect(preset("battle").widgets[1].settings.types).toEqual(["undercut_window", "overcut_window", "position_change"]);
+    expect(preset("pace").widgets[1].settings.types).toEqual(["degradation_warning", "pace_drop"]);
   });
 
   it("returns independent copies", () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { removeWidget } from "./board";
-import { preset } from "./presets";
+import { toggleType } from "../components/EventTypeChips";
+import { type Board, removeWidget, updateSettings } from "./board";
+import { preset, PRESET_IDS } from "./presets";
 import { activeBoard, allBoards, type BoardsAction, boardsReducer, type BoardsState, initialBoards, isEdited } from "./store";
 
 function run(...actions: BoardsAction[]): BoardsState {
@@ -26,6 +27,18 @@ describe("boards store", () => {
   it("an edit that returns a preset to its built-in definition clears the mark", () => {
     const s = run({ type: "rename", id: "pace", name: "Mine" }, { type: "rename", id: "pace", name: "PACE" });
     expect(isEdited(s, "pace")).toBe(false);
+  });
+
+  it.each(PRESET_IDS)("toggling an event-type chip off and on again clears the %s edited mark", (id) => {
+    const events = preset(id).widgets.find((w) => w.type === "events")!;
+    const flip = (b: Board) => {
+      const w = b.widgets.find((x) => x.id === events.id)!;
+      return updateSettings(b, w.id, { types: toggleType(w.settings.types, "position_change") });
+    };
+    let s = run({ type: "select", id }, { type: "update", update: flip });
+    expect(isEdited(s, id)).toBe(true);
+    s = boardsReducer(s, { type: "update", update: flip });
+    expect(isEdited(s, id)).toBe(false);
   });
 
   it("Blank board: names use the lowest free number and become active", () => {
