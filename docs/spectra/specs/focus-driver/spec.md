@@ -27,7 +27,7 @@ The dashboard SHALL keep exactly one focus driver. It SHALL default to the drive
 ---
 ### Requirement: Focus driver panel
 
-The focus panel SHALL show the driver's code and team, a stint bar with one segment per stint up to the current lap (coloured by compound, width proportional to laps in the stint), `deg_s_per_lap` and the cliff flag, the predicted next lap, expected position with its p10-p90 range, `p_win`, `p_podium`, and `p_points`, a chart of `p_win` and `p_podium` for laps 1 to N from `/positions/history?lap=N`, the note "Assumes a green race to the end", a strategy table from `/strategy?lap=N&driver=<focus>`, and the list of events at lap N or earlier whose `drivers` include the focus driver. The strategy table and the probability history SHALL be requested when playback is paused, and during playback only on laps divisible by 5; it SHALL show "Simulating..." until the response arrives.
+The focus panel SHALL show the driver's code and team, a stint bar with one segment per stint up to the current lap (coloured by compound, width proportional to laps in the stint), `deg_s_per_lap` and the cliff flag, the predicted next lap, expected position with its p10-p90 range, `p_win`, `p_podium`, and `p_points`, a chart of `p_win` and `p_podium` for laps 1 to N from `/positions/history?lap=N`, the note "Includes random safety-car and VSC periods" under the probabilities, a strategy table from `/strategy?lap=N&driver=<focus>` with the note "Assumes a green race to the end" under it, and the list of events at lap N or earlier whose `drivers` include the focus driver. The strategy table and the probability history SHALL be requested when playback is paused, and during playback only on laps divisible by 5; it SHALL show "Simulating..." until the response arrives.
 
 #### Scenario: Stint bar up to the current lap
 
@@ -49,6 +49,11 @@ The focus panel SHALL show the driver's code and team, a stint bar with one segm
 - **GIVEN** `/positions?lap=30` gives the focus driver `expected_position` 4.6, `position_p10` 3, `position_p90` 7, `p_win` 0.04, `p_podium` 0.31, `p_points` 0.99
 - **WHEN** the focus panel renders
 - **THEN** it shows `P4.6 (P3-P7)`, `WIN 4%`, `PODIUM 31%`, `POINTS 99%`
+
+#### Scenario: Safety-car notes
+
+- **WHEN** the focus panel renders with a strategy table
+- **THEN** "Includes random safety-car and VSC periods" appears under the probabilities and "Assumes a green race to the end" appears under the strategy table, and no other copy of either note appears
 
 ---
 ### Requirement: Focus driver highlights
