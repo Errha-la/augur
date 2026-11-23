@@ -68,11 +68,11 @@ export function Menu({ label, ariaLabel, guide, children, align = "left" }: Menu
 }
 
 /** A dismissible one-line message under the status bar. */
-export function Notice({ text, onDismiss }: { text: string; onDismiss: () => void }) {
+export function Notice({ text, onDismiss, testId = "notice" }: { text: string; onDismiss: () => void; testId?: string }) {
   return (
     <div
       role="status"
-      data-testid="notice"
+      data-testid={testId}
       className="flex items-center justify-between gap-3 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200"
     >
       <span>{text}</span>

@@ -87,18 +87,19 @@ describe("Board persistence", () => {
     fakeBackend();
     localStorage.setItem(STORAGE_KEY, "{not json");
     await open();
-    expect(screen.getByTestId("notice")).toHaveTextContent(STORAGE_UNREADABLE);
+    expect(screen.getByTestId("storage-notice")).toHaveTextContent(STORAGE_UNREADABLE);
     expect(label()).toHaveTextContent("BATTLE");
     await new Promise((r) => setTimeout(r, 400));
     expect(localStorage.getItem(STORAGE_KEY)).toBe("{not json");
     fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
-    expect(screen.queryByTestId("notice")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("storage-notice")).not.toBeInTheDocument();
   });
 
   it("a first visit with nothing stored starts on BATTLE without a notice", async () => {
     fakeBackend();
     await open();
     expect(label()).toHaveTextContent("BATTLE");
+    expect(screen.queryByTestId("storage-notice")).not.toBeInTheDocument();
     expect(screen.queryByTestId("notice")).not.toBeInTheDocument();
   });
 
@@ -109,7 +110,7 @@ describe("Board persistence", () => {
     });
     const setItem = vi.spyOn(Storage.prototype, "setItem");
     await open();
-    expect(screen.getByTestId("notice")).toHaveTextContent(STORAGE_UNAVAILABLE);
+    expect(screen.getByTestId("storage-notice")).toHaveTextContent(STORAGE_UNAVAILABLE);
     fireEvent.click(menu().getByRole("menuitem", { name: "New blank board" }));
     expect(label()).toHaveTextContent("Board 1");
     await new Promise((r) => setTimeout(r, 400));
@@ -123,7 +124,7 @@ describe("Board persistence", () => {
     });
     await open();
     fireEvent.click(menu().getByRole("menuitem", { name: "New blank board" }));
-    expect(await screen.findByTestId("notice")).toHaveTextContent(STORAGE_UNAVAILABLE);
+    expect(await screen.findByTestId("storage-notice")).toHaveTextContent(STORAGE_UNAVAILABLE);
   });
 });
 

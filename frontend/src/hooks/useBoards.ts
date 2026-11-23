@@ -5,6 +5,13 @@ import { type BoardsAction, boardsReducer, type BoardsState } from "../canvas/st
 export interface UseBoards {
   state: BoardsState;
   dispatch: Dispatch<BoardsAction>;
+  /**
+   * Storage state ("could not be read" / "will not be saved"). Kept apart from
+   * `notice` so a later message (import report, board full) never hides it.
+   */
+  storageNotice: string | null;
+  dismissStorageNotice: () => void;
+  /** One-off messages: import reports, "A board holds at most 24 widgets". */
   notice: string | null;
   setNotice: (notice: string | null) => void;
 }
@@ -18,7 +25,9 @@ export interface UseBoards {
 export function useBoards(start?: BoardsState): UseBoards {
   const [loaded] = useState(() => (start ? { state: start, notice: null, canSave: true } : loadBoards()));
   const [state, rawDispatch] = useReducer(boardsReducer, loaded.state);
-  const [notice, setNotice] = useState<string | null>(loaded.notice);
+  const [storageNotice, setStorageNotice] = useState<string | null>(loaded.notice);
+  const [notice, setNotice] = useState<string | null>(null);
+  const dismissStorageNotice = useCallback(() => setStorageNotice(null), []);
   const canSave = useRef(loaded.canSave);
   const unsaved = useRef(false);
   const latest = useRef(state);
@@ -34,7 +43,7 @@ export function useBoards(start?: BoardsState): UseBoards {
     unsaved.current = false;
     if (!saveBoards(latest.current)) {
       canSave.current = false;
-      setNotice(STORAGE_UNAVAILABLE);
+      setStorageNotice(STORAGE_UNAVAILABLE);
     }
   }, []);
 
@@ -53,5 +62,5 @@ export function useBoards(start?: BoardsState): UseBoards {
     };
   }, [flush]);
 
-  return { state, dispatch, notice, setNotice };
+  return { state, dispatch, storageNotice, dismissStorageNotice, notice, setNotice };
 }

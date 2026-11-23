@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { describe, expect, it, vi } from "vitest";
 import App from "../App";
 import { exportBoard, MAX_FILE_BYTES, NOT_A_BOARD_FILE, parseBoardFile, slug } from "../canvas/boardFile";
+import { STORAGE_UNAVAILABLE } from "../canvas/persistence";
 import { activeBoard } from "../canvas/store";
 import { fakeBackend } from "../test/fakeBackend";
 import { waitForShown } from "../test/renderApp";
@@ -91,6 +92,16 @@ describe("Board export and import", () => {
     importText('{"format": "other"}');
     expect(await screen.findByTestId("notice")).toHaveTextContent(NOT_A_BOARD_FILE);
     expect(boardNames()).toEqual(["PIT WALL", "BATTLE", "PACE"]);
+  });
+
+  it("an import report does not hide 'Boards will not be saved in this browser.'", async () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("blocked", "SecurityError");
+    });
+    await open();
+    importText(fileWith([{ id: "a", type: "timing", x: 0, y: 0, w: 5, h: 10, settings: {} }]));
+    expect(await screen.findByTestId("notice")).toHaveTextContent("Imported Shared: 1 widgets, 0 skipped");
+    expect(screen.getByTestId("storage-notice")).toHaveTextContent(STORAGE_UNAVAILABLE);
   });
 
   it("a 101 KB file is rejected before it is read", async () => {
