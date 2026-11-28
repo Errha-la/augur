@@ -183,7 +183,7 @@ AUGUR_NARRATOR=openai_compat AUGUR_LLM_BASE_URL=http://<host>:<port>/v1 AUGUR_LL
 # narrated 2024-24-abu-dhabi-grand-prix: <ok> ok, <rejected> rejected, <failed> failed, <cached> cached
 ```
 
-Run it again to retry rejected or failed events; cached events are skipped. Start the API (`make dev-api`) with the same narrator variables, since it serves only the commentary cached for the current settings. The variables can also live in a git-ignored `.env` file loaded with `set -a; source .env; set +a`.
+Run it again to retry rejected or failed events; cached events are skipped. Re-analyzing a race (`augur.analyze` or `augur.bench`) drops the cached commentary of every event whose evidence or template text changed, so run `augur.narrate` again afterwards. Start the API (`make dev-api`) with the same narrator variables, since it serves only the commentary cached for the current settings. The variables can also live in a git-ignored `.env` file loaded with `set -a; source .env; set +a`.
 
 #### Switch the LLM
 

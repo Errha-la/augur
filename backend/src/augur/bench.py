@@ -84,6 +84,10 @@ def check(data_dir: Path, model_name: str, races: Sequence[str]) -> dict:
 def needs_analysis(store: ReplayStore, race_id: str, model_name: str) -> bool:
     if not store.is_analyzed(race_id, model_name) or not store.has_positions(race_id, model_name):
         return True
+    # Retrained since the analysis: the stored events and positions came from the old model.
+    trained_at = registry.read_metrics(store.data_dir, model_name).get("trained_at")
+    if trained_at and datetime.fromisoformat(store.analyzed_at(race_id, model_name)) < datetime.fromisoformat(trained_at):
+        return True
     race = store.get_race(race_id)
     events = store.events_until(race_id, model_name, int(race["total_laps"]))
     # Analyzed before outcomes existed: every outcome-type event would read as pending.
@@ -98,8 +102,7 @@ def ensure_analyzed(data_dir: Path, race_id: str, model_name: str, runs: int) ->
         events, positions = analyze.compute_analysis(data_dir, race_id, model_name, runs=runs, seed=seed)
     except analyze.AnalyzeError as exc:
         raise BenchError(str(exc)) from None
-    analyze.replace_events(data_dir, race_id, model_name, events)
-    analyze.replace_positions(data_dir, race_id, model_name, positions, runs, seed)
+    analyze.store_analysis(data_dir, race_id, model_name, events, positions, runs, seed)
     return True
 
 

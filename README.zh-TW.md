@@ -183,7 +183,7 @@ AUGUR_NARRATOR=openai_compat AUGUR_LLM_BASE_URL=http://<host>:<port>/v1 AUGUR_LL
 # narrated 2024-24-abu-dhabi-grand-prix: <ok> ok, <rejected> rejected, <failed> failed, <cached> cached
 ```
 
-再跑一次可以重試被拒絕或失敗的事件；已快取的事件會跳過。啟動 API（`make dev-api`）時要帶同樣的 narrator 變數，因為它只提供目前設定下快取的賽評。變數也可以寫在 git-ignored 的 `.env` 檔，用 `set -a; source .env; set +a` 載入。
+再跑一次可以重試被拒絕或失敗的事件；已快取的事件會跳過。重新 analyze 一場比賽（`augur.analyze` 或 `augur.bench`）時，evidence 或 template 文字有變的事件，其快取賽評會被刪除，所以之後要再跑一次 `augur.narrate`。啟動 API（`make dev-api`）時要帶同樣的 narrator 變數，因為它只提供目前設定下快取的賽評。變數也可以寫在 git-ignored 的 `.env` 檔，用 `set -a; source .env; set +a` 載入。
 
 #### 更換 LLM
 
