@@ -102,8 +102,7 @@ def ensure_analyzed(data_dir: Path, race_id: str, model_name: str, runs: int) ->
         events, positions = analyze.compute_analysis(data_dir, race_id, model_name, runs=runs, seed=seed)
     except analyze.AnalyzeError as exc:
         raise BenchError(str(exc)) from None
-    analyze.replace_events(data_dir, race_id, model_name, events)
-    analyze.replace_positions(data_dir, race_id, model_name, positions, runs, seed)
+    analyze.store_analysis(data_dir, race_id, model_name, events, positions, runs, seed)
     return True
 
 
