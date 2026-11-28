@@ -154,3 +154,16 @@ def test_bench_reanalyzes_events_stored_without_outcomes(data, tmp_path):
 
     assert run(data, tmp_path / "two") == 0
     assert not any(bench.needs_analysis(ReplayStore(data), r, "baseline") for r in STAND_INS)
+
+
+def test_bench_reanalyzes_after_the_model_is_retrained(data, tmp_path):
+    from augur.models import registry
+    from augur.replay import ReplayStore
+
+    assert run(data, tmp_path / "one") == 0
+    assert not any(bench.needs_analysis(ReplayStore(data), r, "baseline") for r in STAND_INS)
+    # A retrain after the analysis: the stored events and positions came from the old model.
+    path = registry.metrics_path(data, "baseline")
+    metrics = json.loads(path.read_text())
+    path.write_text(json.dumps({**metrics, "trained_at": "2999-01-01T00:00:00+00:00"}))
+    assert all(bench.needs_analysis(ReplayStore(data), r, "baseline") for r in STAND_INS)

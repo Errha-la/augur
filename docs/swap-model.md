@@ -132,7 +132,7 @@ baseline: podium skill 61.7% vs current order, lap times match baseline (0.0%), 
 - **Lap times**: mean absolute error against the baseline model, which predicts no change from recent pace. `beat`, `trail`, or `match`.
 - **Event hit rate**: undercut and degradation calls that came true, over hits plus misses (calls the race ended before deciding are left out). These calls are rule-based, so the rate is the same for every model.
 
-The result goes to `bench/mymodel.json`, with the pooled scores, each race's scores (`per_race`), `seed`, `data_source`, and `augur_version`. A benchmark race without events or position predictions for your model (or analyzed before event outcomes existed) is analyzed first, which takes about half a minute per race. Your model's name and author appear on every Wrapped card.
+The result goes to `bench/mymodel.json`, with the pooled scores, each race's scores (`per_race`), `seed`, `data_source`, and `augur_version`. A benchmark race without events or position predictions for your model (or analyzed before event outcomes existed, or before your model was last trained) is analyzed first, which takes about half a minute per race. Your model's name and author appear on every Wrapped card.
 
 ## 4. Rules
 
